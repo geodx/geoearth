@@ -2,7 +2,6 @@ import * as Cesium from 'cesium'
 import Utils from '../core/Utils'
 import ZoomNavigationControl from './ZoomNavigationControl'
 import ResetViewNavigationControl from './ResetViewNavigationControl'
-import { SceneMode, Cartesian2, Cartesian3, defined, BoundingSphere, HeadingPitchRange, Transforms } from 'cesium'
 import type { Terria } from '..'
 import svgCompassRotationMarker from '../svgPaths/svgCompassRotationMarker'
 import svgCompassOuterRing from '../svgPaths/svgCompassOuterRing'
@@ -51,6 +50,7 @@ export class NavigationViewModel {
   private rotateInitialCursorAngle?: number
   private rotateFrame?: Cesium.Matrix4
   private rotateInitialCameraAngle = 0
+
 
   private compassEl!: HTMLElement
   private outerRingEl!: HTMLElement
@@ -172,29 +172,69 @@ export class NavigationViewModel {
     const deg = -this.heading * (180 / Math.PI)
     this.outerRingEl.style.transform = `rotate(${deg}deg)`
   }
+  private orbitTickFunction(): void {
+    console.log("orbitTickFunction");
 
-  private updateRotationMarker(angle: number, opacity: number): void {
-    this.rotationMarkerEl.style.transform = `rotate(${-angle * (180 / Math.PI)}deg)`
-    this.rotationMarkerEl.style.opacity = opacity.toString()
-    this.gyroEl.classList.toggle('compass-gyro-active', this.isOrbiting)
+    const timestamp = Cesium.getTimestamp()
+    const deltaT = timestamp - this.orbitLastTimestamp
+    // (orbitCursorOpacity - 0.5) * 2.5 / 1000 这段逻辑保持不变
+    const rate = ((this.orbitCursorOpacity - 0.5) * 2.5) / 1000
+    const distance = deltaT * rate
+
+    const angle = this.orbitCursorAngle + Cesium.Math.PI_OVER_TWO
+    const x = Math.cos(angle) * distance
+    const y = Math.sin(angle) * distance
+
+    let oldTransform: Cesium.Matrix4 | undefined
+    if (this.orbitFrame) {
+      oldTransform = Cesium.Matrix4.clone(this.terria.viewerWidget.camera.transform, new Cesium.Matrix4())
+      this.terria.viewerWidget.camera.lookAtTransform(this.orbitFrame)
+    }
+
+    // 2D模式下只做平移
+    if (this.terria.viewerWidget.scene.mode === Cesium.SceneMode.SCENE2D) {
+      const direction = new Cesium.Cartesian3(x, y, 0)
+
+      const amount =
+        (Math.max(
+          this.terria.viewerWidget.scene.canvas.clientWidth,
+          this.terria.viewerWidget.scene.canvas.clientHeight,
+        ) / 100) * this.terria.viewerWidget.camera.positionCartographic.height * distance
+
+      this.terria.viewerWidget.camera.move(direction, amount)
+    } else {
+      if (this.orbitIsLook) {
+        this.terria.viewerWidget.camera.look(Cesium.Cartesian3.UNIT_Z, -x)
+        this.terria.viewerWidget.camera.look(this.terria.viewerWidget.camera.right, -y)
+      } else {
+        this.terria.viewerWidget.camera.rotateLeft(x)
+        this.terria.viewerWidget.camera.rotateUp(y)
+      }
+    }
+
+    if (this.orbitFrame && oldTransform) {
+      this.terria.viewerWidget.camera.lookAtTransform(oldTransform)
+    }
+
+    // viewModel.terria.cesium.notifyRepaintRequired();
+
+    this.orbitLastTimestamp = timestamp
   }
-
   // ==================== 鼠标交互 ====================
   private handleMouseDown(e: MouseEvent | TouchEvent): void {
     console.log(e);
-    if (this.terria.viewerWidget.scene.mode === SceneMode.MORPHING) return
+    if (this.terria.viewerWidget.scene.mode === Cesium.SceneMode.MORPHING) return
 
     const rect = this.compassEl.getBoundingClientRect()
-    const center = new Cartesian2(rect.width / 2, rect.height / 2)
+    const center = new Cesium.Cartesian2(rect.width / 2, rect.height / 2)
     const pos = this.getClientPos(e)
-    const clickPos = new Cartesian2(pos.clientX - rect.left, pos.clientY - rect.top)
-    const vector = Cartesian2.subtract(clickPos, center, new Cartesian2())
-    const distance = Cartesian2.magnitude(vector)
+    const clickPos = new Cesium.Cartesian2(pos.clientX - rect.left, pos.clientY - rect.top)
+    const vector = Cesium.Cartesian2.subtract(clickPos, center, new Cesium.Cartesian2())
+    const distance = Cesium.Cartesian2.magnitude(vector)
     const maxRadius = rect.width / 2
     const distanceFraction = distance / maxRadius
     if (distanceFraction < 50 / 145) {
       console.log("startOrbit", distanceFraction);
-
       this.startOrbit(vector)
     } else if (distanceFraction < 1) {
       console.log("startRotate", distanceFraction);
@@ -208,10 +248,10 @@ export class NavigationViewModel {
     const camera = scene.camera
     const sscc = scene.screenSpaceCameraController
 
-    if (!sscc.enableInputs || scene.mode === SceneMode.MORPHING) return
+    if (!sscc.enableInputs || scene.mode === Cesium.SceneMode.MORPHING) return
 
-    const center = Utils.getCameraFocus(this.terria, true, new Cartesian3())
-    if (!defined(center)) {
+    const center = Utils.getCameraFocus(this.terria, true, new Cesium.Cartesian3())
+    if (!Cesium.defined(center)) {
       this.controls[1]?.activate() // reset view
       return
     }
@@ -219,11 +259,11 @@ export class NavigationViewModel {
     const cameraPos = scene.globe.ellipsoid.cartographicToCartesian(camera.positionCartographic)
     const surfaceNormal = scene.globe.ellipsoid.geodeticSurfaceNormal(center)
 
-    camera.flyToBoundingSphere(new BoundingSphere(center, 0), {
-      offset: new HeadingPitchRange(
+    camera.flyToBoundingSphere(new Cesium.BoundingSphere(center, 0), {
+      offset: new Cesium.HeadingPitchRange(
         0,
-        Cesium.Math.PI_OVER_TWO - Cartesian3.angleBetween(surfaceNormal, camera.directionWC),
-        Cartesian3.distance(cameraPos, center),
+        Cesium.Math.PI_OVER_TWO - Cesium.Cartesian3.angleBetween(surfaceNormal, camera.directionWC),
+        Cesium.Cartesian3.distance(cameraPos, center),
       ),
       duration: 1.5,
     })
@@ -234,67 +274,75 @@ export class NavigationViewModel {
     return { clientX: touch.clientX, clientY: touch.clientY }
   }
 
-  private startOrbit(cursorVector: Cartesian2): void {
+  private startOrbit(cursorVector: Cesium.Cartesian2): void {
     this.isOrbiting = true
-    this.orbitCursorOpacity = 0.5
-    this.updateRotationMarker(this.orbitCursorAngle, 0.8)
 
     const scene = this.terria.viewerWidget.scene
     const camera = scene.camera
 
     // 设置参考系
-    const center = Utils.getCameraFocus(this.terria, true, new Cartesian3())
-    console.log(center);
-
-    if (!defined(center)) {
-      this.orbitFrame = Transforms.eastNorthUpToFixedFrame(camera.positionWC, scene.globe.ellipsoid)
+    const center = Utils.getCameraFocus(this.terria, true, new Cesium.Cartesian3())
+    if (!Cesium.defined(center)) {
+      this.orbitFrame = Cesium.Transforms.eastNorthUpToFixedFrame(camera.positionWC, scene.globe.ellipsoid)
       this.orbitIsLook = true
     } else {
-      this.orbitFrame = Transforms.eastNorthUpToFixedFrame(center, scene.globe.ellipsoid)
+      this.orbitFrame = Cesium.Transforms.eastNorthUpToFixedFrame(center, scene.globe.ellipsoid)
       this.orbitIsLook = false
     }
+    const updateRotationMarker = (angle: number, opacity: number): void => {
+      this.rotationMarkerEl.style.transform = `rotate(${-angle * (180 / Math.PI)}deg)`
+      this.rotationMarkerEl.style.opacity = opacity.toString()
+      this.gyroEl.classList.toggle('compass-gyro-active', this.isOrbiting)
+    }
 
-    // const moveHandler = (e: MouseEvent | TouchEvent) => {
-    //   const pos = this.getClientPos(e)
-    //   const rect = this.compassEl.getBoundingClientRect()
-    //   const vec = new Cartesian2(
-    //     pos.clientX - rect.left - rect.width / 2,
-    //     pos.clientY - rect.top - rect.height / 2,
-    //   )
-    //   const angle = Math.atan2(-vec.y, vec.x)
-    //   this.orbitCursorAngle = Cesium.Math.zeroToTwoPi(angle - Cesium.Math.PI_OVER_TWO)
-    //   const dist = Math.min(Cartesian2.magnitude(vec) / (rect.width / 2), 1)
-    //   this.orbitCursorOpacity = 0.5 + 0.5 * dist * dist
-    //   this.updateRotationMarker(this.orbitCursorAngle, this.orbitCursorOpacity)
-    // }
+    const moveHandler = (e: MouseEvent | TouchEvent) => {
+      const pos = this.getClientPos(e)
+      const rect = this.compassEl.getBoundingClientRect()
+      const vec = new Cesium.Cartesian2(
+        pos.clientX - rect.left - rect.width / 2,
+        pos.clientY - rect.top - rect.height / 2,
+      )
+      const angle = Math.atan2(-vec.y, vec.x)
+      this.orbitCursorAngle = Cesium.Math.zeroToTwoPi(angle - Cesium.Math.PI_OVER_TWO)
+      const dist = Math.min(Cesium.Cartesian2.magnitude(vec) / (rect.width / 2), 1)
+      this.orbitCursorOpacity = 0.5 + 0.5 * dist * dist
+      updateRotationMarker(this.orbitCursorAngle, this.orbitCursorOpacity)
+    }
 
-    // const upHandler = () => {
-    //   this.isOrbiting = false
-    //   this.updateRotationMarker(0, 0)
-    //   document.removeEventListener('mousemove', moveHandler)
-    //   document.removeEventListener('touchmove', moveHandler)
-    //   document.removeEventListener('mouseup', upHandler)
-    //   document.removeEventListener('touchend', upHandler)
-    // }
+    const upHandler = () => {
+      this.isOrbiting = false
+      console.log("upHandler");
 
-    // document.addEventListener('mousemove', moveHandler)
-    // document.addEventListener('touchmove', moveHandler)
-    // document.addEventListener('mouseup', upHandler)
-    // document.addEventListener('touchend', upHandler)
+      updateRotationMarker(0, 0)
+      document.removeEventListener('mousemove', moveHandler)
+      document.removeEventListener('touchmove', moveHandler)
+      document.removeEventListener('mouseup', upHandler)
+      document.removeEventListener('touchend', upHandler)
+    }
+    // orbitMouseMoveFunction orbitMouseUpFunction
+    document.addEventListener('mousemove', moveHandler)
+    document.addEventListener('touchmove', moveHandler)
+    document.addEventListener('mouseup', upHandler)
+    document.addEventListener('touchend', upHandler)
+
+    // this.terria.viewerWidget.clock.onTick.addEventListener(this.orbitTickFunction, this)
+    // this.terria.viewerWidget.clock.onTick.removeEventListener(this.orbitTickFunction)
+
+    updateRotationMarker(this.orbitCursorAngle, 0.8)
   }
 
-  private startRotate(cursorVector: Cartesian2): void {
+  private startRotate(cursorVector: Cesium.Cartesian2): void {
     this.isRotating = true
     this.rotateInitialCursorAngle = Math.atan2(-cursorVector.y, cursorVector.x)
 
     const scene = this.terria.viewerWidget.scene
     const camera = scene.camera
 
-    const center = Utils.getCameraFocus(this.terria, true, new Cartesian3())
-    if (defined(center)) {
-      this.rotateFrame = Transforms.eastNorthUpToFixedFrame(center, scene.globe.ellipsoid)
+    const center = Utils.getCameraFocus(this.terria, true, new Cesium.Cartesian3())
+    if (Cesium.defined(center)) {
+      this.rotateFrame = Cesium.Transforms.eastNorthUpToFixedFrame(center, scene.globe.ellipsoid)
     } else {
-      this.rotateFrame = Transforms.eastNorthUpToFixedFrame(camera.positionWC, scene.globe.ellipsoid)
+      this.rotateFrame = Cesium.Transforms.eastNorthUpToFixedFrame(camera.positionWC, scene.globe.ellipsoid)
     }
 
     this.rotateInitialCameraAngle = -camera.heading
@@ -304,7 +352,7 @@ export class NavigationViewModel {
     const moveHandler = (e: MouseEvent | TouchEvent) => {
       const pos = this.getClientPos(e)
       const rect = this.compassEl.getBoundingClientRect()
-      const vec = new Cartesian2(
+      const vec = new Cesium.Cartesian2(
         pos.clientX - rect.left - rect.width / 2,
         pos.clientY - rect.top - rect.height / 2,
       )
