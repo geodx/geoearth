@@ -5,11 +5,10 @@ import type { Terria } from '..';
 interface DistanceLegendOptions {
   terria: Terria
   container: HTMLElement
-  enableDistanceLegend?: boolean
   mapElement: HTMLElement
 }
 
-/** 预定义的距离刻度（米） */
+/** 预定义距离刻度 */
 const distances: number[] = [
   1, 2, 3, 5,
   10, 20, 30, 50,
@@ -25,7 +24,7 @@ const distances: number[] = [
 const geodesic = new Cesium.EllipsoidGeodesic()
 
 class DistanceLegendViewModel {
-  // ==================== 公开的可观察属性 ====================
+  // ==================== 公有属性 ====================
   public distanceLabel?: string
   public barWidth?: number
 
@@ -37,13 +36,14 @@ class DistanceLegendViewModel {
   private barEl: HTMLElement;
 
   private _removeSubscription?: () => void
+  private _lastLegendUpdate = 0
 
   constructor(options: DistanceLegendOptions) {
     if (!Cesium.defined(options) || !Cesium.defined(options.terria)) {
       throw new Cesium.DeveloperError('options.terria is required.')
     }
     const terria = options.terria
-    this.enableDistanceLegend = Cesium.defined(options.enableDistanceLegend) ? options.enableDistanceLegend : true
+    this.enableDistanceLegend = Cesium.defined(terria.options.enableDistanceLegend) ? terria.options.enableDistanceLegend : true
     this.root = document.createElement('div');
     this.labelEl = document.createElement('div');
     this.barEl = document.createElement('div');
@@ -53,7 +53,7 @@ class DistanceLegendViewModel {
         this._removeSubscription()
         this._removeSubscription = undefined
       }
-    }, this,)
+    }, this)
 
     const addUpdateSubscription = () => {
       var scene = terria.viewerWidget.scene
@@ -61,11 +61,11 @@ class DistanceLegendViewModel {
         this.updateDistanceLegendCesium(scene)
       )
     }
-
     addUpdateSubscription()
 
     // 当 widget 再次切换时重新订阅
     this.eventHelper.add(terria.afterWidgetChanged, addUpdateSubscription, this)
+
   }
 
   /** 销毁资源 */
@@ -78,8 +78,6 @@ class DistanceLegendViewModel {
 
   /** 把模板渲染到指定容器 */
   public show(container: HTMLElement) {
-
-
     this.root.className = 'distance-legend';
     this.labelEl.className = 'distance-legend-label';
     this.barEl.className = 'distance-legend-scale-bar';
@@ -88,7 +86,7 @@ class DistanceLegendViewModel {
     // 插入到容器
     container.appendChild(this.root);
     // 隐藏初始状态
-    this.setVisible(true);
+    // this.setVisible(false);
   }
   public static create(options: DistanceLegendOptions): DistanceLegendViewModel {
     const result = new DistanceLegendViewModel(options)
@@ -107,6 +105,12 @@ class DistanceLegendViewModel {
       this.distanceLabel = undefined
       return
     }
+    var now = Cesium.getTimestamp()
+    if (now < this._lastLegendUpdate + 250) {
+      return
+    }
+    this._lastLegendUpdate = now
+
     // Find the distance between two pixels at the bottom center of the screen.
     const width = scene.canvas.clientWidth
     const height = scene.canvas.clientHeight
@@ -126,15 +130,16 @@ class DistanceLegendViewModel {
     const rightCartographic = globe.ellipsoid.cartesianToCartographic(rightPosition)
     geodesic.setEndPoints(leftCartographic, rightCartographic)
     const pixelDistance = geodesic.surfaceDistance
+    // Find the first distance that makes the scale bar less than 100 pixels.
     const maxBarWidth = 100
     let distance
-    for (var i = distances.length - 1; !Cesium.defined(distance) && i >= 0; --i) {
+    for (var i = distances.length - 1; !distance && i >= 0; --i) {
       if (distances[i]! / pixelDistance < maxBarWidth) {
         distance = distances[i]
       }
     }
     if (Cesium.defined(distance)) {
-      var label
+      let label
       if (distance >= 1000) {
         label = (distance / 1000).toString() + ' km'
       } else {

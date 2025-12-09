@@ -39,7 +39,14 @@ export interface Terria {
 class CesiumNavigation {
     private viewerCesiumWidget: Cesium.Viewer | Cesium.CesiumWidget;
     private options: NavigationOptions;
-
+    private distanceLegendViewModel: DistanceLegendViewModel | undefined;
+    /**
+     * @alias CesiumNavigation
+     * @constructor
+     *
+     * @param {Viewer|CesiumWidget} viewerWidget The Viewer or CesiumWidget instance
+     * @param {NavigationOptions} options
+     */
     constructor(viewerWidget: Cesium.Viewer | Cesium.CesiumWidget, options: NavigationOptions) {
         this.viewerCesiumWidget = viewerWidget;
         this.options = {
@@ -51,14 +58,15 @@ class CesiumNavigation {
         };
         this.initialize();
     }
+
     private initialize() {
         if (!Cesium.defined(this.viewerCesiumWidget)) {
             throw new Error('CesiumWidget or Viewer is required.')
         }
         this.viewerCesiumWidget.camera.percentageChanged = 0.05;
         const container = document.createElement('div')
-        container.oncontextmenu = (e: Event) => e.preventDefault();
         container.className = 'cesium-widget-cesiumNavigationContainer'
+        container.oncontextmenu = (e: Event) => e.preventDefault();// 禁用右键菜单
         this.viewerCesiumWidget.container.appendChild(container)
         const terria = {
             viewerWidget: this.viewerCesiumWidget,
@@ -71,14 +79,13 @@ class CesiumNavigation {
             const distanceLegendDiv = document.createElement('div')
             container.appendChild(distanceLegendDiv)
             distanceLegendDiv.setAttribute('id', 'distanceLegendDiv')
-            const distanceLegendViewModel = DistanceLegendViewModel.create({
+            this.distanceLegendViewModel = DistanceLegendViewModel.create({
                 container: distanceLegendDiv,
                 terria: terria,
                 mapElement: container,
-                enableDistanceLegend: true
             })
         }
-        if (this.options.enableZoomControls && this.options.enableCompass) {
+        if (this.options.enableZoomControls || this.options.enableCompass) {
             const navigationDiv = document.createElement('div')
             navigationDiv.setAttribute('id', 'navigationDiv')
             container.appendChild(navigationDiv)
@@ -90,39 +97,13 @@ class CesiumNavigation {
                 enableCompass: true
             })
         }
-        // else if ((this.options.enableZoomControls && !this.options.enableZoomControls) && this.options.enableCompass) {
-        //     this.navigationDiv = document.createElement('div')
-        //     this.navigationDiv.setAttribute('id', 'navigationDiv')
-        //     container.appendChild(this.navigationDiv)
-        //     // Create the navigation controls.
-        //     this.navigationViewModel = NavigationViewModel.create({
-        //         container: this.navigationDiv,
-        //         terria: this.terria,
-        //         enableZoomControls: false,
-        //         enableCompass: true
-        //     })
-        // } else if ((!defined(this.terria.options.enableZoomControls) || this.terria.options.enableZoomControls) && (defined(this.terria.options.enableCompass) && !this.terria.options.enableCompass)) {
-        //     this.navigationDiv = document.createElement('div')
-        //     this.navigationDiv.setAttribute('id', 'navigationDiv')
-        //     container.appendChild(this.navigationDiv)
-        //     // Create the navigation controls.
-        //     this.navigationViewModel = NavigationViewModel.create({
-        //         container: this.navigationDiv,
-        //         terria: this.terria,
-        //         enableZoomControls: true,
-        //         enableCompass: false
-        //     })
-        // } else if ((defined(this.terria.options.enableZoomControls) && !this.terria.options.enableZoomControls) && (defined(this.terria.options.enableCompass) && !this.terria.options.enableCompass)) {
-        //     // this.navigationDiv.setAttribute("id", "navigationDiv");
-        //     // container.appendChild(this.navigationDiv);
-        //     // Create the navigation controls.
-        //     //            this.navigationViewModel = NavigationViewModel.create({
-        //     //                container: this.navigationDiv,
-        //     //                terria: this.terria,
-        //     //                enableZoomControls: false,
-        //     //                enableCompass: false
-        //     //            });
-        // }
+
+    }
+
+    public destroy() {
+        if (this.distanceLegendViewModel) {
+            this.distanceLegendViewModel.destroy();
+        }
     }
 }
 
