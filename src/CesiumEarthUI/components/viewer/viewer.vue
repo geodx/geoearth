@@ -12,7 +12,7 @@ const loading = ref(false)
 let earth: CesiumEarth.Earth
 function initEarth() {
   earth.createNavigation();
-  // earth.openDeBug();
+  earth.openDeBug();
   // earth.openOverviewMap()
   // earth.viewer3D.scene.globe.depthTestAgainstTerrain = true;
 
@@ -27,7 +27,7 @@ onMounted(async () => {
     infoBox: false,
     selectionIndicator: false,
     vrButton: false,
-    geocoder: true // 是否显示地名查找控件
+    geocoder: false // 是否显示地名查找控件
   });
   initEarth();
 

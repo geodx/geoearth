@@ -84,7 +84,7 @@ class Earth {
             }
         });
 
-        // this.viewer3D.scene.debugShowFramesPerSecond = true;
+        this.viewer3D.scene.debugShowFramesPerSecond = true;
         this.viewer3D.resolutionScale = window.devicePixelRatio;
         this.drawShape = new DrawShape(this.viewer3D);
         this.measureTool = new MeasureTool(this.viewer3D);

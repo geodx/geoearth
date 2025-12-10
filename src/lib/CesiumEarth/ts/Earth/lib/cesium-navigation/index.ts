@@ -2,6 +2,7 @@ import "./styles/cesium-navigation.css"
 import * as Cesium from 'cesium';
 import DistanceLegendViewModel from "./viewModels/DistanceLegendViewModel";
 import NavigationViewModel from "./viewModels/NavigationViewModel";
+import type NavigationControl from "./controls/NavigationControl";
 
 interface NavigationOptions {
     // 用于在使用重置导航重置地图视图时设置默认视图控制。接受的值是Cesium.Cartographic 和 Cesium.Rectangle.
@@ -34,7 +35,9 @@ export interface Terria {
     options: NavigationOptions;
     afterWidgetChanged: Cesium.Event;
     beforeWidgetChanged: Cesium.Event;
-    trackedEntity?: Cesium.Entity
+    trackedEntity?: Cesium.Entity;
+    container?: HTMLElement;
+    controls?: NavigationControl[];
 }
 class CesiumNavigation {
     private viewerCesiumWidget: Cesium.Viewer | Cesium.CesiumWidget;
@@ -68,7 +71,7 @@ class CesiumNavigation {
         container.className = 'cesium-widget-cesiumNavigationContainer'
         container.oncontextmenu = (e: Event) => e.preventDefault();// 禁用右键菜单
         this.viewerCesiumWidget.container.appendChild(container)
-        const terria = {
+        const terria: Terria = {
             viewerWidget: this.viewerCesiumWidget,
             options: this.options,
             afterWidgetChanged: new Cesium.Event(),
@@ -77,25 +80,18 @@ class CesiumNavigation {
         // 距离图例
         if (this.options.enableDistanceLegend) {
             const distanceLegendDiv = document.createElement('div')
-            container.appendChild(distanceLegendDiv)
             distanceLegendDiv.setAttribute('id', 'distanceLegendDiv')
-            this.distanceLegendViewModel = DistanceLegendViewModel.create({
-                container: distanceLegendDiv,
-                terria: terria,
-                mapElement: container,
-            })
+            container.appendChild(distanceLegendDiv)
+            terria.container = distanceLegendDiv
+            this.distanceLegendViewModel = DistanceLegendViewModel.create(terria)
         }
         if (this.options.enableZoomControls || this.options.enableCompass) {
             const navigationDiv = document.createElement('div')
             navigationDiv.setAttribute('id', 'navigationDiv')
             container.appendChild(navigationDiv)
+            terria.container = navigationDiv
             // Create the navigation controls.
-            const navigationViewModel = NavigationViewModel.create({
-                container: navigationDiv,
-                terria: terria,
-                enableZoomControls: true,
-                enableCompass: true
-            })
+            const navigationViewModel = NavigationViewModel.create(terria)
         }
 
     }
