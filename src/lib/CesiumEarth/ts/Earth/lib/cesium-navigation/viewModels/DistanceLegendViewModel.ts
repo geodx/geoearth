@@ -1,13 +1,6 @@
 import * as Cesium from 'cesium';
 import type { Terria } from '..';
 
-/** 距离比例尺 ViewModel 的配置选项 */
-interface DistanceLegendOptions {
-  terria: Terria
-  container: HTMLElement
-  mapElement: HTMLElement
-}
-
 /** 预定义距离刻度 */
 const distances: number[] = [
   1, 2, 3, 5,
@@ -38,11 +31,10 @@ class DistanceLegendViewModel {
   private _removeSubscription?: () => void
   private _lastLegendUpdate = 0
 
-  constructor(options: DistanceLegendOptions) {
-    if (!Cesium.defined(options) || !Cesium.defined(options.terria)) {
-      throw new Cesium.DeveloperError('options.terria is required.')
+  constructor(terria: Terria) {
+    if (!Cesium.defined(terria) || !Cesium.defined(terria.viewerWidget)) {
+      throw new Cesium.DeveloperError('viewer is required.')
     }
-    const terria = options.terria
     this.enableDistanceLegend = Cesium.defined(terria.options.enableDistanceLegend) ? terria.options.enableDistanceLegend : true
     this.root = document.createElement('div');
     this.labelEl = document.createElement('div');
@@ -88,9 +80,9 @@ class DistanceLegendViewModel {
     // 隐藏初始状态
     // this.setVisible(false);
   }
-  public static create(options: DistanceLegendOptions): DistanceLegendViewModel {
-    const result = new DistanceLegendViewModel(options)
-    result.show(options.container)
+  public static create(terria: Terria): DistanceLegendViewModel {
+    const result = new DistanceLegendViewModel(terria)
+    result.show(terria.container!)
     return result
   }
   private setVisible(visible: boolean): void {
