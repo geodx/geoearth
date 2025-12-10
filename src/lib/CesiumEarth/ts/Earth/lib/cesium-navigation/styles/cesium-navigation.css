@@ -2,10 +2,12 @@
   pointer-events: auto;
   position: absolute;
   border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(47, 53, 60, 0.8);
   padding-left: 5px;
   padding-right: 5px;
+  right: 25px;
   bottom: 30px;
-  right: 0px;
   height: 30px;
   width: 125px;
   box-sizing: content-box;

@@ -1,20 +1,13 @@
 
 import {
-  Viewer,
-  defined,
-  Camera,
-  Cartographic,
-  Rectangle,
-  Math as CesiumMath,
-  ScreenSpaceCameraController,
-  Scene,
-  Ellipsoid,
+  defined, Camera, Cartographic, Rectangle,
+  Math as CesiumMath, ScreenSpaceCameraController, Ellipsoid,
 } from "cesium";
 import NavigationControl from "./NavigationControl";
 import type { Terria } from "..";
 import svgReset from "../svgPaths/svgReset";
 
-// 定义 TerriaJS 风格的配置选项（兼容 cesium-navigation）
+// 定义 TerriaJS 风格的配置选项
 interface TerriaOptions {
   resetTooltip?: string;
   resetSvg?: string;
@@ -46,7 +39,7 @@ class ResetViewNavigationControl extends NavigationControl {
     this.name = terria.options.resetTooltip || "重置视图";
     this.svgIcon = terria.options.resetSvg || svgReset;
     this.resetSvg = terria.options.resetSvg;
-    this.resetSuccess = terria.options.resetSuccess;
+    // this.resetSuccess = terria.options.resetSuccess;
   }
 
   public setNavigationLocked(locked: boolean): void {
@@ -60,8 +53,8 @@ class ResetViewNavigationControl extends NavigationControl {
   private resetView(): void {
     if (this.navigationLocked) return;
 
-    const scene = this.terria.scene;
-    const sscc: ScreenSpaceCameraController = scene.screenSpaceCameraController;
+    const scene = this.terria.viewerWidget.scene;
+    const sscc = scene.screenSpaceCameraController;
     if (!sscc.enableInputs) return;
 
     this.isActive = true;
@@ -90,31 +83,11 @@ class ResetViewNavigationControl extends NavigationControl {
             duration,
             complete: this.resetSuccess,
           });
-        } else if (defaultResetView instanceof Rectangle) {
-          try {
-            Rectangle.validate(defaultResetView);
-            camera.flyTo({
-              destination: defaultResetView,
-              orientation,
-              duration,
-              complete: this.resetSuccess,
-            });
-          } catch (e) {
-            console.error("ResetViewNavigationControl: defaultResetView Rectangle is invalid!", e);
-          }
         }
-      } else if (typeof (camera as any).flyHome === "function") {
-        // Cesium 早期版本支持 flyHome
-        (camera as any).flyHome(duration);
       } else {
         // 默认飞到全球视野
         camera.flyTo({
           destination: Camera.DEFAULT_VIEW_RECTANGLE,
-          orientation: {
-            heading: 0,
-            pitch: -CesiumMath.PI_OVER_TWO,
-            roll: 0,
-          },
           duration,
         });
       }

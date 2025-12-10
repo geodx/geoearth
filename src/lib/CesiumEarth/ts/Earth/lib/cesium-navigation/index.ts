@@ -20,7 +20,11 @@ interface NavigationOptions {
     //修改放大按钮的tooltip
     zoomInTooltip?: string;
     //修改缩小按钮的tooltip
-    zoomOutTooltip?: string
+    zoomOutTooltip?: string;
+    //重置视图时的动画持续时间，单位为秒。默认值为3秒。
+    duration?: number
+    //默认朝向。
+    orientation?: { heading: number, pitch: number, roll: number };
 
     compassOuterRingSvg?: string
     compassRotationMarkerSvg?: string
@@ -69,7 +73,7 @@ class CesiumNavigation {
         this.viewerCesiumWidget.camera.percentageChanged = 0.05;
         const container = document.createElement('div')
         container.className = 'cesium-widget-cesiumNavigationContainer'
-        container.oncontextmenu = (e: Event) => e.preventDefault();// 禁用右键菜单
+        // container.oncontextmenu = (e: Event) => e.preventDefault();// 禁用右键菜单
         this.viewerCesiumWidget.container.appendChild(container)
         const terria: Terria = {
             viewerWidget: this.viewerCesiumWidget,
