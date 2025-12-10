@@ -1,25 +1,12 @@
 
 import {
-  defined, Camera, Cartographic, Rectangle,
-  Math as CesiumMath, ScreenSpaceCameraController, Ellipsoid,
+  defined, Camera, Cartographic,
+  Math as CesiumMath, Ellipsoid,
 } from "cesium";
 import NavigationControl from "./NavigationControl";
 import type { Terria } from "..";
 import svgReset from "../svgPaths/svgReset";
 
-// 定义 TerriaJS 风格的配置选项
-interface TerriaOptions {
-  resetTooltip?: string;
-  resetSvg?: string;
-  resetSuccess?: () => void;
-  duration?: number;
-  defaultResetView?: Cartographic | Rectangle;
-  orientation?: {
-    heading?: number;
-    pitch?: number;
-    roll?: number;
-  };
-}
 
 
 class ResetViewNavigationControl extends NavigationControl {

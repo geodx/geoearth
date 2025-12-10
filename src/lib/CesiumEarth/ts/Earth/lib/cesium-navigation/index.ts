@@ -73,7 +73,7 @@ class CesiumNavigation {
         this.viewerCesiumWidget.camera.percentageChanged = 0.05;
         const container = document.createElement('div')
         container.className = 'cesium-widget-cesiumNavigationContainer'
-        // container.oncontextmenu = (e: Event) => e.preventDefault();// 禁用右键菜单
+        container.oncontextmenu = (e: Event) => e.preventDefault();// 禁用右键菜单
         this.viewerCesiumWidget.container.appendChild(container)
         const terria: Terria = {
             viewerWidget: this.viewerCesiumWidget,
