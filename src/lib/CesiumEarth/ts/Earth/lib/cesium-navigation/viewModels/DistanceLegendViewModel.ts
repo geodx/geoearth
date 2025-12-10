@@ -78,7 +78,7 @@ class DistanceLegendViewModel {
     // 插入到容器
     container.appendChild(this.root);
     // 隐藏初始状态
-    // this.setVisible(false);
+    this.setVisible(false);
   }
   public static create(terria: Terria): DistanceLegendViewModel {
     const result = new DistanceLegendViewModel(terria)
@@ -114,6 +114,7 @@ class DistanceLegendViewModel {
     const leftPosition = globe.pick(left, scene)
     const rightPosition = globe.pick(right, scene)
     if (!Cesium.defined(leftPosition) || !Cesium.defined(rightPosition)) {
+      this.setVisible(false);
       this.barWidth = undefined
       this.distanceLabel = undefined
       return
@@ -130,7 +131,7 @@ class DistanceLegendViewModel {
         distance = distances[i]
       }
     }
-    if (Cesium.defined(distance)) {
+    if (distance) {
       let label
       if (distance >= 1000) {
         label = (distance / 1000).toString() + ' km'
@@ -144,7 +145,9 @@ class DistanceLegendViewModel {
       this.labelEl.textContent = label;
       this.barEl.style.width = `${this.barWidth}px`;
       this.barEl.style.left = `${5 + (125 - this.barWidth) / 2}px`;
+      this.setVisible(true);
     } else {
+      this.setVisible(false);
       this.barWidth = undefined
       this.distanceLabel = undefined
     }

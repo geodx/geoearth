@@ -103,12 +103,14 @@ export class NavigationViewModel {
     // 指南针主体
     this.compassEl = document.createElement('div')
     this.compassEl.className = 'compass'
-    this.compassEl.addEventListener('mousedown', (e) => {
-      if (e.button === 0) this.handleMouseDown(e)
-    })
-    this.compassEl.addEventListener('touchstart', (e) => this.handleMouseDown(e))
-    this.compassEl.addEventListener('dblclick', (e) => this.handleDoubleClick(e))
-
+    this.compassEl.title = 'Drag outer ring: rotate view. Drag inner gyroscope: free orbit.Double-click: reset view.TIP: You can also free orbit by holding the CTRL key and dragging the map.'
+    if (enableOuterRing) {
+      this.compassEl.addEventListener('mousedown', (e) => {
+        if (e.button === 0) this.handleMouseDown(e)
+      })
+      this.compassEl.addEventListener('touchstart', (e) => this.handleMouseDown(e))
+      this.compassEl.addEventListener('dblclick', (e) => this.handleDoubleClick(e))
+    }
     if (!this.enableCompass) this.compassEl.style.display = 'none'
 
     // 外环背景
@@ -120,11 +122,13 @@ export class NavigationViewModel {
     this.rotationMarkerEl.className = 'compass-rotation-marker'
     this.rotationMarkerEl.innerHTML = svgCompassRotationMarker
     this.rotationMarkerEl.style.opacity = '0'
+    this.rotationMarkerEl.style.display = 'none'
 
     // 外环（随 heading 旋转）
     this.outerRingEl = document.createElement('div')
     this.outerRingEl.className = 'compass-outer-ring'
     this.outerRingEl.innerHTML = this.terria.options?.compassOuterRingSvg || svgCompassOuterRing
+    this.outerRingEl.title = "Click and drag to rotate the camera"
     // 内盘背景 + 内盘
     const gyroBg = document.createElement('div')
     gyroBg.className = 'compass-gyro-background'
@@ -298,6 +302,9 @@ export class NavigationViewModel {
     this.orbitTickFunction = undefined
 
     this.isOrbiting = true
+    this.rotationMarkerEl!.style.display = 'block'
+    this.gyroEl!.classList.toggle('compass-gyro-active', this.isOrbiting)
+
     this.orbitLastTimestamp = Cesium.getTimestamp()
 
     if (this.terria.trackedEntity) {
@@ -317,8 +324,6 @@ export class NavigationViewModel {
     }
 
     this.orbitTickFunction = () => {
-      console.log("orbitTickFunction");
-
       const timestamp = Cesium.getTimestamp()
       const deltaT = timestamp - this.orbitLastTimestamp
       const rate = ((this.orbitCursorOpacity - 0.5) * 2.5) / 1000
@@ -357,43 +362,45 @@ export class NavigationViewModel {
     }
 
 
-    const updateRotationMarker = (angle: number, opacity: number): void => {
-      this.rotationMarkerEl.style.transform = `rotate(${-angle * (180 / Math.PI)}deg)`
-      this.rotationMarkerEl.style.opacity = opacity.toString()
-      this.gyroEl.classList.toggle('compass-gyro-active', this.isOrbiting)
+    const updateRotationMarker = (vector: Cesium.Cartesian2, compassWidth: number): void => {
+      if (!this.rotationMarkerEl || !this.gyroEl) return
+
+      const angle = Math.atan2(-vector.y, vector.x)
+      this.orbitCursorAngle = Cesium.Math.zeroToTwoPi(angle - Cesium.Math.PI_OVER_TWO)
+      this.rotationMarkerEl.style.transform = `rotate(${-this.orbitCursorAngle}rad)`
+
+      const dist = Math.min(Cesium.Cartesian2.magnitude(vector) / (compassWidth / 2), 1)
+      this.orbitCursorOpacity = 0.5 + 0.5 * dist * dist
+      this.rotationMarkerEl.style.opacity = this.orbitCursorOpacity.toString()
     }
 
     this.orbitMouseMoveFunction = (e: MouseEvent | TouchEvent) => {
       const { clientX, clientY } = this.getClientPos(e)
-      if (!this.compassEl) return
-      const rect = this.compassEl.getBoundingClientRect()
+      var rect = this.compassEl!.getBoundingClientRect()
       const vec = new Cesium.Cartesian2(
         clientX - rect.left - rect.width / 2,
         clientY - rect.top - rect.height / 2,
       )
-      const angle = Math.atan2(-vec.y, vec.x)
-      this.orbitCursorAngle = Cesium.Math.zeroToTwoPi(angle - Cesium.Math.PI_OVER_TWO)
-      const dist = Math.min(Cesium.Cartesian2.magnitude(vec) / (rect.width / 2), 1)
-      this.orbitCursorOpacity = 0.5 + 0.5 * dist * dist
-      updateRotationMarker(this.orbitCursorAngle, this.orbitCursorOpacity)
+      updateRotationMarker(vec, rect.width)
     }
-
     this.orbitMouseUpFunction = () => {
       // TODO: if mouse didn't move, reset view to looking down, north is up?
       this.isOrbiting = false
-      console.log("upHandler:", this.orbitTickFunction);
+      this.rotationMarkerEl!.style.display = 'none'
+      this.gyroEl!.classList.toggle('compass-gyro-active', this.isOrbiting)
       this.removeOrbitEventListener()
       if (this.orbitTickFunction) {
-        this.terria.viewerWidget.clock.onTick.removeEventListener(this.orbitTickFunction)
+        this.terria.viewerWidget.clock.onTick.removeEventListener(this.orbitTickFunction, this)
       }
       this.orbitMouseMoveFunction = undefined
       this.orbitMouseUpFunction = undefined
       this.orbitTickFunction = undefined
     }
+
     this.addOrbitEventListener()
     this.terria.viewerWidget.clock.onTick.addEventListener(this.orbitTickFunction, this)
 
-    updateRotationMarker(this.orbitCursorAngle, 0.8)
+    updateRotationMarker(cursorVector, this.compassEl!.getBoundingClientRect().width)
   }
 
   private startRotate(cursorVector: Cesium.Cartesian2): void {
