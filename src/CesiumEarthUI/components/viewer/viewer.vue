@@ -11,18 +11,19 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 const loading = ref(false)
 let earth: CesiumEarth.Earth
 function initEarth() {
-  earth.createNavigation();
+
   earth.openDeBug();
-  // earth.openOverviewMap()
+  earth.createNavigation();
+  earth.openOverviewMap()
   // earth.viewer3D.scene.globe.depthTestAgainstTerrain = true;
 
-  // earth.thenLoadComplete().then(() => {
-  //   loading.value = false;
-  // });
+  earth.thenLoadComplete().then(() => {
+    loading.value = false;
+  });
 }
 
 onMounted(async () => {
-
+  loading.value = true;
   earth = new CesiumEarth.Earth('MapContainer', {
     infoBox: false,
     selectionIndicator: false,
@@ -32,7 +33,7 @@ onMounted(async () => {
   initEarth();
 
 })
-// onBeforeUnmount(() => { if (earth) earth.destroy() })11
+// onBeforeUnmount(() => { if (earth) earth.destroy() })
 </script>
 
 
