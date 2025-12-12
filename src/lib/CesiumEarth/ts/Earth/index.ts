@@ -15,7 +15,6 @@ import { DrawShape } from '../DrawShape';
 import { MeasureTool } from '../MeasureTool';
 import { InfoBox } from './lib/InfoBox';
 import { CesiumDateFormatter, CesiumTimeFormatter } from './lib/locale-zh';
-import { useEarthStore } from './lib/EarthStore';
 import { AsyncTool } from '../Utils';
 import { debugManage } from './lib/deBugManage/debugManage';
 import { OverviewMap } from './lib/overview/OverviewMap';
@@ -39,19 +38,21 @@ import { createNavigation } from './lib/createNavigation';
  *
  */
 class Earth {
-    private readonly viewer3D: Viewer;
+    public viewer3D: Viewer;
     private viewer3DWorkSpace: WorkSpace;
     private viewerOM: any
 
     private loadComplete: boolean = false;
     private overviewMap: OverviewMap | undefined;
     private startAnimation: StartAnimation;
-    private drawShape: DrawShape;
+    public drawShape: DrawShape;
     // 默认生成的量测工具
     private measureTool: MeasureTool;
     private isOpenOverviewMap: boolean = false;
 
     private infoBox: InfoBox;
+
+
     /**
    * 创建新的 viewer 对象
    * @param domID     创建球的父容器（div 的 id）
@@ -92,8 +93,6 @@ class Earth {
 
         // 调整鼠标滚轮缩放速度，默认为 5，太快了
         this.viewer3D.scene.screenSpaceCameraController.zoomFactor = 3;
-
-        useEarthStore().setEarth(this)
 
         if (this.viewer3D.animation) {
             this.viewer3D.animation.viewModel.dateFormatter = CesiumDateFormatter;

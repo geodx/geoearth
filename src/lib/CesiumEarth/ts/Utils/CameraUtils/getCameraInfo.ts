@@ -4,12 +4,10 @@
  最后修改日期：2022-03-19
  ****************************************************************************/
 
-import { Cartographic, Math as CesiumMath } from "cesium";
-import { getMainViewer } from "../../Earth/lib/getMainViewer";
+import { Viewer, Cartographic, Math as CesiumMath } from "cesium";
 
 // 获取镜头高度
-function getCameraInfo() {
-    const viewer = getMainViewer();
+function getCameraInfo(viewer: Viewer) {
     let { position, heading, pitch, roll } = viewer.camera;
     let cartographic = Cartographic.fromCartesian(position);
     cartographic.longitude = Math.floor(CesiumMath.toDegrees(cartographic.longitude) * 10_0000) / 10_0000

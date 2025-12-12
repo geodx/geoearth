@@ -1,8 +1,8 @@
 <template>
     <specialEffect></specialEffect>
-    <!-- <GeologicalSection></GeologicalSection>
+    <GeologicalSection></GeologicalSection>
     <skyBoxTool></skyBoxTool>
-    <MeasureTool></MeasureTool>
+    <!--<MeasureTool></MeasureTool>
     <pathPlanning></pathPlanning>
     <plotTool></plotTool>
     <pathRoaming></pathRoaming>
@@ -29,7 +29,9 @@
 
 <script lang="ts" setup>
 import specialEffect from './specialEffect/specialEffect.vue';
-// import skyBoxTool from './skyBoxTool/skyBoxTool.vue';
+import GeologicalSection from './geologicalSection/geologicalSection.vue';
+import skyBoxTool from './skyBoxTool/skyBoxTool.vue';
+
 // import MeasureTool from './measureTool/measureTool.vue';
 // import pathPlanning from './pathPlanning/pathPlanning.vue';
 // import plotTool from './plotTool/plotTool.vue';
@@ -53,7 +55,6 @@ import specialEffect from './specialEffect/specialEffect.vue';
 // import resourceTree from './resourceTree/resourceTree.vue';
 // import Legends from '../viewer/legends/legends.vue';
 // import Vr3D from './vr3D/vr3D.vue';
-// import GeologicalSection from './geologicalSection/geologicalSection.vue';
 
 
 </script>

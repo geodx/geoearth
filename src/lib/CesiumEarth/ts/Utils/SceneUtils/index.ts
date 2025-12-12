@@ -1,7 +1,10 @@
-import { Cartesian2, Cartesian3, Cartographic, Ellipsoid, Fullscreen, Math } from "cesium";
-import { JPGExport } from "./Export/JPGExport";
-import { getMainViewer } from "../../Earth/lib/getMainViewer";
+import { Viewer, Cartesian2, Cartesian3, Cartographic, Ellipsoid, Fullscreen, Math } from "cesium";
+import { JPGExport } from './Export/JPGExport';
+import { getMostDetailedHeight } from './getMostDetailedHeight';
+import { getTerrainMostDetailedHeight } from './getTerrainMostDetailedHeight';
+import { FlyToWorkspace } from './FlyToWorkspace/index';
 import { WeatherEffect } from './WeatherEffect/index';
+
 const SceneUtils = {
   // 全屏
   fullScreen() {
@@ -9,14 +12,12 @@ const SceneUtils = {
   },
 
   // 全球视图
-  globalView() {
-    const viewer = getMainViewer();
+  globalView(viewer: Viewer) {
     viewer.camera.flyHome(1);
   },
 
   // 正北方向
-  trueNorth() {
-    const viewer = getMainViewer();
+  trueNorth(viewer: Viewer) {
     // 相机的经纬度
     const camPos = Cartographic.fromCartesian(viewer.camera.position,
       Ellipsoid.WGS84, new Cartographic());
@@ -41,9 +42,7 @@ const SceneUtils = {
   },
 
   // 垂直视角
-  verticalView() {
-
-    const viewer = getMainViewer();
+  verticalView(viewer: Viewer) {
     // 相机的经纬度
     const camPos = Cartographic.fromCartesian(viewer.camera.position,
       Ellipsoid.WGS84, new Cartographic());
@@ -70,11 +69,10 @@ const SceneUtils = {
   },
 
   // 锁定垂直视角
-  lockVerticalView() {
-    const viewer = getMainViewer();
+  lockVerticalView(viewer: Viewer) {
     const flag = viewer.scene.screenSpaceCameraController.enableTilt;
     if (flag) {
-      this.verticalView();// 设置垂直视角
+      this.verticalView(viewer);// 设置垂直视角
       viewer.scene.screenSpaceCameraController.enableTilt = false;
     } else {
       viewer.scene.screenSpaceCameraController.enableTilt = true; // 如果为真，则允许用户倾斜相机。如果为假，相机将锁定到当前标题。
@@ -109,9 +107,9 @@ const SceneUtils = {
     // triggerDownload.click();
   },
 
-  viewerFlyToLonLat(lon: number, lat: number, height: number = 200000): Promise<boolean> {
+  viewerFlyToLonLat(lon: number, lat: number, height: number = 200000, viewer: Viewer,): Promise<boolean> {
     return new Promise((resolve) => {
-      getMainViewer().camera.flyTo({
+      viewer.camera.flyTo({
         destination: Cartesian3.fromDegrees(lon, lat, height),
         complete: () => {
           resolve(true);
@@ -120,15 +118,15 @@ const SceneUtils = {
     });
   },
 
-  runFunByName(funcName: string) {
+  runFunByName(funcName: string, viewer: Viewer,) {
     if (funcName === 'fullScreen') {
       this.fullScreen(); // 全屏
     } else if (funcName === 'trueNorth') {
-      this.trueNorth(); // 正北方向
+      this.trueNorth(viewer); // 正北方向
     } else if (funcName === 'verticalView') {
-      this.verticalView(); // 垂直视角
+      this.verticalView(viewer); // 垂直视角
     } else if (funcName === 'lockVerticalView') {
-      this.lockVerticalView(); // 锁定垂直视角
+      this.lockVerticalView(viewer); // 锁定垂直视角
     } else if (funcName === 'surroundBrowse') {
       // this.surroundBrowse(); // 环绕浏览
     } else if (funcName === 'surfaceTransparent') {
@@ -147,7 +145,10 @@ const SceneUtils = {
 
 export {
   SceneUtils,
+  FlyToWorkspace,
   WeatherEffect,
+  getMostDetailedHeight,
+  getTerrainMostDetailedHeight
 
 };
 

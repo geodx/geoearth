@@ -1,5 +1,5 @@
+import type { Viewer } from 'cesium';
 import { PostProcessStage } from 'cesium';
-import { getMainViewer } from '../../../Earth/lib/getMainViewer';
 
 // 天气效果：雨、雪、雾
 
@@ -7,8 +7,8 @@ let wfStage: PostProcessStage | null = null;
 let WeatherEffect = {
 
     //开启雪天效果
-    addSnowEffect() {
-        this.removeEffect();
+    addSnowEffect(viewer: Viewer) {
+        this.removeEffect(viewer);
         wfStage = new PostProcessStage({
             fragmentShader: this.getSnow_fs(),
             uniforms: {
@@ -21,30 +21,30 @@ let WeatherEffect = {
             }
         });
         // 将后期处理阶段添加到场景的 postProcessStages 中
-        getMainViewer().scene.postProcessStages.add(wfStage);
+        viewer.scene.postProcessStages.add(wfStage);
     },
     //开启雨天效果
-    addRainEffect() {
-        this.removeEffect();
+    addRainEffect(viewer: Viewer) {
+        this.removeEffect(viewer);
         wfStage = new PostProcessStage({
             fragmentShader: this.getRain_fs()
         });
-        getMainViewer().scene.postProcessStages.add(wfStage);
+        viewer.scene.postProcessStages.add(wfStage);
     },
 
     //开启雾天效果
-    addFogEffect() {
-        this.removeEffect();
+    addFogEffect(viewer: Viewer) {
+        this.removeEffect(viewer);
         wfStage = new PostProcessStage({
             fragmentShader: this.getFog_fs()
         });
-        getMainViewer().scene.postProcessStages.add(wfStage);
+        viewer.scene.postProcessStages.add(wfStage);
     },
 
     //关闭天气效果
-    removeEffect() {
+    removeEffect(viewer: Viewer) {
         if (!wfStage) return;
-        getMainViewer().scene.postProcessStages.remove(wfStage);
+        viewer.scene.postProcessStages.remove(wfStage);
         wfStage = null;
     },
 

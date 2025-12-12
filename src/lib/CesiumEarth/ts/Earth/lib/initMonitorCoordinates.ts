@@ -4,8 +4,7 @@
  最后修改日期：2022-03-25
  ****************************************************************************/
 
-import { Cartesian3, ScreenSpaceEventHandler, Viewer, Math, EllipsoidTerrainProvider, ScreenSpaceEventType, Cartesian2 } from 'cesium';
-import { getMainViewer } from './getMainViewer';
+import { ScreenSpaceEventHandler, Viewer, Math, EllipsoidTerrainProvider, ScreenSpaceEventType, Cartesian2 } from 'cesium';
 import { getTerrainMostDetailedHeight } from '../../Utils/SceneUtils/getTerrainMostDetailedHeight';
 
 import { getCameraHeight } from '../../Utils/CameraUtils/getCameraHeight';
@@ -13,7 +12,6 @@ import { getCameraInfo } from '../../Utils/CameraUtils/getCameraInfo';
 
 
 function initMonitorCoordinates(viewer: Viewer, moveFun: Function) {
-    !viewer && (viewer = getMainViewer());
     let canvas = viewer.scene.canvas;
     // 具体事件的实现
     let ellipsoid = viewer.scene.globe.ellipsoid;

@@ -6,10 +6,8 @@
 
 import { Cartographic, Viewer, Math, HeadingPitchRoll } from 'cesium';
 import { ConfigTool } from '../../Config/ConfigTool';
-import { getMainViewer } from './getMainViewer';
 import CesiumNavigation from './cesium-navigation';
 function createNavigation(viewer: Viewer) {
-  viewer = viewer ? viewer : getMainViewer()
   const APPConfig = ConfigTool.config;
   const options = {
     // 默认视角位置

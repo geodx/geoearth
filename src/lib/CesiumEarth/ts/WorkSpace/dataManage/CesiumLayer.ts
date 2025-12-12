@@ -69,7 +69,7 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
         })
       })
     } else {
-      return await SceneUtils.viewerFlyToLonLat(110, 40, 15000000)
+      return await SceneUtils.viewerFlyToLonLat(110, 40, 15000000, this.viewer)
     }
   }
 
@@ -90,8 +90,6 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
   }
 
   async addSingleTileImagery(url: string, param: ResourceItem) {
-
-    console.log();
     url = url || (await import('../../../img/earth/worldimage2.png')).default
     const properties = param.properties as ImageryLayerProps
     let layerRectangle = properties.rectangle
