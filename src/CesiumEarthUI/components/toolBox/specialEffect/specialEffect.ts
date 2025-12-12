@@ -4,23 +4,29 @@
  最后修改日期：2022-04-12
  ****************************************************************************/
 
-import CesiumEarth from "@/lib/cesiumEarth";
-import { useEarthStore } from "@/lib/cesiumEarth/ts/Earth/lib/EarthStore";
-import { Cartesian3, Color, JulianDate, PostProcessStage, PostProcessStageComposite, PostProcessStageLibrary, ShadowMap, viewerCesiumInspectorMixin } from "cesium";
-
+import CesiumEarth from "@/lib/CesiumEarth";
+import { useEarthStore } from "@/stores/EarthStore";
+import { Viewer, Cartesian3, Color, JulianDate, PostProcessStageLibrary, viewerCesiumInspectorMixin } from "cesium";
+const earthStore = useEarthStore()
 
 export default class SpecialEffect {
-    private earth
+    private earth: CesiumEarth.Earth;
+    private viewer: Viewer;
     private blackWhite: any
     private night: any;
     private bright: any;
     private lenFlares: any;
     private outLine: any;
     private depth: any;
-    private earthStore = useEarthStore()
     constructor() {
-        this.earth = this.earthStore.getEarth()
+        // setTimeout(() => {
+        //     this.earth = earthStore.getEarth()
+        //     this.viewer = earthStore.viewer
+        // }, 1000);
+        this.earth = earthStore.getEarth()
+        this.viewer = earthStore.viewer
     }
+
     setView() {
         const flyToOpts = {
             destination: Cartesian3.fromDegrees(121.53806, 29.87179, 220),
@@ -34,13 +40,14 @@ export default class SpecialEffect {
             },
             duration: 1
         };
-        this.earth.viewer3D.scene.camera.setView(flyToOpts);
+        this.viewer?.scene.camera.setView(flyToOpts);
     }
 
     openEffect(className: string) {
         switch (className) {
             case 'depthTestAgainstTerrain': {
-                this.earth.viewer3D.scene.globe.depthTestAgainstTerrain = true;
+                this.viewer.scene.globe.depthTestAgainstTerrain = true;
+
             }
                 break;
             case 'FramesPerSecond': {
@@ -48,7 +55,7 @@ export default class SpecialEffect {
             }
                 break;
             case 'FrustumPlanes': {
-                this.earth.viewer3D.scene.debugShowFrustumPlanes = true;
+                this.viewer.scene.debugShowFrustumPlanes = true;
             }
                 break;
             case 'dbtm': {
@@ -133,7 +140,7 @@ export default class SpecialEffect {
     endEffect(className: string) {
         switch (className) {
             case 'shadows': {
-                this.earth.viewer3D.scene.globe.depthTestAgainstTerrain = false;
+                this.viewer.scene.globe.depthTestAgainstTerrain = false;
             }
                 break;
             case 'FramesPerSecond': {
@@ -141,7 +148,7 @@ export default class SpecialEffect {
             }
                 break;
             case 'FrustumPlanes': {
-                this.earth.viewer3D.scene.debugShowFrustumPlanes = false;
+                this.viewer.scene.debugShowFrustumPlanes = false;
             }
                 break;
             case 'dbtm': {
@@ -226,7 +233,7 @@ export default class SpecialEffect {
     //地形三角网
     dxsjwOpen() {
         if (!(this.earth.viewer3D as any).cesiumInspector) {
-            this.earth.viewer3D.extend(viewerCesiumInspectorMixin);
+            this.viewer.extend(viewerCesiumInspectorMixin);
             (this.earth.viewer3D as any).cesiumInspector.container.style.display = 'none';
         }
         //
@@ -239,21 +246,21 @@ export default class SpecialEffect {
 
     //地表透明
     dbtmOpen() {
-        this.earth.viewer3D.scene.screenSpaceCameraController.enableCollisionDetection = false;
-        this.earth.viewer3D.scene.globe.translucency.enabled = true; //可用透明度
-        this.earth.viewer3D.scene.globe.translucency.frontFaceAlpha = 0.8; //默认设置为0.8
+        this.viewer.scene.screenSpaceCameraController.enableCollisionDetection = false;
+        this.viewer.scene.globe.translucency.enabled = true; //可用透明度
+        this.viewer.scene.globe.translucency.frontFaceAlpha = 0.8; //默认设置为0.8
     }
 
     dbtmEnd() {
-        this.earth.viewer3D.scene.globe.translucency.frontFaceAlpha = 1;
-        this.earth.viewer3D.scene.screenSpaceCameraController.enableCollisionDetection = true;
-        this.earth.viewer3D.scene.globe.translucency.enabled = false; //可用透明度
+        this.viewer.scene.globe.translucency.frontFaceAlpha = 1;
+        this.viewer.scene.screenSpaceCameraController.enableCollisionDetection = true;
+        this.viewer.scene.globe.translucency.enabled = false; //可用透明度
     }
 
     //泛光
     lightOpen() {
         this.setView();
-        let bloom = this.earth.viewer3D.scene.postProcessStages.bloom;
+        let bloom = this.viewer.scene.postProcessStages.bloom;
         bloom.enabled = true;
         bloom.uniforms.glowOnly = false;
         bloom.uniforms.contrast = 128;
@@ -264,12 +271,12 @@ export default class SpecialEffect {
     };
 
     lightEnd() {
-        this.earth.viewer3D.scene.postProcessStages.bloom.enabled = false;
+        this.viewer.scene.postProcessStages.bloom.enabled = false;
     };
 
     //黑白
     blackWhiteOpen() {
-        let collection = this.earth.viewer3D.scene.postProcessStages;
+        let collection = this.viewer.scene.postProcessStages;
         this.blackWhite = PostProcessStageLibrary.createBlackAndWhiteStage();
         let silhouette = collection.add(this.blackWhite);
         silhouette.enabled = true;
@@ -277,26 +284,26 @@ export default class SpecialEffect {
     };
 
     blackWhiteEnd() {
-        let collection = this.earth.viewer3D.scene.postProcessStages;
+        let collection = this.viewer.scene.postProcessStages;
         collection.remove(this.blackWhite);
     };
 
     //夜视
     nightVisionOpen() {
-        let collection = this.earth.viewer3D.scene.postProcessStages;
+        let collection = this.viewer.scene.postProcessStages;
         this.night = PostProcessStageLibrary.createNightVisionStage();
         let silhouette = collection.add(this.night);
         silhouette.enabled = true;
     }
 
     nightVisionEnd() {
-        this.earth.viewer3D.scene.postProcessStages.remove(this.night);
+        this.viewer.scene.postProcessStages.remove(this.night);
         this.night = undefined;
     }
 
     //亮度
     brightnessOpen() {
-        let collection = this.earth.viewer3D.scene.postProcessStages;
+        let collection = this.viewer.scene.postProcessStages;
         this.bright = PostProcessStageLibrary.createBrightnessStage();
         let silhouette = collection.add(this.bright);
         silhouette.enabled = true;
@@ -304,14 +311,14 @@ export default class SpecialEffect {
     }
 
     brightnessEnd() {
-        this.earth.viewer3D.scene.postProcessStages.remove(this.bright);
+        this.viewer.scene.postProcessStages.remove(this.bright);
         this.bright = undefined;
     }
 
     //镜头耀斑
     lenFlareOpen() {
         this.lenFlares = PostProcessStageLibrary.createLensFlareStage();
-        let lensFlare = this.earth.viewer3D.scene.postProcessStages.add(this.lenFlares);
+        let lensFlare = this.viewer.scene.postProcessStages.add(this.lenFlares);
         lensFlare.enabled = true;
         lensFlare.uniforms.intensity = 5;
         lensFlare.uniforms.distortion = 5;
@@ -320,32 +327,32 @@ export default class SpecialEffect {
         lensFlare.uniforms.dirtAmount = 5;
         lensFlare.uniforms.earthRadius = 5;
 
-        let camera = this.earth.viewer3D.scene.camera;
+        let camera = this.viewer.scene.camera;
         camera.position = new Cartesian3(40010447.97500168, 56238683.46406788, 20776576.752223067);
         camera.direction = new Cartesian3(-0.5549701431494752, -0.7801872010801355, -0.2886452346452218);
         camera.up = new Cartesian3(-0.3016252360948521, -0.13464820558887716, 0.9438707950150912);
         camera.right = Cartesian3.cross(camera.direction, camera.up, new Cartesian3());
-        this.earth.viewer3D.clock.currentTime = new JulianDate(2458047, 27399.860215000022);
+        this.viewer.clock.currentTime = new JulianDate(2458047, 27399.860215000022);
     }
 
     lenFlareEnd() {
-        this.earth.viewer3D.scene.postProcessStages.remove(this.lenFlares);
+        this.viewer.scene.postProcessStages.remove(this.lenFlares);
         this.lenFlares = undefined;
-        this.earth.viewer3D.clock.currentTime = new JulianDate();
+        this.viewer.clock.currentTime = new JulianDate();
     }
 
     //强制光照-开启和关闭光照
     forceLightOpen() {
-        this.earth.viewer3D.scene.globe.enableLighting = true;
+        this.viewer.scene.globe.enableLighting = true;
     }
 
     forceLightEnd() {
-        this.earth.viewer3D.scene.globe.enableLighting = false;
+        this.viewer.scene.globe.enableLighting = false;
     }
 
     //环境遮蔽
     ambientOcclusionOpen() {
-        let ambientOcclusion = this.earth.viewer3D.scene.postProcessStages.ambientOcclusion;
+        let ambientOcclusion = this.viewer.scene.postProcessStages.ambientOcclusion;
         ambientOcclusion.enabled = true;
         ambientOcclusion.uniforms.ambientOcclusionOnly = false;
         ambientOcclusion.uniforms.intensity = 3;
@@ -356,12 +363,12 @@ export default class SpecialEffect {
     }
 
     ambientOcclusionEnd() {
-        this.earth.viewer3D.scene.postProcessStages.ambientOcclusion.enabled = false;
+        this.viewer.scene.postProcessStages.ambientOcclusion.enabled = false;
     }
 
     //轮廓
     outlineOpen() {
-        let collection = this.earth.viewer3D.scene.postProcessStages;
+        let collection = this.viewer.scene.postProcessStages;
         this.outLine = PostProcessStageLibrary.createSilhouetteStage();
         let silhouette = collection.add(this.outLine);
         silhouette.enabled = true;
@@ -369,13 +376,13 @@ export default class SpecialEffect {
     }
 
     outlineEnd() {
-        this.earth.viewer3D.scene.postProcessStages.remove(this.outLine);
+        this.viewer.scene.postProcessStages.remove(this.outLine);
         this.outLine = undefined;
     }
 
     //景深
     depthFieldOpen() {
-        let collection = this.earth.viewer3D.scene.postProcessStages;
+        let collection = this.viewer.scene.postProcessStages;
         this.depth = PostProcessStageLibrary.createDepthOfFieldStage();
         let silhouette = collection.add(this.depth);
         silhouette.enabled = true;
@@ -386,64 +393,64 @@ export default class SpecialEffect {
     }
 
     depthFieldEnd() {
-        this.earth.viewer3D.scene.postProcessStages.remove(this.depth);
+        this.viewer.scene.postProcessStages.remove(this.depth);
         this.depth = undefined;
     }
 
     //阴影，日照阴影
     shadeOpen() {
-        this.earth.viewer3D.scene.shadowMap.enabled = true;
+        this.viewer.scene.shadowMap.enabled = true;
     };
 
     shadeEnd() {
-        this.earth.viewer3D.scene.shadowMap.enabled = false;
+        this.viewer.scene.shadowMap.enabled = false;
     };
 
     //太阳
     sunOpen() {
-        this.earth.viewer3D.scene.sun!.show = true;
+        this.viewer.scene.sun!.show = true;
     };
 
     sunEnd() {
-        this.earth.viewer3D.scene.sun!.show = false;
+        this.viewer.scene.sun!.show = false;
     }
 
     //月亮
     moonOpen() {
-        this.earth.viewer3D.scene.moon!.show = true;
+        this.viewer.scene.moon!.show = true;
     };
 
     moonEnd() {
-        this.earth.viewer3D.scene.moon!.show = false;
+        this.viewer.scene.moon!.show = false;
     }
 
     //星空
     starOpen() {
-        this.earth.viewer3D.scene.skyBox!.show = true;
+        this.viewer.scene.skyBox!.show = true;
     };
 
     starEnd() {
-        this.earth.viewer3D.scene.skyBox!.show = false;
+        this.viewer.scene.skyBox!.show = false;
     }
 
     //地面大气
     groundAirOpen() {
-        this.earth.viewer3D.scene.skyAtmosphere!.show = true;
+        this.viewer.scene.skyAtmosphere!.show = true;
     };
 
     groundAirEnd() {
-        this.earth.viewer3D.scene.skyAtmosphere!.show = false;
+        this.viewer.scene.skyAtmosphere!.show = false;
     }
 
 
     snowOpen() {
         this.setView();
-        CesiumEarth.WeatherEffect.addSnowEffect();
+        CesiumEarth.WeatherEffect.addSnowEffect(this.viewer);
     };
 
     rainOpen() {
         this.setView();
-        CesiumEarth.WeatherEffect.addRainEffect();
+        CesiumEarth.WeatherEffect.addRainEffect(this.viewer);
     };
 
     fogOpen() {
@@ -459,20 +466,20 @@ export default class SpecialEffect {
             },
             duration: 1
         };
-        this.earth.viewer3D.scene.camera.setView(flyToOpts);
-        CesiumEarth.WeatherEffect.addFogEffect();
+        this.viewer.scene.camera.setView(flyToOpts);
+        CesiumEarth.WeatherEffect.addFogEffect(this.viewer);
     };
 
     snowEnd() {
-        CesiumEarth.WeatherEffect.removeEffect();
+        CesiumEarth.WeatherEffect.removeEffect(this.viewer);
     };
 
     rainEnd() {
-        CesiumEarth.WeatherEffect.removeEffect();
+        CesiumEarth.WeatherEffect.removeEffect(this.viewer);
     };
 
     fogEnd() {
-        CesiumEarth.WeatherEffect.removeEffect();
+        CesiumEarth.WeatherEffect.removeEffect(this.viewer);
     };
 }
 

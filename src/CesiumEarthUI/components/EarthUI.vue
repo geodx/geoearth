@@ -1,22 +1,23 @@
 <template>
   <div class="cesium-utils">
     <viewer></viewer>
-    <!-- <toolBox></toolBox>
-    <load-bar></load-bar> -->
+    <toolBox></toolBox>
+    <!--   <load-bar></load-bar> -->
   </div>
 </template>
 
 <script lang="ts" setup>
 import Viewer from './viewer/viewer.vue';
-// import toolBox from './toolBox/index.vue';
+import toolBox from './toolBox/index.vue';
 // import LoadBar from './viewer/LoadBar/index.vue';
-import { onBeforeMount } from 'vue';
-// import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
-// import { UIConfig } from '@/config/UIConfig';
+import { onBeforeMount, onMounted } from 'vue';
+import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
+import { UIConfig } from '@/config/UIConfig';
 
-onBeforeMount(() => {
-  // const ceStore = useCesiumEarthStore()
-  // ceStore.loadUIConfig(UIConfig)
+
+onMounted(() => {
+  const ceStore = useCesiumEarthStore()
+  ceStore.loadUIConfig(UIConfig)
 });
 
 </script>

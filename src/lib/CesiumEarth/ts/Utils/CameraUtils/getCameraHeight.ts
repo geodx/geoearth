@@ -1,9 +1,7 @@
 import { Cartesian2, Cartesian3, defined, EllipsoidGeodesic, Viewer } from 'cesium';
-import { getMainViewer } from '../../Earth/lib/getMainViewer';
 
 // 获取镜头距离地面的高度
 function getCameraHeight(viewer: Viewer) {
-    viewer = viewer || getMainViewer();
     let scene = viewer.scene;
 
     let width = scene.canvas.clientWidth;

@@ -1,4 +1,5 @@
-import CesiumEarth from '@/lib/cesium-earth';
+
+import CesiumEarth from '@/lib/CesiumEarth';
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 interface ComAction {

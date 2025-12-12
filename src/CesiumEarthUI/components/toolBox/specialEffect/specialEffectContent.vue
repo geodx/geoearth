@@ -17,21 +17,22 @@
 </template>
 
 <script lang="ts" setup>
-import { useEarthStore } from '@/lib/cesium-earth/ts/Earth/lib/EarthStore';
 import { onMounted, ref } from 'vue';
+import { Viewer } from 'cesium';
+import { useEarthStore } from '@/stores/EarthStore';
 const earthStore = useEarthStore()
 defineProps(['tool', 'toggleEffect']);
 const dxkzValue = ref(1);
 const dbtmValue = ref(0.8);
-const earth = ref();
+let viewer: Viewer;
 onMounted(() => {
-    earth.value = earthStore.getEarth()
+    viewer = earthStore.viewer
 })
 function valueChange() {
-    earth.value.viewer3D.scene.verticalExaggeration = dxkzValue.value;
+    viewer.scene.verticalExaggeration = dxkzValue.value;
 };
 function valueChange1() {
-    earth.value.viewer3D.scene.globe.translucency.frontFaceAlpha = dbtmValue.value;
+    viewer.scene.globe.translucency.frontFaceAlpha = dbtmValue.value;
 }
 
 </script>

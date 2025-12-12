@@ -1,4 +1,13 @@
-// import './loadResources'
+import './loadResources'
+
+import type { JulianDate } from "cesium";
+
+declare module 'cesium' {
+  interface ImageryLayer {
+    pid?: string | number;
+    param?: any;
+  }
+}
 
 type CameraViewType = {
   destination: {
@@ -26,18 +35,15 @@ interface WorldDegree {
 interface WorldDegreeWithTime extends WorldDegree {
   isoTime: string;
 }
+interface WorldDegreeWithJulianDate extends WorldDegree {
+  julianDate: JulianDate;
+}
+
 
 export type {
   CameraViewType,
   WorldDegree,
   WorldDegreeWithTime,
+  WorldDegreeWithJulianDate
 };
 
-
-declare module 'cesium' {
-  interface ImageryLayer {
-    pid?: string | number;
-    param?: any;
-  }
-
-}

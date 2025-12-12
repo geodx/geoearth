@@ -7,15 +7,17 @@
 <script lang="ts" setup>
 import CesiumEarth from '@/lib/CesiumEarth';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { useEarthStore } from '@/stores/EarthStore';
+const earthStore = useEarthStore()
 
 const loading = ref(false)
 let earth: CesiumEarth.Earth
 function initEarth() {
 
   earth.openDeBug();
-  earth.createNavigation();
+  // earth.createNavigation();
   earth.openOverviewMap()
-  // earth.viewer3D.scene.globe.depthTestAgainstTerrain = true;
+  earth.viewer3D.scene.globe.depthTestAgainstTerrain = true;
 
   earth.thenLoadComplete().then(() => {
     loading.value = false;
@@ -30,6 +32,7 @@ onMounted(async () => {
     vrButton: false,
     geocoder: false // 是否显示地名查找控件
   });
+  earthStore.setEarth(earth)
   initEarth();
 
 })

@@ -16,17 +16,21 @@
 </template>
 <script lang="ts" setup>
 
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import SpecialEffectContent from './specialEffectContent.vue';
 import SpecialEffect from './specialEffect';
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 import { Cartesian3 } from 'cesium';
 import { TabPane, WinTabs } from '../../winTabs'
-import { useEarthStore } from '@/lib/cesium-earth/ts/Earth/lib/EarthStore';
+import CesiumEarth from '@/lib/CesiumEarth';
+import { useEarthStore } from '@/stores/EarthStore';
 const ceStore = useCesiumEarthStore()
 const earthStore = useEarthStore()
-let specialEffect = new SpecialEffect();
+let specialEffect: SpecialEffect;
 
+onMounted(() => {
+    specialEffect = new SpecialEffect();
+})
 const postEffect = ref([
     { value: { a: true }, name: '深度检测', class: 'depthTestAgainstTerrain', status: 0, iconUrl: new URL('./img/tool-specialEffect-5.png', import.meta.url).href },
     { value: { a: false }, name: '显示帧率', class: 'FramesPerSecond', status: 0, iconUrl: new URL('./img/tool-specialEffect-5.png', import.meta.url).href },
@@ -90,8 +94,8 @@ function toggleEffect(className: string, status: number) {
 const show = computed(() => {
     let s = ceStore.comStatus('specialEffect');
     if (s) {
-        const earth = earthStore.getEarth()
-        earth.viewer3D.camera.flyTo({
+        const viewer = earthStore.viewer
+        viewer?.camera.flyTo({
             'destination': new Cartesian3(-2895596.962457116, 4717490.945820842, 3158425.3777735666),
             'orientation': {
                 'heading': 3.8736780571268605,
