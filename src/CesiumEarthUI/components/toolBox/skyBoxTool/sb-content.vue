@@ -67,13 +67,12 @@ const groundSkyBoxList: any[] = []
 let SkyBox: CesiumEarth.SkyBoxOnGround
 let earth: Earth
 async function loadConfig() {
-    // const { data: skybox } = await axios.get(new URL('/VGEEarth/Config/skybox/skybox.json', import.meta.url).href)
-    //    const scenarioData = config.TEST ? testScenarioData : await (await fetch(url)).json()
-
     const response = await fetch(new URL('/CesiumEarth/skybox/skybox.json', import.meta.url))
     const skybox = await response.json()
     const baseUrl = skybox.baseUrl
 
+    farSkyBoxInfoList.value.length = 0
+    farSkyBoxList.length = 0
     for (let i = 0; i < skybox.farSkyBoxList.length; i++) {
         farSkyBoxInfoList.value.push({ index: i, name: skybox.farSkyBoxList[i].name })
         farSkyBoxList.push({
@@ -88,6 +87,10 @@ async function loadConfig() {
         })
     }
     SkyBox.setFarSkyBox(farSkyBoxList[0])
+
+
+    groundSkyBoxInfoList.value.length = 0
+    groundSkyBoxList.length = 0
     for (let i = 0; i < skybox.groundSkyBoxList.length; i++) {
         groundSkyBoxInfoList.value.push({ index: i, name: skybox.groundSkyBoxList[i].name })
         groundSkyBoxList.push({
@@ -105,9 +108,6 @@ async function loadConfig() {
 }
 
 function flyToGround() {
-    const s = CesiumEarth.ConfigTool.getResourcesByPid('80f3778c-c8dc-481b-2122-b90e04fd3104')
-    if (!s) return
-    earth.viewer3DWorkSpace.addData(s)
     earth.viewer3D.camera.flyTo({
         destination: new Cesium.Cartesian3(-2895596.962457116, 4717490.945820842, 3158425.3777735666),
         orientation: {
@@ -127,14 +127,14 @@ function setFarSkyBox(index: number = 0) {
 }
 
 function setGroundSkyBox(index: number = 0) {
-    SkyBox.setGroundSkyBox(farSkyBoxList[index])
+    SkyBox.setGroundSkyBox(groundSkyBoxList[index])
 }
 
 function reset() {
     farSkyBox.value = 0
-    setFarSkyBox()
     groundSkyBox.value = 0
-    setGroundSkyBox()
+    loadConfig()
+
 }
 
 function close() {
