@@ -22,7 +22,6 @@ import SpecialEffect from './specialEffect';
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 import { Cartesian3 } from 'cesium';
 import { TabPane, WinTabs } from '../../winTabs'
-import CesiumEarth from '@/lib/CesiumEarth';
 import { useEarthStore } from '@/stores/EarthStore';
 const ceStore = useCesiumEarthStore()
 const earthStore = useEarthStore()
@@ -94,15 +93,16 @@ function toggleEffect(className: string, status: number) {
 const show = computed(() => {
     let s = ceStore.comStatus('specialEffect');
     if (s) {
-        const viewer = earthStore.viewer
-        viewer?.camera.flyTo({
-            'destination': new Cartesian3(-2895596.962457116, 4717490.945820842, 3158425.3777735666),
-            'orientation': {
-                'heading': 3.8736780571268605,
-                'pitch': -0.13964038346926966,
-                'roll': 6.283183317671659
-            }
-        });
+        earthStore.getEarth().then(e => {
+            e.viewer3D.camera.flyTo({
+                'destination': new Cartesian3(-2895596.962457116, 4717490.945820842, 3158425.3777735666),
+                'orientation': {
+                    'heading': 3.8736780571268605,
+                    'pitch': -0.13964038346926966,
+                    'roll': 6.283183317671659
+                }
+            });
+        })
     }
     return s;
 })
