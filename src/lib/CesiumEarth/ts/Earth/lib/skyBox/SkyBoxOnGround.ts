@@ -24,7 +24,7 @@ export interface SetGroundSkyBoxOptions {
     /** 近景天空盒sources */
     sources: SkyBoxSources
     /** 触发近景阈值(米)，默认225705 */
-    height?: number | string
+    height?: number
     /** 低空时隐藏大气层，默认true */
     hideAtmosphereWhenNear?: boolean
     /**
@@ -97,9 +97,7 @@ export class SkyBoxOnGround {
         this._assertAlive()
 
         // 参数处理
-        const height =
-            typeof options.height === "string" ? Number(options.height) : options.height ?? 225705
-        this.height = Number.isFinite(height) ? height : 225705
+        this.height = options.height ?? 225705
         this.hideAtmosphereWhenNear = options.hideAtmosphereWhenNear ?? true
         this.showAtmosphereWhenFar = options.showAtmosphereWhenFar ?? true
 
@@ -109,10 +107,7 @@ export class SkyBoxOnGround {
 
         this.groundSources = options.sources
 
-
         this.groundSkyBox = new GroundSkyBox({ sources: options.sources })
-
-        const defaultSkyBox = this.farSkyBox ?? this.viewer.scene.skyBox
 
         // 注册postRender监听
         const scene = this.viewer.scene
@@ -120,12 +115,13 @@ export class SkyBoxOnGround {
             const camH = Cesium.Cartographic.fromCartesian(this.viewer.camera.positionWC).height
             if (camH < this.height) {
                 scene.skyBox = this.groundSkyBox
-                if (this.hideAtmosphereWhenNear && scene.skyAtmosphere) scene.skyAtmosphere.show = false
+                if (this.hideAtmosphereWhenNear && scene.skyAtmosphere)
+                    scene.skyAtmosphere.show = false
             } else {
+                const defaultSkyBox = this.farSkyBox ?? this.viewer.scene.skyBox
                 scene.skyBox = defaultSkyBox
-                if (scene.skyAtmosphere) {
+                if (scene.skyAtmosphere)
                     scene.skyAtmosphere.show = this.showAtmosphereWhenFar
-                }
             }
         }
 
@@ -154,7 +150,7 @@ export class SkyBoxOnGround {
         }
 
         if (restoreDefaults) {
-            // 恢复初始化状态(尽量不打扰外部后来又改过的逻辑：这里按你需求“干净释放”来做恢复)
+            // 恢复初始化状态
             this.viewer.scene.skyBox = this.defaultSkyBoxAtInit
             if (this.viewer.scene.skyAtmosphere) {
                 this.viewer.scene.skyAtmosphere.show = this.defaultAtmosphereShowAtInit

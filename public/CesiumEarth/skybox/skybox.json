@@ -2,17 +2,6 @@
   "baseUrl": "/",
   "farSkyBoxList": [
     {
-      "name": "默认天空盒",
-      "sources": {
-        "negativeX": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/nx.jpg",
-        "negativeY": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/ny.jpg",
-        "negativeZ": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/nz.jpg",
-        "positiveX": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/px.jpg",
-        "positiveY": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/py.jpg",
-        "positiveZ": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/pz.jpg"
-      }
-    },
-    {
       "name": "galaxy",
       "sources": {
         "negativeX": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/nx.jpg",
