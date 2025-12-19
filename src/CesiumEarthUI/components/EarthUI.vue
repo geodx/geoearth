@@ -10,7 +10,7 @@
 import Viewer from './viewer/viewer.vue';
 import toolBox from './toolBox/index.vue';
 // import LoadBar from './viewer/LoadBar/index.vue';
-import { onBeforeMount, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 import { UIConfig } from '@/config/UIConfig';
 

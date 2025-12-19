@@ -39,7 +39,7 @@ import { createNavigation } from './lib/createNavigation';
  */
 class Earth {
     public viewer3D: Viewer;
-    private viewer3DWorkSpace: WorkSpace;
+    public viewer3DWorkSpace: WorkSpace;
     private viewerOM: any
 
     private loadComplete: boolean = false;
@@ -99,7 +99,7 @@ class Earth {
             this.viewer3D.animation.viewModel.timeFormatter = CesiumTimeFormatter;
         }
         // if (this.viewer3D.timeline) {
-        //     this.viewer3D.timeline.makeLabel = CesiumDateTimeFormatter;
+        // this.viewer3D.timeline.makeLabel = CesiumDateTimeFormatter;
         // }
     }
 

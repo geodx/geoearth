@@ -13,6 +13,8 @@ export { DrawShape } from './DrawShape/index';
 // Earth
 export { Earth } from './Earth/index';
 export { InfoBox } from './Earth/lib/InfoBox';
+export { SkyBoxOnGround } from './Earth/lib/skyBox/SkyBoxOnGround';
+export { GroundSkyBox } from './Earth/lib/skyBox/GroundSkyBox';
 
 // EventManage
 export { ScopeType } from './EventManage';

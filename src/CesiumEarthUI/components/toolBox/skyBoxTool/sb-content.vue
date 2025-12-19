@@ -48,7 +48,12 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { TabPane, WinTabs } from '../../winTabs'
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
+import { useEarthStore } from '@/stores/EarthStore';
+import * as Cesium from 'cesium'
+import CesiumEarth from '@/lib/CesiumEarth';
+import type { Earth } from '@/lib/CesiumEarth/ts/Earth';
 const ceStore = useCesiumEarthStore()
+const earthStore = useEarthStore()
 
 type SkyBoxInfoItem = { index: number, name: string }
 const farSkyBox = ref<number>(0)
@@ -56,18 +61,22 @@ const farSkyBoxInfoList = ref<SkyBoxInfoItem[]>([])
 const groundSkyBox = ref<number>(0)
 const groundSkyBoxInfoList = ref<SkyBoxInfoItem[]>([])
 
-let SkyBox: any
+const farSkyBoxList: any[] = []
+const groundSkyBoxList: any[] = []
 
+let SkyBox: CesiumEarth.SkyBoxOnGround
+let earth: Earth
 async function loadConfig() {
     // const { data: skybox } = await axios.get(new URL('/VGEEarth/Config/skybox/skybox.json', import.meta.url).href)
-    const { data: skybox } = SkyBox
+    //    const scenarioData = config.TEST ? testScenarioData : await (await fetch(url)).json()
+
+    const response = await fetch(new URL('/CesiumEarth/skybox/skybox.json', import.meta.url))
+    const skybox = await response.json()
     const baseUrl = skybox.baseUrl
 
-    const farSkyBoxList: any[] = []
-    farSkyBoxInfoList.value = []
     for (let i = 0; i < skybox.farSkyBoxList.length; i++) {
         farSkyBoxInfoList.value.push({ index: i, name: skybox.farSkyBoxList[i].name })
-        farSkyBoxList.push(new Cesium.SkyBox({
+        farSkyBoxList.push({
             sources: {
                 positiveX: baseUrl + skybox.farSkyBoxList[i].sources.positiveX,
                 negativeX: baseUrl + skybox.farSkyBoxList[i].sources.negativeX,
@@ -76,16 +85,12 @@ async function loadConfig() {
                 positiveZ: baseUrl + skybox.farSkyBoxList[i].sources.positiveZ,
                 negativeZ: baseUrl + skybox.farSkyBoxList[i].sources.negativeZ
             }
-        }))
+        })
     }
-    SkyBox.farSkyBox = farSkyBoxList[0]
-    SkyBox.farSkyBoxList = farSkyBoxList
-
-    const groundSkyBoxList: any[] = []
-    groundSkyBoxInfoList.value = []
+    SkyBox.setFarSkyBox(farSkyBoxList[0])
     for (let i = 0; i < skybox.groundSkyBoxList.length; i++) {
         groundSkyBoxInfoList.value.push({ index: i, name: skybox.groundSkyBoxList[i].name })
-        groundSkyBoxList.push(new Cesium.GroundSkyBox({
+        groundSkyBoxList.push({
             sources: {
                 positiveX: baseUrl + skybox.groundSkyBoxList[i].sources.positiveX,
                 negativeX: baseUrl + skybox.groundSkyBoxList[i].sources.negativeX,
@@ -94,22 +99,17 @@ async function loadConfig() {
                 positiveZ: baseUrl + skybox.groundSkyBoxList[i].sources.positiveZ,
                 negativeZ: baseUrl + skybox.groundSkyBoxList[i].sources.negativeZ
             }
-        }))
+        })
     }
-    SkyBox.groundSkyBox = groundSkyBoxList[0]
-    SkyBox.groundSkyBoxList = groundSkyBoxList
+    SkyBox.setGroundSkyBox(groundSkyBoxList[0])
 }
 
 function flyToGround() {
-    const s = VGEEarth.ConfigTool.getResourcesByPid('80f3778c-c8dc-481b-2122-b90e04fd3104')
+    const s = CesiumEarth.ConfigTool.getResourcesByPid('80f3778c-c8dc-481b-2122-b90e04fd3104')
+    if (!s) return
     earth.viewer3DWorkSpace.addData(s)
-
     earth.viewer3D.camera.flyTo({
-        destination: {
-            x: -2895596.962457116,
-            y: 4717490.945820842,
-            z: 3158425.3777735666
-        },
+        destination: new Cesium.Cartesian3(-2895596.962457116, 4717490.945820842, 3158425.3777735666),
         orientation: {
             heading: 3.8736780571268605,
             pitch: -0.13964038346926966,
@@ -123,15 +123,14 @@ function flyToFar() {
 }
 
 function setFarSkyBox(index: number = 0) {
-    SkyBox.setFarSkyBox(index)
+    SkyBox.setFarSkyBox(farSkyBoxList[index])
 }
 
 function setGroundSkyBox(index: number = 0) {
-    SkyBox.setGroundSkyBox(index)
+    SkyBox.setGroundSkyBox(farSkyBoxList[index])
 }
 
 function reset() {
-    SkyBox.reset()
     farSkyBox.value = 0
     setFarSkyBox()
     groundSkyBox.value = 0
@@ -139,11 +138,12 @@ function reset() {
 }
 
 function close() {
-    store.commit('setVGEEarthComAction', { name: 'skyBoxTool', on_off: 2 })
+    ceStore.setCesiumEarthComAction('skyBoxTool', 2)
 }
 
 onMounted(async () => {
-    SkyBox = new VGEEarth.SkyBoxOnGround(earth.viewer3D)
+    earth = await earthStore.getEarth()
+    SkyBox = new CesiumEarth.SkyBoxOnGround(earth.viewer3D)
     await loadConfig()
 })
 

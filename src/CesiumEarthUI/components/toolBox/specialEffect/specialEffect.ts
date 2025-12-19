@@ -10,8 +10,8 @@ import { Viewer, Cartesian3, Color, JulianDate, PostProcessStageLibrary, viewerC
 const earthStore = useEarthStore()
 
 export default class SpecialEffect {
-    private earth: CesiumEarth.Earth;
-    private viewer: Viewer;
+    private earth: CesiumEarth.Earth | undefined;
+    private viewer: Viewer | undefined;
     private blackWhite: any
     private night: any;
     private bright: any;
@@ -19,13 +19,14 @@ export default class SpecialEffect {
     private outLine: any;
     private depth: any;
     constructor() {
-        // setTimeout(() => {
-        //     this.earth = earthStore.getEarth()
-        //     this.viewer = earthStore.viewer
-        // }, 1000);
-        this.earth = earthStore.getEarth()
-        this.viewer = earthStore.viewer
+        this.init();
     }
+
+    private async init() {
+        this.earth = await earthStore.getEarth()
+        this.viewer = this.earth.viewer3D
+    }
+
 
     setView() {
         const flyToOpts = {
@@ -44,6 +45,7 @@ export default class SpecialEffect {
     }
 
     openEffect(className: string) {
+        if (!this.earth || !this.viewer) return
         switch (className) {
             case 'depthTestAgainstTerrain': {
                 this.viewer.scene.globe.depthTestAgainstTerrain = true;
@@ -138,6 +140,7 @@ export default class SpecialEffect {
     }
 
     endEffect(className: string) {
+        if (!this.earth || !this.viewer) return
         switch (className) {
             case 'shadows': {
                 this.viewer.scene.globe.depthTestAgainstTerrain = false;
@@ -232,6 +235,7 @@ export default class SpecialEffect {
 
     //地形三角网
     dxsjwOpen() {
+        if (!this.earth || !this.viewer) return
         if (!(this.earth.viewer3D as any).cesiumInspector) {
             this.viewer.extend(viewerCesiumInspectorMixin);
             (this.earth.viewer3D as any).cesiumInspector.container.style.display = 'none';
@@ -241,17 +245,19 @@ export default class SpecialEffect {
     }
 
     dxsjwEnd() {
-        (this.earth.viewer3D as any).cesiumInspector.viewModel.wireframe = false;
+        (this.earth?.viewer3D as any).cesiumInspector.viewModel.wireframe = false;
     }
 
     //地表透明
     dbtmOpen() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.screenSpaceCameraController.enableCollisionDetection = false;
         this.viewer.scene.globe.translucency.enabled = true; //可用透明度
         this.viewer.scene.globe.translucency.frontFaceAlpha = 0.8; //默认设置为0.8
     }
 
     dbtmEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.globe.translucency.frontFaceAlpha = 1;
         this.viewer.scene.screenSpaceCameraController.enableCollisionDetection = true;
         this.viewer.scene.globe.translucency.enabled = false; //可用透明度
@@ -259,6 +265,7 @@ export default class SpecialEffect {
 
     //泛光
     lightOpen() {
+        if (!this.earth || !this.viewer) return
         this.setView();
         let bloom = this.viewer.scene.postProcessStages.bloom;
         bloom.enabled = true;
@@ -271,11 +278,13 @@ export default class SpecialEffect {
     };
 
     lightEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.postProcessStages.bloom.enabled = false;
     };
 
     //黑白
     blackWhiteOpen() {
+        if (!this.earth || !this.viewer) return
         let collection = this.viewer.scene.postProcessStages;
         this.blackWhite = PostProcessStageLibrary.createBlackAndWhiteStage();
         let silhouette = collection.add(this.blackWhite);
@@ -284,12 +293,14 @@ export default class SpecialEffect {
     };
 
     blackWhiteEnd() {
+        if (!this.earth || !this.viewer) return
         let collection = this.viewer.scene.postProcessStages;
         collection.remove(this.blackWhite);
     };
 
     //夜视
     nightVisionOpen() {
+        if (!this.earth || !this.viewer) return
         let collection = this.viewer.scene.postProcessStages;
         this.night = PostProcessStageLibrary.createNightVisionStage();
         let silhouette = collection.add(this.night);
@@ -297,12 +308,14 @@ export default class SpecialEffect {
     }
 
     nightVisionEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.postProcessStages.remove(this.night);
         this.night = undefined;
     }
 
     //亮度
     brightnessOpen() {
+        if (!this.earth || !this.viewer) return
         let collection = this.viewer.scene.postProcessStages;
         this.bright = PostProcessStageLibrary.createBrightnessStage();
         let silhouette = collection.add(this.bright);
@@ -311,12 +324,14 @@ export default class SpecialEffect {
     }
 
     brightnessEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.postProcessStages.remove(this.bright);
         this.bright = undefined;
     }
 
     //镜头耀斑
     lenFlareOpen() {
+        if (!this.earth || !this.viewer) return
         this.lenFlares = PostProcessStageLibrary.createLensFlareStage();
         let lensFlare = this.viewer.scene.postProcessStages.add(this.lenFlares);
         lensFlare.enabled = true;
@@ -336,6 +351,7 @@ export default class SpecialEffect {
     }
 
     lenFlareEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.postProcessStages.remove(this.lenFlares);
         this.lenFlares = undefined;
         this.viewer.clock.currentTime = new JulianDate();
@@ -343,15 +359,18 @@ export default class SpecialEffect {
 
     //强制光照-开启和关闭光照
     forceLightOpen() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.globe.enableLighting = true;
     }
 
     forceLightEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.globe.enableLighting = false;
     }
 
     //环境遮蔽
     ambientOcclusionOpen() {
+        if (!this.earth || !this.viewer) return
         let ambientOcclusion = this.viewer.scene.postProcessStages.ambientOcclusion;
         ambientOcclusion.enabled = true;
         ambientOcclusion.uniforms.ambientOcclusionOnly = false;
@@ -363,11 +382,13 @@ export default class SpecialEffect {
     }
 
     ambientOcclusionEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.postProcessStages.ambientOcclusion.enabled = false;
     }
 
     //轮廓
     outlineOpen() {
+        if (!this.earth || !this.viewer) return
         let collection = this.viewer.scene.postProcessStages;
         this.outLine = PostProcessStageLibrary.createSilhouetteStage();
         let silhouette = collection.add(this.outLine);
@@ -376,12 +397,14 @@ export default class SpecialEffect {
     }
 
     outlineEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.postProcessStages.remove(this.outLine);
         this.outLine = undefined;
     }
 
     //景深
     depthFieldOpen() {
+        if (!this.earth || !this.viewer) return
         let collection = this.viewer.scene.postProcessStages;
         this.depth = PostProcessStageLibrary.createDepthOfFieldStage();
         let silhouette = collection.add(this.depth);
@@ -393,67 +416,81 @@ export default class SpecialEffect {
     }
 
     depthFieldEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.postProcessStages.remove(this.depth);
         this.depth = undefined;
     }
 
     //阴影，日照阴影
     shadeOpen() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.shadowMap.enabled = true;
     };
 
     shadeEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.shadowMap.enabled = false;
     };
 
     //太阳
     sunOpen() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.sun!.show = true;
     };
 
     sunEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.sun!.show = false;
     }
 
     //月亮
     moonOpen() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.moon!.show = true;
     };
 
     moonEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.moon!.show = false;
     }
 
     //星空
     starOpen() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.skyBox!.show = true;
     };
 
     starEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.skyBox!.show = false;
     }
 
     //地面大气
     groundAirOpen() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.skyAtmosphere!.show = true;
     };
 
     groundAirEnd() {
+        if (!this.earth || !this.viewer) return
         this.viewer.scene.skyAtmosphere!.show = false;
     }
 
 
     snowOpen() {
+        if (!this.earth || !this.viewer) return
         this.setView();
         CesiumEarth.WeatherEffect.addSnowEffect(this.viewer);
     };
 
     rainOpen() {
+        if (!this.earth || !this.viewer) return
         this.setView();
         CesiumEarth.WeatherEffect.addRainEffect(this.viewer);
     };
 
     fogOpen() {
+        if (!this.earth || !this.viewer) return
         let flyToOpts = {
             destination: Cartesian3.fromDegrees(121.53806, 29.87179, 220),
             // destination: {
@@ -471,14 +508,17 @@ export default class SpecialEffect {
     };
 
     snowEnd() {
+        if (!this.earth || !this.viewer) return
         CesiumEarth.WeatherEffect.removeEffect(this.viewer);
     };
 
     rainEnd() {
+        if (!this.earth || !this.viewer) return
         CesiumEarth.WeatherEffect.removeEffect(this.viewer);
     };
 
     fogEnd() {
+        if (!this.earth || !this.viewer) return
         CesiumEarth.WeatherEffect.removeEffect(this.viewer);
     };
 }

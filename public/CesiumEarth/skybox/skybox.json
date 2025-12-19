@@ -1,37 +1,37 @@
 {
-  "baseUrl": "https://vge-webgl.oss-cn-beijing.aliyuncs.com/skybox/",
+  "baseUrl": "/",
   "farSkyBoxList": [
     {
       "name": "默认天空盒",
       "sources": {
-        "positiveX": "farSkyBoxs/01/tycho2t3_80_px.jpg",
-        "negativeX": "farSkyBoxs/01/tycho2t3_80_mx.jpg",
-        "positiveY": "farSkyBoxs/01/tycho2t3_80_py.jpg",
-        "negativeY": "farSkyBoxs/01/tycho2t3_80_my.jpg",
-        "positiveZ": "farSkyBoxs/01/tycho2t3_80_pz.jpg",
-        "negativeZ": "farSkyBoxs/01/tycho2t3_80_mz.jpg"
+        "negativeX": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/nx.jpg",
+        "negativeY": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/ny.jpg",
+        "negativeZ": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/nz.jpg",
+        "positiveX": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/px.jpg",
+        "positiveY": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/py.jpg",
+        "positiveZ": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/pz.jpg"
       }
     },
     {
-      "name": "星空天空盒1",
+      "name": "galaxy",
       "sources": {
-        "positiveX": "farSkyBoxs/02/px.jpg",
-        "positiveY": "farSkyBoxs/02/py.jpg",
-        "positiveZ": "farSkyBoxs/02/pz.jpg",
-        "negativeX": "farSkyBoxs/02/nx.jpg",
-        "negativeY": "farSkyBoxs/02/ny.jpg",
-        "negativeZ": "farSkyBoxs/02/nz.jpg"
+        "negativeX": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/nx.jpg",
+        "negativeY": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/ny.jpg",
+        "negativeZ": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/nz.jpg",
+        "positiveX": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/px.jpg",
+        "positiveY": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/py.jpg",
+        "positiveZ": "CesiumEarth/skybox/img/farSkyBoxs/galaxy/pz.jpg"
       }
     },
     {
-      "name": "星空天空盒2",
+      "name": "planet",
       "sources": {
-        "positiveX": "farSkyBoxs/03/px.jpg",
-        "positiveY": "farSkyBoxs/03/py.jpg",
-        "positiveZ": "farSkyBoxs/03/pz.jpg",
-        "negativeX": "farSkyBoxs/03/nx.jpg",
-        "negativeY": "farSkyBoxs/03/ny.jpg",
-        "negativeZ": "farSkyBoxs/03/nz.jpg"
+        "negativeX": "CesiumEarth/skybox/img/farSkyBoxs/planet/tycho2t3_80_mx.jpg",
+        "negativeY": "CesiumEarth/skybox/img/farSkyBoxs/planet/tycho2t3_80_my.jpg",
+        "negativeZ": "CesiumEarth/skybox/img/farSkyBoxs/planet/tycho2t3_80_mz.jpg",
+        "positiveX": "CesiumEarth/skybox/img/farSkyBoxs/planet/tycho2t3_80_px.jpg",
+        "positiveY": "CesiumEarth/skybox/img/farSkyBoxs/planet/tycho2t3_80_py.jpg",
+        "positiveZ": "CesiumEarth/skybox/img/farSkyBoxs/planet/tycho2t3_80_px.jpg"
       }
     }
   ],
@@ -39,12 +39,12 @@
     {
       "name": "天空盒1",
       "sources": {
-        "positiveX": "groundSkyBoxs/01/px.png",
-        "positiveY": "groundSkyBoxs/01/py.png",
-        "positiveZ": "groundSkyBoxs/01/pz.png",
-        "negativeX": "groundSkyBoxs/01/nx.png",
-        "negativeY": "groundSkyBoxs/01/ny.png",
-        "negativeZ": "groundSkyBoxs/01/nz.png"
+        "negativeX": "CesiumEarth/skybox/img/groundSkyBoxs/Epic_BlueSunset/left.png",
+        "negativeY": "CesiumEarth/skybox/img/groundSkyBoxs/Epic_BlueSunset/back.png",
+        "negativeZ": "CesiumEarth/skybox/img/groundSkyBoxs/Epic_BlueSunset/bottom.png",
+        "positiveX": "CesiumEarth/skybox/img/groundSkyBoxs/Epic_BlueSunset/right.png",
+        "positiveY": "CesiumEarth/skybox/img/groundSkyBoxs/Epic_BlueSunset/front.png",
+        "positiveZ": "CesiumEarth/skybox/img/groundSkyBoxs/Epic_BlueSunset/top.png"
       }
     },
     {
@@ -72,12 +72,12 @@
     {
       "name": "天空盒4",
       "sources": {
-        "positiveX": "groundSkyBoxs/04/Right.jpg",
         "negativeX": "groundSkyBoxs/04/Left.jpg",
-        "positiveY": "groundSkyBoxs/04/Front.jpg",
         "negativeY": "groundSkyBoxs/04/Back.jpg",
-        "positiveZ": "groundSkyBoxs/04/Up.jpg",
-        "negativeZ": "groundSkyBoxs/04/Down.jpg"
+        "negativeZ": "groundSkyBoxs/04/Down.jpg",
+        "positiveX": "groundSkyBoxs/04/Right.jpg",
+        "positiveY": "groundSkyBoxs/04/Front.jpg",
+        "positiveZ": "groundSkyBoxs/04/Up.jpg"
       }
     },
     {

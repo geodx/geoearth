@@ -42,6 +42,11 @@ const ConfigTool = {
       return item.dataType === 'terrain' && item.defaultLoad;
     });
   },
+  getResourcesByPid(pid: string) {
+    return this.getAllSources().find(item => {
+      return item.pid === pid;
+    });
+  },
   getAllSources() {
     const s = this.config;
     return [
