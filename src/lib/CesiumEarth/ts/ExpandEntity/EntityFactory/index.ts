@@ -5,12 +5,13 @@ import {
     CallbackProperty, Cartesian3, Entity, Color, Viewer, Math
 } from 'cesium';
 
-import type { Feature } from 'GeoJSON';
+import type { Feature, Geometry, GeometryCollection } from 'GeoJSON';
 import { getMostDetailedHeight, type WorldDegree } from '../../cesium.earth';
 import { CartographicTool } from '../../Utils';
 import { PolylineLightingMaterial } from '../Material/Polyline';
 import * as turf from "@turf/turf";
 import { CallbackPositionProperty } from 'cesium';
+import type { AllGeoJSON } from '@turf/turf';
 
 /**
  * 名称：Entity 快捷创建库
@@ -259,7 +260,7 @@ const EntityFactory = {
      * @param position
      * @param text
      */
-    buildLabel(position: Cartesian3, text: string) {
+    buildLabel(position: Cartesian3, text: string | CallbackProperty) {
         return new Entity({
             position: position,
             label: {

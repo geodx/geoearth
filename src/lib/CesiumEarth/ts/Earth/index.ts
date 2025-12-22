@@ -47,7 +47,7 @@ class Earth {
     private startAnimation: StartAnimation;
     public drawShape: DrawShape;
     // 默认生成的量测工具
-    private measureTool: MeasureTool;
+    public measureTool: MeasureTool;
     private isOpenOverviewMap: boolean = false;
 
     private infoBox: InfoBox;

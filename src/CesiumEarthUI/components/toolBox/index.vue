@@ -2,8 +2,8 @@
     <specialEffect></specialEffect>
     <GeologicalSection></GeologicalSection>
     <skyBoxTool></skyBoxTool>
-    <!--<MeasureTool></MeasureTool>
-    <pathPlanning></pathPlanning>
+    <MeasureTool></MeasureTool>
+    <!--<pathPlanning></pathPlanning>
     <plotTool></plotTool>
     <pathRoaming></pathRoaming>
     <Weather></Weather>
@@ -31,8 +31,8 @@
 import specialEffect from './specialEffect/specialEffect.vue';
 import GeologicalSection from './geologicalSection/geologicalSection.vue';
 import skyBoxTool from './skyBoxTool/skyBoxTool.vue';
+import MeasureTool from './measureTool/measureTool.vue';
 
-// import MeasureTool from './measureTool/measureTool.vue';
 // import pathPlanning from './pathPlanning/pathPlanning.vue';
 // import plotTool from './plotTool/plotTool.vue';
 // import pathRoaming from './pathRoaming/pathRoaming.vue';

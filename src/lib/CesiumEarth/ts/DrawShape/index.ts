@@ -19,7 +19,7 @@ import { CallbackPositionProperty } from 'cesium';
 
 
 
-const commitEndCallBack = (coordinateType: CoordinateType, endCallback: Function, ps: Cartesian3[]) => {
+const commitEndCallBack = (coordinateType: CoordinateType | undefined, endCallback: Function, ps: Cartesian3[]) => {
   if (typeof endCallback === 'function') {
     let type = coordinateType || CoordinateType.cartesian3;
     endCallback(coordinateTransform(type, ps));
@@ -30,7 +30,7 @@ interface DrawShapeOptions {
   position?: any,
   normal?: any,
   dimensions?: any,
-  coordinateType: CoordinateType,
+  coordinateType?: CoordinateType,
   endCallback: Function,
   moveCallback?: Function,
   errCallback?: Function
@@ -63,7 +63,7 @@ interface DrawShapeOptions {
  */
 class DrawShape {
   private viewer: Viewer;
-  private dataSourceToo: CustomDataSource;
+  private dataSourceTool: CustomDataSource;
 
   // 绘制图形的坐标串
   private coordinates: Cartesian3[] = [];
@@ -84,8 +84,8 @@ class DrawShape {
     this.viewer = viewer;
     this.handler = HandlerManage.getHandle(viewer, null).handler;
 
-    this.dataSourceToo = new CustomDataSource('坐标采集工具-实体集合');
-    viewer.dataSources.add(this.dataSourceToo).then();
+    this.dataSourceTool = new CustomDataSource('坐标采集工具-实体集合');
+    viewer.dataSources.add(this.dataSourceTool).then();
   }
 
 
@@ -140,7 +140,7 @@ class DrawShape {
 
         // 生成点和图形
         if (!this.drawEntities) {
-          this.drawEntities = this.dataSourceToo.entities.add({
+          this.drawEntities = this.dataSourceTool.entities.add({
             polyline: {
               positions: new CallbackProperty(() => {
                 return this.coordinates;
@@ -200,7 +200,6 @@ class DrawShape {
 
   // 画多折线
   public drawPolyLine({ coordinateType, endCallback, moveCallback, errCallback }: DrawShapeOptions) {
-    let that = this;
     let handler = this.drawShapeStart();
     this.endCallback = endCallback;
     this.moveCallback = moveCallback;
@@ -220,7 +219,7 @@ class DrawShape {
 
         // 生成点和图形
         if (!this.drawEntities) {
-          this.drawEntities = this.dataSourceToo.entities.add({
+          this.drawEntities = this.dataSourceTool.entities.add({
             polyline: {
               positions: new CallbackProperty(() => {
                 return this.coordinates;
@@ -261,6 +260,7 @@ class DrawShape {
     handler.setInputAction(() => {
       this.coordinates.pop();
       if (this.coordinates.length >= 1) {
+
         commitEndCallBack(coordinateType, endCallback, this.coordinates);
       } else {
         this.drawShapeErrorCallback(null);
@@ -271,7 +271,6 @@ class DrawShape {
 
   // 画角度
   public drawTriangle({ coordinateType, endCallback, moveCallback, errCallback }: DrawShapeOptions) {
-    let that = this;
     let handler = this.drawShapeStart();
     this.endCallback = endCallback;
     this.moveCallback = moveCallback;
@@ -300,7 +299,7 @@ class DrawShape {
           dynamicPositions = new CallbackProperty(() => {
             return this.coordinates;
           }, false);
-          this.drawEntities = this.dataSourceToo.entities.add({
+          this.drawEntities = this.dataSourceTool.entities.add({
             polyline: {
               positions: dynamicPositions,
               width: 12,
@@ -359,56 +358,54 @@ class DrawShape {
 
   // 画多边形
   public drawPolygon({ coordinateType, endCallback, moveCallback, errCallback }: DrawShapeOptions) {
-    let that = this;
-    let handler = this.drawShapeStart();
+    const handler = this.drawShapeStart();
     this.endCallback = endCallback;
     this.moveCallback = moveCallback;
     this.errCallback = errCallback;
 
-    let minPointsSize = 2; // 多边形最少点数
-    let returnPosition: Cartesian3[] = []; // 诡异的bug，数组的值会发生跳动
+    const minPointsSize = 2; // 多边形最少点数
+    const returnPosition: Cartesian3[] = [];
 
     // 设置左键单击拾取坐标事件
     handler.setInputAction((event: any) => {
       // 获得鼠标点击位置的坐标
-      let earthPosition = this.viewer.scene.pickPosition(event.position);
+      const earthPosition = this.viewer.scene.pickPosition(event.position);
 
       if (defined(earthPosition)) {
         this.dynamicNodesPoint.push(EntityFactory.createPoint(earthPosition)); // 生成点
 
-        returnPosition.push(JSON.parse(JSON.stringify(earthPosition)));
+        returnPosition.push(earthPosition);
 
         this.coordinates.push(earthPosition);
         this.returnPositions = coordinateTransform(coordinateType, this.coordinates);
 
-        if (this.dynamicNodesPoint.length === minPointsSize) {
-          if (!this.drawEntities) {
-            this.drawEntities = this.dataSourceToo.entities.add(EntityFactory.createLightingPolygon(this.coordinates));
-          }
+        if (!this.drawEntities) {
+          this.drawEntities = this.dataSourceTool.entities.add(EntityFactory.createLightingPolygon(this.coordinates));
         }
       }
     }, ScreenSpaceEventType.LEFT_CLICK);
     // 鼠标移动事件
     handler.setInputAction((event: any) => {
-      let newPosition = this.viewer.scene.pickPosition(event.endPosition);
-
+      const newPosition = this.viewer.scene.pickPosition(event.endPosition);
       // 移动点跟着光标动
       if (defined(newPosition)) {
+        if (this.coordinates.length === 1) {
+          this.coordinates.push(newPosition);
+        }
 
-        this.coordinates.pop();
-        this.coordinates.push(newPosition);
-
+        if (this.coordinates.length >= 2) {
+          // 更新最新鼠标点
+          this.coordinates.pop();
+          this.coordinates.push(newPosition);
+        }
         if (typeof moveCallback === 'function') {
-          let moveReturn = JSON.parse(JSON.stringify(returnPosition));
-          moveReturn.push(JSON.parse(JSON.stringify(newPosition)));
-          moveCallback(moveReturn);
+          moveCallback(this.coordinates);
         }
       }
     }, ScreenSpaceEventType.MOUSE_MOVE);
     // 右键结束
     handler.setInputAction(() => {
       this.drawShapeEnd();
-
       // 如果绘制的点数少于最小点数，返回绘制失败
       if (returnPosition.length >= minPointsSize) {
         returnPosition.push(returnPosition[0]!);
@@ -421,7 +418,6 @@ class DrawShape {
 
   // 画圆
   public drawCircle({ coordinateType, endCallback, moveCallback, errCallback }: DrawShapeOptions) {
-    let that = this;
     let handler = this.drawShapeStart();
     this.endCallback = endCallback;
     this.moveCallback = moveCallback;
@@ -484,7 +480,7 @@ class DrawShape {
           }
           if (!this.drawEntities) {
             // @ts-ignore
-            this.drawEntities = this.dataSourceToo.entities.add({
+            this.drawEntities = this.dataSourceTool.entities.add({
               position: circleCenter,
               name: 'Red ellipse on surface',
               ellipse: {
@@ -514,7 +510,6 @@ class DrawShape {
    * @param errCallback
    */
   public drawRectangle({ coordinateType, endCallback, moveCallback, errCallback }: DrawShapeOptions) {
-    let that = this;
     let handler = this.drawShapeStart();
     this.endCallback = endCallback;
     this.moveCallback = moveCallback;
@@ -542,7 +537,7 @@ class DrawShape {
             dynamicPositions = new CallbackProperty(function () {
               return new PolygonHierarchy(positions);
             }, false);
-            this.drawEntities = this.dataSourceToo.entities.add({
+            this.drawEntities = this.dataSourceTool.entities.add({
               polygon: {
                 hierarchy: dynamicPositions,
                 material: new ColorMaterialProperty(
@@ -591,7 +586,6 @@ class DrawShape {
    * @param errCallback
    */
   public drawInclinedRectangle({ coordinateType, endCallback, moveCallback, errCallback }: DrawShapeOptions) {
-    let that = this;
     let handler = this.drawShapeStart();
     this.endCallback = endCallback;
     this.moveCallback = moveCallback;
@@ -618,7 +612,7 @@ class DrawShape {
             dynamicPositions = new CallbackProperty(() => {
               return new PolygonHierarchy(this.coordinates);
             }, false);
-            this.drawEntities = this.dataSourceToo.entities.add({
+            this.drawEntities = this.dataSourceTool.entities.add({
               polygon: {
                 hierarchy: dynamicPositions,
                 material: new ColorMaterialProperty(
@@ -671,14 +665,13 @@ class DrawShape {
 
   // 画高差
   public drawHeightDistinct({ coordinateType, endCallback, moveCallback, errCallback }: DrawShapeOptions) {
-    let that = this;
-    let handler = this.drawShapeStart();
+    this.drawShapeStart();
     this.endCallback = endCallback;
     this.moveCallback = moveCallback;
     this.errCallback = errCallback;
 
     // 设置左键单击拾取坐标事件
-    handler.setInputAction((event: any) => {
+    this.handler.setInputAction((event: ScreenSpaceEventHandler.PositionedEvent) => {
       let earthPosition = this.viewer.scene.pickPosition(event.position);
 
       if (defined(earthPosition)) {
@@ -687,11 +680,11 @@ class DrawShape {
 
           this.coordinates.push(earthPosition);
           this.coordinates.push(earthPosition);
-          this.dataSourceToo.entities.add(EntityFactory.createHeightEllipse(this.coordinates));
+          this.dataSourceTool.entities.add(EntityFactory.createHeightEllipse(this.coordinates));
 
           const worldDegree = CartographicTool.formCartesian3(this.coordinates[0]!);
           const heightDifference = GISMathUtils.getHeight(this.coordinates)
-          this.dataSourceToo.entities.add(
+          this.dataSourceTool.entities.add(
             EntityFactory.PointLabelEntity(
               Cartesian3.fromDegrees(worldDegree.longitude, worldDegree.latitude, worldDegree.height + heightDifference),
               new CallbackProperty(() => GISMathUtils.getHeight(this.coordinates) + '米', false)
@@ -700,13 +693,12 @@ class DrawShape {
         } else {
           commitEndCallBack(coordinateType, endCallback, this.coordinates);
           this.drawShapeEnd();
-          handler.destroy();
         }
       }
     }, ScreenSpaceEventType.LEFT_CLICK);
 
     // 鼠标移动事件
-    handler.setInputAction((event: any) => {
+    this.handler.setInputAction((event: any) => {
       let newPosition = this.viewer.scene.pickPosition(event.endPosition);
       if (defined(newPosition)) {
         if (this.coordinates.length === 2) {
@@ -719,12 +711,11 @@ class DrawShape {
     }, ScreenSpaceEventType.MOUSE_MOVE);
 
     // 鼠标右击事件，表示结束取消
-    handler.setInputAction(() => {
+    this.handler.setInputAction(() => {
       if (this.coordinates.length === 0) {
         commitEndCallBack(coordinateType, endCallback, this.coordinates);
       }
       this.drawShapeEnd();
-      handler.destroy();
     }, ScreenSpaceEventType.RIGHT_CLICK);
 
   }
@@ -738,7 +729,6 @@ class DrawShape {
    * @param callback   返回值
    */
   public drawYPlan({ position, normal, dimensions, endCallback, moveCallback, errCallback }: DrawShapeOptions) {
-    let that = this;
     let handler = this.drawShapeStart();
     this.endCallback = endCallback;
     this.moveCallback = moveCallback;
@@ -756,7 +746,7 @@ class DrawShape {
 
     let plane = new ClippingPlane(normal, 0.0);
 
-    this.drawEntities = this.dataSourceToo.entities.add({
+    this.drawEntities = this.dataSourceTool.entities.add({
       position: position,
       plane: {
         // dimensions : new Cartesian2(10000.0, 10000.0),
@@ -828,14 +818,12 @@ class DrawShape {
    * @param err
    */
   private drawShapeErrorCallback(err: any) {
-    let that = this;
     this.drawShapeEnd();
     typeof this.errCallback === 'function' && this.errCallback(err);
   }
 
   // 画图前的一些准备工作
   private drawShapeStart() {
-    let that = this;
     this.drawShapeEnd();
     // 改变鼠标样式
     window.document.body.style.cursor = 'crosshair';
@@ -855,7 +843,6 @@ class DrawShape {
 
   // 执行画图完成后的一些工作
   private drawShapeEnd() {
-    let that = this;
     // 恢复鼠标样式
     window.document.body.style.cursor = 'auto';
     // 清除已经绘制的 entity
@@ -876,14 +863,10 @@ class DrawShape {
    * 清除已经绘制的 entity
    */
   private clearDrawEntity() {
-    let that = this;
     this.coordinates = [];
-
-    this.dataSourceToo.entities.removeAll();
-
+    this.dataSourceTool.entities.removeAll();
     // 已经确定位置的几何形节点
     this.dynamicNodesPoint = [];
-
     // 绘制的实体
     this.drawEntities = undefined;
   }

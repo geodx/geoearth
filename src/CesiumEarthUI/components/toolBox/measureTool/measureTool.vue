@@ -1,19 +1,16 @@
 /****************************************************************************
-名称：天空盒 显隐控制器
-作者：冯功耀
+名称：量测工具 显隐控制器
 最后修改日期：2022-04-20
 ****************************************************************************/
 
 <template>
-    <SBContent v-if="show"></SBContent>
+    <ms-content v-if="true"></ms-content>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
-import SBContent from './sb-content.vue';
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
+import MsContent from './ms-content.vue';
+import { computed } from 'vue';
 const ceStore = useCesiumEarthStore()
-const show = computed(() => ceStore.comStatus('skyBoxTool'))
-
-
+const show = computed(() => ceStore.comStatus('measureTool')) 
 </script>
