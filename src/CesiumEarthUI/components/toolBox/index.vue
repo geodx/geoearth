@@ -3,11 +3,11 @@
     <GeologicalSection></GeologicalSection>
     <skyBoxTool></skyBoxTool>
     <MeasureTool></MeasureTool>
-    <!--<pathPlanning></pathPlanning>
-    <plotTool></plotTool>
-    <pathRoaming></pathRoaming>
+    <!-- <pathPlanning></pathPlanning> -->
+    <!-- <plotTool></plotTool> -->
+    <!-- <pathRoaming></pathRoaming> -->
     <Weather></Weather>
-    <ImageLayerSplitMana></ImageLayerSplitMana>
+    <!--<ImageLayerSplitMana></ImageLayerSplitMana>
     <ImageLayerTimeLine></ImageLayerTimeLine>
     <visualMarker></visualMarker>
     <areaNavigation></areaNavigation>
@@ -33,10 +33,10 @@ import GeologicalSection from './geologicalSection/geologicalSection.vue';
 import skyBoxTool from './skyBoxTool/skyBoxTool.vue';
 import MeasureTool from './measureTool/measureTool.vue';
 
-// import pathPlanning from './pathPlanning/pathPlanning.vue';
-// import plotTool from './plotTool/plotTool.vue';
-// import pathRoaming from './pathRoaming/pathRoaming.vue';
-// import Weather from './weather/weather.vue';
+import pathPlanning from './pathPlanning/pathPlanning.vue';
+import plotTool from './plotTool/plotTool.vue';
+import pathRoaming from './pathRoaming/pathRoaming.vue';
+import Weather from './weather/weather.vue';
 // import ImageLayerSplitMana from './ImageLayerSplitMana/ImageLayerSplitMana.vue';
 // import ImageLayerTimeLine from './ImageLayerTimeLine/ImageLayerTimeLine.vue';
 // import visualMarker from './visualMarker/visualMarker.vue';

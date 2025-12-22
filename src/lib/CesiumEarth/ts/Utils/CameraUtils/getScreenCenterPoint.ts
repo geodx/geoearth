@@ -10,8 +10,7 @@ import { Viewer, Cartesian2, Cartographic } from "cesium";
 
 function getScreenCenterPoint(viewer: Viewer) {
     let pick = new Cartesian2(viewer.scene.canvas.width / 2, viewer.scene.canvas.height / 2);
-    let cartesian = viewer.scene.globe.pick(viewer.camera.getPickRay(pick), viewer.scene);
-
+    let cartesian = viewer.scene.globe.pick(viewer.camera.getPickRay(pick)!, viewer.scene);
     if (cartesian) {
         let cartographic = Cartographic.fromCartesian(cartesian);
         let point = [cartographic.longitude / Math.PI * 180, cartographic.latitude / Math.PI * 180];
