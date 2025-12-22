@@ -4,7 +4,7 @@
 ****************************************************************************/
 
 <template>
-    <ms-content v-if="true"></ms-content>
+    <ms-content v-if="show"></ms-content>
 </template>
 
 <script lang="ts" setup>
