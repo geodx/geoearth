@@ -5,7 +5,7 @@
 ****************************************************************************/
 
 <template>
-    <SBContent v-if="true"></SBContent>
+    <SBContent v-if="show"></SBContent>
 </template>
 
 <script lang="ts" setup>

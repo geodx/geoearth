@@ -1,18 +1,12 @@
-import { MaterialProperty, Event, JulianDate } from 'cesium';
+import { Event, JulianDate, defined } from 'cesium';
 
 /**
  * 线材质基类
  */
-abstract class PolylineBaseMaterial implements MaterialProperty {
-    protected _definitionChanged = new Event();
+abstract class PolylineBaseMaterial {
+    abstract isConstant: boolean;
+    abstract definitionChanged: Event<(...args: any[]) => void>;
 
-    get definitionChanged() {
-        return this._definitionChanged;
-    }
-
-    get isConstant() {
-        return false;
-    }
 
     abstract getType(): string;
 
@@ -21,6 +15,10 @@ abstract class PolylineBaseMaterial implements MaterialProperty {
     abstract equals(other: any): boolean;
 
     abstract init(): void;
+
+    getConstant(property: any) {
+        return !defined(property) || property.isConstant;
+    }
 }
 
 

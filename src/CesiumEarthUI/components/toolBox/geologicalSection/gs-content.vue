@@ -46,8 +46,8 @@ let earth: CesiumEarth.Earth;
 const startPoint = ref()
 const endPoint = ref()
 
-onMounted(() => {
-    earth = earthStore.getEarth()
+onMounted(async () => {
+    earth = await earthStore.getEarth()
 })
 onUnmounted(() => {
     clearChart();
@@ -55,12 +55,12 @@ onUnmounted(() => {
 // 绘制剖面线
 async function drawLine(): Promise<Cartographic[]> {
     return new Promise((resolve, reject) => {
-        earth.drawShape.drawLine((
+        earth.drawShape.drawLine(
             {
                 coordinateType: CoordinateType.cartographicObj,
                 endCallback: (e: Cartographic[]) => resolve(e)
             }
-        ));
+        );
     });
 }
 // 生成剖面线
@@ -191,7 +191,6 @@ function clearChart() {
 }
 function close() {
     ceStore.setCesiumEarthComAction('geologicalSection', 2)
-    // this.$store.commit('setVGEEarthComAction', { name: 'geologicalSection', on_off: 2 });
 }
 
 </script>
