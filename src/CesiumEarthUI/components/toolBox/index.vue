@@ -7,9 +7,9 @@
     <!-- <plotTool></plotTool> -->
     <!-- <pathRoaming></pathRoaming> -->
     <Weather></Weather>
-    <!--<ImageLayerSplitMana></ImageLayerSplitMana>
+    <!-- <ImageLayerSplitManage></ImageLayerSplitManage> -->
     <ImageLayerTimeLine></ImageLayerTimeLine>
-    <visualMarker></visualMarker>
+    <!--<visualMarker></visualMarker>
     <areaNavigation></areaNavigation>
     <featureEffect></featureEffect>
     <VideoShed></VideoShed>
@@ -37,8 +37,8 @@ import pathPlanning from './pathPlanning/pathPlanning.vue';
 import plotTool from './plotTool/plotTool.vue';
 import pathRoaming from './pathRoaming/pathRoaming.vue';
 import Weather from './weather/weather.vue';
-// import ImageLayerSplitMana from './ImageLayerSplitMana/ImageLayerSplitMana.vue';
-// import ImageLayerTimeLine from './ImageLayerTimeLine/ImageLayerTimeLine.vue';
+import ImageLayerSplitManage from './ImageLayerSplitManage/ImageLayerSplitManage.vue';
+import ImageLayerTimeLine from './ImageLayerTimeLine/ImageLayerTimeLine.vue';
 // import visualMarker from './visualMarker/visualMarker.vue';
 // import areaNavigation from './areaNavigation/areaNavigation.vue';
 // import VideoShed from './videoShed/videoShed.vue';
