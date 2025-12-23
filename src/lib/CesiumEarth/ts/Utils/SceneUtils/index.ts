@@ -107,7 +107,7 @@ const SceneUtils = {
     // triggerDownload.click();
   },
 
-  viewerFlyToLonLat(lon: number, lat: number, height: number = 200000, viewer: Viewer,): Promise<boolean> {
+  viewerFlyToLonLat(viewer: Viewer, lon: number, lat: number, height: number = 200000,): Promise<boolean> {
     return new Promise((resolve) => {
       viewer.camera.flyTo({
         destination: Cartesian3.fromDegrees(lon, lat, height),

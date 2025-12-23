@@ -1,5 +1,5 @@
 <template>
-    <win-tabs v-if="true" :initCSS="{ width: 370, height: 560, left: 900, top: 30 }" @close="close">
+    <win-tabs v-if="show" :initCSS="{ width: 370, height: 560, left: 900, top: 30 }" @close="close">
 
         <button @click="reSetWeather">获取天气</button>
         <tab-pane :label="'实时天气&nbsp;' + time + '&nbsp;'">
