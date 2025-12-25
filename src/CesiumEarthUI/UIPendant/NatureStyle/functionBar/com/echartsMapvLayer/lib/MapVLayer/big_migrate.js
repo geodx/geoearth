@@ -5,15 +5,14 @@
  最后修改日期：2022-04-18
  ****************************************************************************/
 
-
-let timeData = [];
+let timeData = []
 
 /**
  * 创建mapvLayer图层
  * @returns {*[]} 所创建的所有的mapvLayer图层
  */
 function createBigmigrate() {
-    return initData();
+  return initData()
 }
 
 /**
@@ -21,42 +20,42 @@ function createBigmigrate() {
  * @returns {*[]} 所创建的所有的mapvLayer图层
  */
 function initData() {
-    let rs = getData();
-    let items = rs.split('|');
-    let data = [];
-    timeData = [];
-    let cityBegin;
-    for (let i = 0; i < items.length; i++) {
-        let itemArr = items[i].split(/\n/);
-        for (let k = 0; k < itemArr.length; k++) {
-            if (!!itemArr[k]) {
-                let item = itemArr[k].split(/\t/);
-                if (item[0] === '起点城市' || item[0] === '迁出城市') {
-                    cityBegin = item[1];
-                }
-                if (item[0] !== '起点城市' || item[0] !== '迁出城市' && item.length > 1) {
-                    let cityCenter1 = mapv.utilCityCenter.getCenterByCityName(item[0].replace(/市|省/, ''));
-                    let cityCenter2 = mapv.utilCityCenter.getCenterByCityName(cityBegin.replace(/市|省/, ''));
-                    if (cityCenter1) {
-                        if (Math.random() > 0.7) {
-                            curive(cityCenter2, cityCenter1, 50);
-                        }
-                        data.push({
-                            geometry: {
-                                type: 'LineString',
-                                coordinates: [
-                                    [cityCenter1.lng, cityCenter1.lat],
-                                    [cityCenter2.lng, cityCenter2.lat]
-                                ]
-                            },
-                            count: 100 * Math.random()
-                        });
-                    }
-                }
-            }
+  let rs = getData()
+  let items = rs.split('|')
+  let data = []
+  timeData = []
+  let cityBegin
+  for (let i = 0; i < items.length; i++) {
+    let itemArr = items[i].split(/\n/)
+    for (let k = 0; k < itemArr.length; k++) {
+      if (!!itemArr[k]) {
+        let item = itemArr[k].split(/\t/)
+        if (item[0] === '起点城市' || item[0] === '迁出城市') {
+          cityBegin = item[1]
         }
+        if (item[0] !== '起点城市' || (item[0] !== '迁出城市' && item.length > 1)) {
+          let cityCenter1 = mapv.utilCityCenter.getCenterByCityName(item[0].replace(/市|省/, ''))
+          let cityCenter2 = mapv.utilCityCenter.getCenterByCityName(cityBegin.replace(/市|省/, ''))
+          if (cityCenter1) {
+            if (Math.random() > 0.7) {
+              curive(cityCenter2, cityCenter1, 50)
+            }
+            data.push({
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [cityCenter1.lng, cityCenter1.lat],
+                  [cityCenter2.lng, cityCenter2.lat],
+                ],
+              },
+              count: 100 * Math.random(),
+            })
+          }
+        }
+      }
     }
-    return initLayer(data);
+  }
+  return initLayer(data)
 }
 
 /**
@@ -65,57 +64,56 @@ function initData() {
  * @returns {*[]} 所创建的所有的mapvLayer图层
  */
 function initLayer(data) {
-    let dataSet = new mapv.DataSet(data);
-    let options = {
-        strokeStyle: 'rgba(55, 50, 250, 0.3)',
-        globalCompositeOperation: 'lighter',
-        shadowColor: 'rgba(55, 50, 250, 0.5)',
-        methods: {
-            click: function (item) {
-            }
-        },
-        gradient: { 0: 'rgba(55, 50, 250, 0)', 1: 'rgba(55, 50, 250, 1)' },
-        lineWidth: .2,
-        draw: 'intensity'
-    };
+  let dataSet = new mapv.DataSet(data)
+  let options = {
+    strokeStyle: 'rgba(55, 50, 250, 0.3)',
+    globalCompositeOperation: 'lighter',
+    shadowColor: 'rgba(55, 50, 250, 0.5)',
+    methods: {
+      click: function (item) {},
+    },
+    gradient: { 0: 'rgba(55, 50, 250, 0)', 1: 'rgba(55, 50, 250, 1)' },
+    lineWidth: 0.2,
+    draw: 'intensity',
+  }
 
-    let layer1 = new VGEEarth.MapVLayer(VGEEarth.getMainViewer(), dataSet, options);
+  let layer1 = new CesiumEarth.MapVLayer(CesiumEarth.getMainViewer(), dataSet, options)
 
-    dataSet = new mapv.DataSet(timeData);
-    options = {
-        fillStyle: 'rgba(255, 250, 250, 0.9)',
-        size: .5,
-        animation: {
-            type: 'time',
-            stepsRange: {
-                start: 0,
-                end: 50
-            },
-            trails: 1,
-            duration: 5
-        },
-        draw: 'simple'
-    };
-    let layer2 = new VGEEarth.MapVLayer(VGEEarth.getMainViewer(), dataSet, options);
-    return [layer1, layer2];
+  dataSet = new mapv.DataSet(timeData)
+  options = {
+    fillStyle: 'rgba(255, 250, 250, 0.9)',
+    size: 0.5,
+    animation: {
+      type: 'time',
+      stepsRange: {
+        start: 0,
+        end: 50,
+      },
+      trails: 1,
+      duration: 5,
+    },
+    draw: 'simple',
+  }
+  let layer2 = new CesiumEarth.MapVLayer(CesiumEarth.getMainViewer(), dataSet, options)
+  return [layer1, layer2]
 }
 
 function curive(fromPoint, endPoint, n) {
-    let delLng = (endPoint.lng - fromPoint.lng) / n;
-    let delLat = (endPoint.lat - fromPoint.lat) / n;
+  let delLng = (endPoint.lng - fromPoint.lng) / n
+  let delLat = (endPoint.lat - fromPoint.lat) / n
 
-    for (let i = 0; i < n; i++) {
-        let pointNLng = fromPoint.lng + delLng * i;
-        let pointNLat = fromPoint.lat + delLat * i;
-        timeData.push({
-            geometry: {
-                type: 'Point',
-                coordinates: [pointNLng, pointNLat]
-            },
-            count: 1,
-            time: i
-        });
-    }
+  for (let i = 0; i < n; i++) {
+    let pointNLng = fromPoint.lng + delLng * i
+    let pointNLat = fromPoint.lat + delLat * i
+    timeData.push({
+      geometry: {
+        type: 'Point',
+        coordinates: [pointNLng, pointNLat],
+      },
+      count: 1,
+      time: i,
+    })
+  }
 }
 
 /**
@@ -123,7 +121,7 @@ function curive(fromPoint, endPoint, n) {
  * @returns {string}
  */
 function getData() {
-    return `起点城市	深圳市
+  return `起点城市	深圳市
 东莞市	611971
 惠州市	443660
 广州市	362470
@@ -6989,8 +6987,7 @@ function getData() {
 黄南藏族自治州	1
 林芝地区	1
 日喀则地区	0
-台湾	60000`;
-
+台湾	60000`
 }
 
-export default createBigmigrate;
+export default createBigmigrate

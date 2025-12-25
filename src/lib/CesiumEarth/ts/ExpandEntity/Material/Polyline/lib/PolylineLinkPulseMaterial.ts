@@ -24,7 +24,7 @@ class PolylineLinkPulseMaterial extends PolylineBaseMaterial {
     }
 
     get isConstant() {
-        return false;
+        return true;
     }
 
     get definitionChanged() {

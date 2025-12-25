@@ -2,16 +2,10 @@
     <div>
         <div style="padding-top: 15px">
             材质：
-            <el-select v-model="polygonMaterialIndex"
-                       clearable
-                       placeholder="请选择"
-                       size="small"
-                       style="width: 215px"
-                       @change="changeSymbol">
-                <el-option v-for="(item,index) in polygonMaterials"
-                           :key="item.label"
-                           :label="item.label"
-                           :value="index">
+            <el-select v-model="polygonMaterialIndex" clearable placeholder="请选择" size="small" style="width: 215px"
+                @change="changeSymbol">
+                <el-option v-for="(item, index) in polygonMaterials" :key="item.label" :label="item.label"
+                    :value="index">
                     <span style="float: left">{{ item.label }}</span>
                 </el-option>
             </el-select>
@@ -51,6 +45,4 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
-
-</style>
+<style lang="scss" scoped></style>

@@ -62,7 +62,7 @@ interface FlyPathParams {
  * @example
  * //创建一个动态实体模型类
  *     let property = new SampledPositionProperty();
- *     let flyPath = new VGEEarth.Material.Polyline.FlyPath(viewer, {
+ *     let flyPath = new CesiumEarth.Material.Polyline.FlyPath(viewer, {
  *         orientation: new VelocityOrientationProperty(property),
  *         model: {
  *             uri: "./wrj.glb",

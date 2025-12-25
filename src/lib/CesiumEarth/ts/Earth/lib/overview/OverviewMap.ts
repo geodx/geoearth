@@ -1,16 +1,20 @@
 
-import { Cartesian2, defined, CallbackProperty } from "cesium";
-import { Viewer, Entity, ScreenSpaceEventHandler, Rectangle, Color, Cartesian3, ScreenSpaceEventType, Cartographic, PerspectiveFrustum } from "cesium";
+import {
+    Cartesian2, defined, CallbackProperty, CesiumWidget,
+    Viewer, Entity, ScreenSpaceEventHandler, Rectangle, Color,
+    Cartesian3, ScreenSpaceEventType, Cartographic, PerspectiveFrustum
+} from "cesium";
+
 
 
 class OverviewMap {
     private mainViewer: Viewer;
-    private overview: Viewer;
+    private overview: CesiumWidget;
     private viewRectEntity?: Entity;
     private handler: ScreenSpaceEventHandler;
     private isOverViewEvent: boolean;
     private currentRect: Rectangle
-    constructor(viewer3D: Viewer, viewerOM: Viewer) {
+    constructor(viewer3D: Viewer, viewerOM: CesiumWidget) {
         this.mainViewer = viewer3D;
         this.overview = viewerOM;
         this.handler = new ScreenSpaceEventHandler(this.overview.canvas);

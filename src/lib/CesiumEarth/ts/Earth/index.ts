@@ -1,4 +1,4 @@
-import { ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer } from 'cesium';
+import { ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer, CesiumWidget } from 'cesium';
 
 import { DomManage } from './lib/DomManage';
 import { getOptions3D } from './lib/getOptions3D';
@@ -20,6 +20,11 @@ import { debugManage } from './lib/deBugManage/debugManage';
 import { OverviewMap } from './lib/overview/OverviewMap';
 import { createOverview } from './lib/overview/createOverview';
 import { createNavigation } from './lib/createNavigation';
+import { initViewer2DStata } from './lib/initViewer2DStata';
+import { getOptions2D } from './lib/getOptions2D';
+import { sync2DView } from './lib/sync2DView';
+import { loadSource2DData } from './lib/loadSource2DData';
+import { initMonitorCoordinates } from './lib/initMonitorCoordinates';
 
 /**
  * 名称：用于创建地球的构造类
@@ -38,20 +43,27 @@ import { createNavigation } from './lib/createNavigation';
  *
  */
 class Earth {
+    // 场景中的主 Viewer 对象
     public viewer3D: Viewer;
     public viewer3DWorkSpace: WorkSpace;
-    private viewerOM: any
+    private viewerOM: CesiumWidget | undefined
+    private viewer2D: Viewer | undefined;
+    private viewer2DWorkSpace: WorkSpace | undefined;
 
+    private is2D3D: boolean = false;
+    private isOpenOverviewMap: boolean = false;
     private loadComplete: boolean = false;
     private overviewMap: OverviewMap | undefined;
     private startAnimation: StartAnimation;
+
     public drawShape: DrawShape;
     // 默认生成的量测工具
     public measureTool: MeasureTool;
-    private isOpenOverviewMap: boolean = false;
 
-    private infoBox: InfoBox;
 
+    public infoBox: InfoBox;
+    // 初始化坐标与高度的监听
+    public initMonitorCoordinates = initMonitorCoordinates;
 
     /**
    * 创建新的 viewer 对象
@@ -138,7 +150,7 @@ class Earth {
     }
 
     getFPS() {
-        debugManage.getFPS();
+        return debugManage.getFPS();
     }
 
     // 开启鹰眼地图
@@ -163,10 +175,47 @@ class Earth {
         DomManage.closeOverviewMapDom();
     }
 
+    // 开启 Cesium 二三维联动
+    async openMapLink23d() {
+        if (!this.viewer2D) {
+            let viewer2D = new Viewer('viewer2DDom', getOptions2D());
+            let workSpace = new WorkSpace(viewer2D, ScopeType.Viewer2D);
+
+            initViewerStata(viewer2D);
+            // 每次3D相机视图更改时应用我们的同步功能
+            this.viewer3D.camera.changed.addEventListener(sync2DView(this.viewer3D, viewer2D));
+            // 默认情况下，“camera.changed”事件将在相机更改50%时触发,为了使它更敏感，我们可以降低这种敏感度
+            this.viewer3D.camera.percentageChanged = 0.01;
+            initViewer2DStata(viewer2D);
+            await loadSource2DData(viewer2D, workSpace);
+            EventManage.viewerEvent.raiseEvent(ListenType.ViewerEventType.init, ScopeType.Viewer2D, {});
+
+            this.viewer2DWorkSpace = workSpace;
+            this.viewer2D = viewer2D;
+            viewer2D.resolutionScale = window.devicePixelRatio;
+        }
+        DomManage.initCesiumMapLink23d();
+    }
+
+    /**
+     * // 关闭 Cesium 二三维联动*/
+    closeMapLink23d() {
+        DomManage.closeCesiumMapLink23d();
+    }
+    // 切换显示隐藏 2D视图
+    toggleMapLink23d() {
+        this.is2D3D ? this.closeMapLink23d() : this.openMapLink23d();
+        this.is2D3D = !this.is2D3D;
+    }
+
     // 创建指北针
     createNavigation() {
         createNavigation(this.viewer3D);
     };
+
+    destroy() {
+        this.viewer3D.destroy()
+    }
 }
 
 export { Earth };

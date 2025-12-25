@@ -13,7 +13,11 @@ interface ComAction {
   type: string;
   config: any
 }
-
+interface Legend {
+  title: string
+  img: string
+  list: any[],
+}
 export const useCesiumEarthStore = defineStore('CesiumEarth', () => {
   // state
   const useName = ref('')
@@ -27,7 +31,7 @@ export const useCesiumEarthStore = defineStore('CesiumEarth', () => {
     right: [] as ComAction[],
   })
   // 当前所显示的图例
-  const legendCurrent = ref({
+  const legendCurrent = ref<Legend>({
     title: '',
     img: '',
     list: [],

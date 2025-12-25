@@ -54,22 +54,31 @@
 </template>
 
 <script lang="ts" setup>
-import type { Earth } from '@/lib/cesium-earth/ts/Earth';
-import { useEarthStore } from '@/lib/cesium-earth/ts/Earth/lib/EarthStore';
+import type CesiumEarth from '@/lib/CesiumEarth';
+import { useEarthStore } from '@/stores/EarthStore';
 import { onMounted, ref } from 'vue';
 const earthStore = useEarthStore()
 
 const timeLabel = ref('2024年1月22日 10时43分15秒88毫秒')
 const FPS = ref(0)
 const viewerQuality = ref(8)
-let earth: Earth
+let earth: CesiumEarth.Earth
 const position = ref({
 	lon: "0°",
 	lat: "0°",
 	height: "0 m",
 	cameraHeight: "0 m"
 })
+onMounted(async () => {
+	earth = await earthStore.getEarth()
+	earth.thenLoadComplete().then(() => {
+		init()
+		// 2024年1月22日 10时43分15秒88毫秒
+		let now = new Date();
+		timeLabel.value = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ` + now.toLocaleTimeString();
+	});
 
+})
 function init() {
 	// 初始化显示经纬度的标签
 	earth.initMonitorCoordinates(earth.viewer3D, function (log: number, lat: number, height: number, cameraHeight: number) {
@@ -99,16 +108,7 @@ function reload() {
 	location.reload();
 }
 
-onMounted(() => {
-	earth = earthStore.getEarth()
-	earth.thenLoadComplete().then(() => {
-		init()
-		// 2024年1月22日 10时43分15秒88毫秒
-		let now = new Date();
-		timeLabel.value = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ` + now.toLocaleTimeString();
-	});
 
-})
 
 </script>
 <style lang='scss' scoped>

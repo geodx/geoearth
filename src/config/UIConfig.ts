@@ -8,7 +8,7 @@ const UIConfig = {
         left: [
             { id: 'Introduce', name: '平台介绍', type: 'url', defaultOptions: false, url: 'http://8.146.208.114:8083/' },
             { id: 'UserBook', name: '用户手册', type: 'url', defaultOptions: false, url: 'http://8.146.208.114:8083/zh/简介/' },
-            { id: 'APIBook', name: 'API文档', type: 'url', defaultOptions: false, url: 'http://8.146.208.114:3000/VGEEarth-SDK-API/index.html' }
+            { id: 'APIBook', name: 'API文档', type: 'url', defaultOptions: false, url: 'http://8.146.208.114:3000/CesiumEarth-SDK-API/index.html' }
         ],
         right: [
             { id: 'codeBase', name: '开源代码', type: 'url', defaultOptions: false, url: 'https://github.com/WangShan010/MetaVGE-3DVis-Vue3' },

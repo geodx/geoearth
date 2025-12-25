@@ -101,7 +101,7 @@ onUnmounted(() => {
 })
 
 onMounted(() => {
-    pathRoaming = new CesiumEarth.PathRoaming(VGEEarth.getMainViewer(), {
+    pathRoaming = new CesiumEarth.PathRoaming(CesiumEarth.getMainViewer(), {
         speed: 10,
         roamingType: roamingType.value
     });

@@ -15,7 +15,7 @@ let earth: CesiumEarth.Earth
 function initEarth() {
 
   earth.openDeBug();
-  // earth.createNavigation();
+  earth.createNavigation();
   earth.openOverviewMap()
   earth.viewer3D.scene.globe.depthTestAgainstTerrain = true;
 
