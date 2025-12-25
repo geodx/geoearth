@@ -51,7 +51,6 @@ import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 import { useEarthStore } from '@/stores/EarthStore';
 import * as Cesium from 'cesium'
 import CesiumEarth from '@/lib/CesiumEarth';
-import type { Earth } from '@/lib/CesiumEarth/ts/Earth';
 const ceStore = useCesiumEarthStore()
 const earthStore = useEarthStore()
 
@@ -65,7 +64,16 @@ const farSkyBoxList: any[] = []
 const groundSkyBoxList: any[] = []
 
 let SkyBox: CesiumEarth.SkyBoxOnGround
-let earth: Earth
+let earth: CesiumEarth.Earth
+onMounted(async () => {
+    earth = await earthStore.getEarth()
+    SkyBox = new CesiumEarth.SkyBoxOnGround(earth.viewer3D)
+    await loadConfig()
+})
+
+onUnmounted(() => {
+    SkyBox?.destroy?.()
+})
 async function loadConfig() {
     const response = await fetch(new URL('/CesiumEarth/skybox/skybox.json', import.meta.url))
     const skybox = await response.json()
@@ -141,15 +149,7 @@ function close() {
     ceStore.setCesiumEarthComAction('skyBoxTool', 2)
 }
 
-onMounted(async () => {
-    earth = await earthStore.getEarth()
-    SkyBox = new CesiumEarth.SkyBoxOnGround(earth.viewer3D)
-    await loadConfig()
-})
 
-onUnmounted(() => {
-    SkyBox?.destroy?.()
-})
 </script>
 
 <style lang="scss" scoped>

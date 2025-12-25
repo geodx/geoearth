@@ -6,7 +6,7 @@
         "code": "winInfo-Bubble-1",
         "name": "气泡窗口-1",
         "type": "winInfo",
-        "symbolUrl": "./VGEEarth/Config/plotTool/custom/信息.png",
+        "symbolUrl": "./CesiumEarth/Config/plotTool/custom/信息.png",
         "paramList": [
           {
             "name": "标题",
@@ -101,7 +101,7 @@
         "code": "m00",
         "name": "无人机",
         "type": "modelEntity",
-        "modelUrl": "./VGEEarth/Src/dist/glb/动态轨迹线/wrj.glb"
+        "modelUrl": "./CesiumEarth/Src/dist/glb/动态轨迹线/wrj.glb"
       },
       {
         "code": "m01",

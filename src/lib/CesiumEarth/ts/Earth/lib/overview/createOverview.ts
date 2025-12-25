@@ -8,7 +8,7 @@ import type { Viewer } from "cesium";
 import { CesiumWidget } from "cesium";
 import { Color, ImageryLayer, OpenStreetMapImageryProvider, SceneMode } from "cesium";
 
-function createOverview(): Viewer | CesiumWidget {
+function createOverview(): CesiumWidget {
   // 确保容器存在
   const container = document.getElementById("ol-container");
   if (!container) throw new Error('Overview container not found');

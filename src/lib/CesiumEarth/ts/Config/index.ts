@@ -9,10 +9,10 @@
  *
  * @packageDocumentation
  */
-// export { BingMapLayerList } from './Resource/BingMapLayerList';
-// export { MapBoxLayerList } from './Resource/MapBoxLayerList';
-// export { OSMLayersList } from './Resource/OSMLayerList';
-// export { TerrainList } from './Resource/TerrainList';
+export { BingMapLayerList } from './Resource/BingMapLayerList';
+export { MapBoxLayerList } from './Resource/MapBoxLayerList';
+export { OSMLayersList } from './Resource/OSMLayerList';
+export { TerrainList } from './Resource/TerrainList';
 
 export type { ResourceItem } from './ResourceItem';
 export type { ConfigImpl } from './ConfigImpl';

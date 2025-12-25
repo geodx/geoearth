@@ -12,6 +12,7 @@ import { getCameraInfo } from '../../Utils/CameraUtils/getCameraInfo';
 
 
 function initMonitorCoordinates(viewer: Viewer, moveFun: Function) {
+
     let canvas = viewer.scene.canvas;
     // 具体事件的实现
     let ellipsoid = viewer.scene.globe.ellipsoid;
@@ -45,7 +46,7 @@ function initMonitorCoordinates(viewer: Viewer, moveFun: Function) {
         if (!(viewer.terrainProvider instanceof EllipsoidTerrainProvider)) {
             if (isLoaded) {
                 isLoaded = false;
-                getTerrainMostDetailedHeight(lon, lat).then(function (h) {
+                getTerrainMostDetailedHeight(viewer, lon, lat).then(function (h) {
                     isLoaded = true;
                     height = h;
                 });
@@ -57,7 +58,7 @@ function initMonitorCoordinates(viewer: Viewer, moveFun: Function) {
 
 
         cameraHeight = getCameraHeight(viewer) || 3000000;
-        orientation = getCameraInfo().orientation;
+        orientation = getCameraInfo(viewer).orientation;
         if (onEarth) {
             if (typeof moveFun === 'function') {
                 moveFun(lon, lat, height, cameraHeight, orientation);

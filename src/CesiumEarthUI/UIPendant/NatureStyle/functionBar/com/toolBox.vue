@@ -52,7 +52,7 @@ const comActions = computed(() => {
 //   // 读取历史更改的插件
 //   let VGEConfig = localStorage.getItem('VGEConfig');
 //   VGEConfig = VGEConfig ? JSON.parse(VGEConfig) : null;
-//   if (VGEConfig && VGEConfig.Version === VGEEarth.ConfigTool.config.Version) {
+//   if (VGEConfig && VGEConfig.Version === CesiumEarth.ConfigTool.config.Version) {
 //       this.$store.commit("readCom", VGEConfig.comActions)
 //   }
 // },

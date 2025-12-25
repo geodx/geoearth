@@ -1,0 +1,46 @@
+/****************************************************************************
+名称：几何特效
+最后修改日期：2022-07-10
+****************************************************************************/
+
+<template>
+    <win-tabs :initCSS="{ width: 500, height: 280, left: 350, top: 380 }" class="move_box" @close="close">
+        <tab-pane label="点特效">
+            <pointEffect></pointEffect>
+        </tab-pane>
+        <tab-pane label="点聚合">
+            <PointCluster></PointCluster>
+        </tab-pane>
+        <tab-pane label="线特效">
+            <poly-line-effect></poly-line-effect>
+        </tab-pane>
+        <tab-pane label="面特效">
+            <polygon-effect></polygon-effect>
+        </tab-pane>
+        <tab-pane label="行政区标注">
+            <region-label></region-label>
+        </tab-pane>
+        <tab-pane label="LED文本">
+            <LEDLabel></LEDLabel>
+        </tab-pane>
+    </win-tabs>
+</template>
+
+
+
+
+<script lang="ts" setup>
+import { TabPane, WinTabs } from '../../winTabs'
+import PolygonEffect from './polygonEffect/polygonEffect.vue';
+import PointCluster from './pointCluster/pointCluster.vue';
+import pointEffect from './pointEffect/pointEffect.vue';
+import PolyLineEffect from './polyLineEffect/polyLineEffect.vue';
+import regionLabel from './regionLabel/regionLabel.vue';
+import LEDLabel from './LEDLabel/LEDLabel.vue';
+import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
+const ceStore = useCesiumEarthStore()
+
+function close() {
+    ceStore.setCesiumEarthComAction('featureEffect', 2)
+}
+</script>

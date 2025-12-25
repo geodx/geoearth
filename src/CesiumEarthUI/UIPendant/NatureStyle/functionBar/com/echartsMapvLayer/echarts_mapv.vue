@@ -63,7 +63,7 @@ function clearLayer() {
 
 //设置视角
 function setView() {
-    VGEEarth.getMainViewer().camera.setView({
+    CesiumEarth.getMainViewer().camera.setView({
         destination: Cesium.Cartesian3.fromDegrees(117.16, 32.71, 15000000.0)
     });
 }
@@ -91,7 +91,7 @@ export default {
     },
     methods: {
         close() {
-            this.$store.commit('setVGEEarthComAction', { name: 'Echarts-MapV', on_off: 2 });
+            this.$store.commit('setCesiumEarthComAction', { name: 'Echarts-MapV', on_off: 2 });
         },
         toggleActive(echartsItem) {
             clearLayer();

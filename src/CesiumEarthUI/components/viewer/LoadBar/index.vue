@@ -1,5 +1,5 @@
 <template>
-    <div v-if="false" id="loadBar">
+    <div v-if="true" id="loadBar">
         <span v-for="item in loadList" :key="item.id">
             <span v-if="item.numberOfPendingRequests">
                 {{ item.name }}载入， 需要加载瓦片数据包: {{ item.numberOfPendingRequests }} 个
@@ -8,22 +8,24 @@
     </div>
 </template>
 <script lang="ts" setup>
-import type { Earth } from '@/lib/cesium-earth/ts/Earth';
-import { useEarthStore } from '@/lib/cesium-earth/ts/Earth/lib/EarthStore';
+import type CesiumEarth from '@/lib/CesiumEarth';
+import { useEarthStore } from '@/stores/EarthStore';
 import { onMounted, ref } from 'vue';
+const earthStore = useEarthStore()
+
 interface LoadItem {
-    id: any            //或string,按你实际改
+    id: any
     numberOfPendingRequests: any
     name: any
 }
 const loadList = ref<LoadItem[]>([])
-onMounted(() => {
-    const earth: Earth = useEarthStore().getEarth()
+onMounted(async () => {
+    const earth: CesiumEarth.Earth = await earthStore.getEarth()
     earth.thenLoadComplete().then(() => {
         earth.viewer3DWorkSpace._3DTileManage.loadTileCallFunMap.set('LoadBarVue', (s: any, numberOfPendingRequests: any) => {
             loadList.value = loadList.value.filter(item => item.id !== s.pid);
-            loadList.value.push({ id: s.pid, name: s.name, numberOfPendingRequests }
-            );
+            loadList.value.push({ id: s.pid, name: s.name, numberOfPendingRequests });
+            console.log(loadList.value);
         });
     });
 })

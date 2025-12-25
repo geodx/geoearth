@@ -16,18 +16,18 @@ export { Cartesian3Tool } from './CoordinateTool';
 export { CartographicArrTool } from './CoordinateTool';
 export { CartographicTool } from './CoordinateTool';
 
-// export { MarkTool } from './MarkTool';
+export { MarkTool } from './MarkTool';
 export { GISMathUtils } from './GISMathUtils';
 
 
 export { AsyncTool } from './Common';
 export { SafeTool } from './Common';
-// export { ArrTool } from './Common';
-// export { BOMTool } from './Common';
-// export { ColorTool } from './Common';
-// export { DateTool } from './Common';
-// export { GISTool } from './Common';
-// export { HTTPTool } from './Common';
-// export { MathTool } from './Common';
-// export { StringTool } from './Common';
+export { ArrTool } from './Common';
+export { BOMTool } from './Common';
+export { ColorTool } from './Common';
+export { DateTool } from './Common';
+export { GISTool } from './Common';
+export { HTTPTool } from './Common';
+export { MathTool } from './Common';
+export { StringTool } from './Common';
 export { Utils } from './Common';

@@ -33,7 +33,7 @@
 
 <script lang="ts" setup>
 
-import CesiumEarth from '@/lib/cesium-earth';
+import CesiumEarth from '@/lib/CesiumEarth';
 import router from '@/router';
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 import { computed } from 'vue';

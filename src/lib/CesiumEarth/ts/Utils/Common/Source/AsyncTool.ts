@@ -1,10 +1,10 @@
-async function awaitWrap(promise: Promise<unknown>) {
-  try {
-    const data = await promise;
-    return [null, data];
-  } catch (err) {
-    return [err, null];
-  }
+async function awaitWrap(promise: Promise<any>) {
+    try {
+        const data = await promise;
+        return [null, data];
+    } catch (err) {
+        return [err, null];
+    }
 };
 
 
@@ -23,10 +23,13 @@ async function awaitWrap(promise: Promise<unknown>) {
  *
  */
 async function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
-const AsyncTool = { awaitWrap, sleep };
+const AsyncTool = {
+    awaitWrap,
+    sleep
+};
 
 export { AsyncTool };

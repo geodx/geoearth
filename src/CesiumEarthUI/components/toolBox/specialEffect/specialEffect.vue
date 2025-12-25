@@ -30,6 +30,22 @@ let specialEffect: SpecialEffect;
 onMounted(() => {
     specialEffect = new SpecialEffect();
 })
+const show = computed(() => {
+    let s = ceStore.comStatus('specialEffect');
+    if (s) {
+        earthStore.getEarth().then(e => {
+            e.viewer3D.camera.flyTo({
+                'destination': new Cartesian3(-2895596.962457116, 4717490.945820842, 3158425.3777735666),
+                'orientation': {
+                    'heading': 3.8736780571268605,
+                    'pitch': -0.13964038346926966,
+                    'roll': 6.283183317671659
+                }
+            });
+        })
+    }
+    return s;
+})
 const postEffect = ref([
     { value: { a: true }, name: '深度检测', class: 'depthTestAgainstTerrain', status: 0, iconUrl: new URL('./img/tool-specialEffect-5.png', import.meta.url).href },
     { value: { a: false }, name: '显示帧率', class: 'FramesPerSecond', status: 0, iconUrl: new URL('./img/tool-specialEffect-5.png', import.meta.url).href },
@@ -90,22 +106,7 @@ function toggleEffect(className: string, status: number) {
     }
     return status;
 }
-const show = computed(() => {
-    let s = ceStore.comStatus('specialEffect');
-    if (s) {
-        earthStore.getEarth().then(e => {
-            e.viewer3D.camera.flyTo({
-                'destination': new Cartesian3(-2895596.962457116, 4717490.945820842, 3158425.3777735666),
-                'orientation': {
-                    'heading': 3.8736780571268605,
-                    'pitch': -0.13964038346926966,
-                    'roll': 6.283183317671659
-                }
-            });
-        })
-    }
-    return s;
-})
+
 
 </script>
 
