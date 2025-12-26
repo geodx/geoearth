@@ -3,9 +3,15 @@
  最后修改日期：2022-04-18
  ****************************************************************************/
 
-function createMigrate1() {
-  let options = getEchartsOption()
-  let echartsLayer = new CesiumEarth.EchartsLayer(CesiumEarth.getMainViewer(), options)
+import CesiumEarth from "@/lib/CesiumEarth"
+import { useEarthStore } from "@/stores/EarthStore"
+const earthStore = useEarthStore()
+
+async function createMigrate1() {
+  const earth = await earthStore.getEarth()
+
+  const options = getEchartsOption()
+  const echartsLayer = new CesiumEarth.EchartsLayer(earth.viewer3D, options)
   return echartsLayer
 }
 
@@ -154,11 +160,11 @@ function getEchartsOption() {
   const planePath =
     'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z'
   //const planePath = 'arrow';
-  const convertData = function (data) {
+  function convertData(data: any) {
     const res = []
     for (let i = 0; i < data.length; i++) {
       const dataItem = data[i]
-      const fromCoord = geoCoordMap[dataItem[0].name]
+      const fromCoord = geoCoordMap["dataItem[0].name"]
       const toCoord = geoCoordMap[dataItem[1].name]
       if (fromCoord && toCoord) {
         res.push({
@@ -172,8 +178,8 @@ function getEchartsOption() {
     return res
   }
   const color = ['#a6c84c', '#ffa022', '#46bee9'] //航线的颜色
-  const series = []
-  ;[
+  const series: any[] = [];
+  [
     ['西安', XAData],
     ['西宁', XNData],
     ['银川', YCData],
@@ -239,7 +245,7 @@ function getEchartsOption() {
             formatter: '{b}',
           },
         },
-        symbolSize: function (val) {
+        symbolSize: (val: any) => {
           return val[2] / 8
         },
         itemStyle: {

@@ -3,6 +3,8 @@
  最后修改日期：2022-04-18
  ****************************************************************************/
 
+import CesiumEarth from "@/lib/CesiumEarth"
+
 function createScatter() {
   let options = getEchartsOption()
   let echartsLayer = new CesiumEarth.EchartsLayer(CesiumEarth.getMainViewer(), options)

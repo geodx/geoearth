@@ -35,7 +35,7 @@
 import toolBox from './com/toolBox.vue';
 import BaseMap from './com/baseMap.vue';
 
-// import Echarts_mapv from './com/echartsMapvLayer/echarts_mapv.vue';
+import Echarts_mapv from './com/echartsMapvLayer/echarts_mapv.vue';
 
 import bmsYellow from '../assets/img/base-map-selected-yellow.png';
 import bmsGreen from '../assets/img/base-map-selected.png';

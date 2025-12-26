@@ -101,7 +101,7 @@ function createStrongboundary() {
     shadowColor: 'rgba(55, 50, 250, 0.5)',
     shadowBlur: 10,
     methods: {
-      click: function (item) {},
+      click: function (item) { },
     },
     lineWidth: 1.0,
     draw: 'simple',

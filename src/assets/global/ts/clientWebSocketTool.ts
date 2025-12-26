@@ -4,12 +4,11 @@ const clientWebSocketTool = {
 };
 
 clientWebSocketTool.connect = function () {
-    let that = this;
-    that.ws = new ReconnectingWebSocket(`ws://${window.QISWSUrl}`);
+    this.ws = new ReconnectingWebSocket(`ws://${window.QISWSUrl}`);
 
     that.ws.onopen = function (e) {
         console.log('服务器连接成功');
-        let message = {role: '客户端', token: '64bfc9fcd702c537841292a41b2789f2', instruct: '连接申请', data: {}};
+        let message = { role: '客户端', token: '64bfc9fcd702c537841292a41b2789f2', instruct: '连接申请', data: {} };
         // that.ws.send(JSON.stringify(message));
     };
 
@@ -23,7 +22,7 @@ clientWebSocketTool.connect = function () {
         for (const [key, func] of that.listenMap) {
             if (typeof func === 'function') {
                 l = true;
-                func({key, data: json});
+                func({ key, data: json });
             }
         }
         l === false && console.log('服务器推送消息：', json);
