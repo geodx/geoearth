@@ -4,7 +4,7 @@
 ****************************************************************************/
 
 <template>
-    <div v-if="show" class="base-map">
+    <div v-if="false" class="base-map">
         <div class="tool-title">
             <div>
                 <img alt="" src="./img/base-map.png">
@@ -30,22 +30,48 @@
     </div>
 </template>
 
-<script>
-import createMigrate1 from './lib/EchartsLayer/migrate1.js';
-import createMigrate2 from './lib/EchartsLayer/migrate2.js';
-import createMigrate3 from './lib/EchartsLayer/migrate3.js';
-import createOutflow from './lib/EchartsLayer/outflow.js';
-import createInflow from './lib/EchartsLayer/inflow.js';
-import createScatter from './lib/EchartsLayer/scatter.js';
-import createMigrate from './lib/MapVLayer/migrate.js';
-import createBigmigrate from './lib/MapVLayer/big_migrate.js';
-import createHeatmap from './lib/MapVLayer/heat_map.js';
-import createStrongboundary from './lib/MapVLayer/strong_boundary.js';
+<script lang="ts" setup>
+import createMigrate1 from './lib/EchartsLayer/migrate1';
+import createMigrate2 from './lib/EchartsLayer/migrate2';
+import createMigrate3 from './lib/EchartsLayer/migrate3';
+import createOutflow from './lib/EchartsLayer/outflow';
+import createInflow from './lib/EchartsLayer/inflow';
+import createScatter from './lib/EchartsLayer/scatter';
+import createMigrate from './lib/MapVLayer/migrate';
+import createBigmigrate from './lib/MapVLayer/big_migrate';
+import createHeatmap from './lib/MapVLayer/heat_map';
+import createStrongboundary from './lib/MapVLayer/strong_boundary';
 import createBeehive from './lib/MapVLayer/beehive';
-import createSquaregraph from './lib/MapVLayer/square_graph.js';
+import createSquaregraph from './lib/MapVLayer/square_graph';
+import { computed, ref } from 'vue';
+import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
+import { Cartesian3 } from 'cesium';
+import { useEarthStore } from '@/stores/EarthStore';
+const ceStore = useCesiumEarthStore()
+const earthStore = useEarthStore()
 
-let echarts;
-let mapv;
+const selItem = ref('')
+const layerList = ref([
+    { name: '迁徙图1', iconSrc: './app/vge/echartsMapvLayerDemo/migrate1.png' },
+    { name: '迁徙图2', iconSrc: './app/vge/echartsMapvLayerDemo/migrate2.png' },
+    { name: '迁徙图3', iconSrc: './app/vge/echartsMapvLayerDemo/migrate3.png' },
+    { name: '流出线', iconSrc: './app/vge/echartsMapvLayerDemo/outflow.png' },
+    { name: '流入线', iconSrc: './app/vge/echartsMapvLayerDemo/inflow.png' },
+    { name: '散点图', iconSrc: './app/vge/echartsMapvLayerDemo/scatter.png' },
+    { name: '迁徙图', iconSrc: './app/vge/echartsMapvLayerDemo/migrate.png' },
+    { name: '大迁徙图', iconSrc: './app/vge/echartsMapvLayerDemo/big_migrate.png' },
+    // {name: '强力图', iconSrc: './app/vge/echartsMapvLayerDemo/heat_map.png'},
+    { name: '强边界图', iconSrc: './app/vge/echartsMapvLayerDemo/strong_boundary.png' },
+    { name: '蜂巢图', iconSrc: './app/vge/echartsMapvLayerDemo/beehive.png' },
+    { name: '方格图', iconSrc: './app/vge/echartsMapvLayerDemo/square_graph.png' }
+])
+
+let echarts: any;
+let mapv: any;
+
+const show = computed(() => {
+    return ceStore.comStatus('Echarts-MapV');
+})
 
 //销毁图层
 function clearLayer() {
@@ -54,7 +80,7 @@ function clearLayer() {
         echarts = null;
     }
     if (mapv) {
-        mapv.map(layer => {
+        mapv.map((layer: any) => {
             layer.destroy();
         });
         mapv = null;
@@ -63,90 +89,63 @@ function clearLayer() {
 
 //设置视角
 function setView() {
-    CesiumEarth.getMainViewer().camera.setView({
-        destination: Cesium.Cartesian3.fromDegrees(117.16, 32.71, 15000000.0)
-    });
+    earthStore.getEarth().then(earth => {
+        earth.viewer3D.camera.setView({
+            destination: Cartesian3.fromDegrees(117.16, 32.71, 15000000.0)
+        });
+    })
+}
+function close() {
+    ceStore.setCesiumEarthComAction('Echarts-MapV', 2)
+}
+function toggleActive(echartsItem: string) {
+    clearLayer();
+    setView();
+    switch (echartsItem) {
+        case '迁徙图1':
+            echarts = createMigrate1();
+            break;
+        case '迁徙图2':
+            echarts = createMigrate2();
+            break;
+        case '迁徙图3':
+            echarts = createMigrate3();
+            break;
+        case '流出线':
+            echarts = createOutflow();
+            break;
+        case '流入线':
+            echarts = createInflow();
+            break;
+        case '散点图':
+            echarts = createScatter();
+            break;
+        case '迁徙图':
+            mapv = createMigrate();
+            break;
+        case '大迁徙图':
+            mapv = createBigmigrate();
+            break;
+        case '强力图':
+            mapv = createHeatmap();
+            break;
+        case '强边界图':
+            mapv = createStrongboundary();
+            break;
+        case '蜂巢图':
+            mapv = createBeehive();
+            break;
+        case '方格图':
+            mapv = createSquaregraph();
+            break;
+    }
+    selItem.value = echartsItem;
+}
+function clearAlllayer() {
+    clearLayer();
+    selItem.value = '';
 }
 
-export default {
-    name: 'Echarts-MapV',
-    data() {
-        return {
-            layerList: [
-                { name: '迁徙图1', iconSrc: './app/vge/echartsMapvLayerDemo/migrate1.png' },
-                { name: '迁徙图2', iconSrc: './app/vge/echartsMapvLayerDemo/migrate2.png' },
-                { name: '迁徙图3', iconSrc: './app/vge/echartsMapvLayerDemo/migrate3.png' },
-                { name: '流出线', iconSrc: './app/vge/echartsMapvLayerDemo/outflow.png' },
-                { name: '流入线', iconSrc: './app/vge/echartsMapvLayerDemo/inflow.png' },
-                { name: '散点图', iconSrc: './app/vge/echartsMapvLayerDemo/scatter.png' },
-                { name: '迁徙图', iconSrc: './app/vge/echartsMapvLayerDemo/migrate.png' },
-                { name: '大迁徙图', iconSrc: './app/vge/echartsMapvLayerDemo/big_migrate.png' },
-                // {name: '强力图', iconSrc: './app/vge/echartsMapvLayerDemo/heat_map.png'},
-                { name: '强边界图', iconSrc: './app/vge/echartsMapvLayerDemo/strong_boundary.png' },
-                { name: '蜂巢图', iconSrc: './app/vge/echartsMapvLayerDemo/beehive.png' },
-                { name: '方格图', iconSrc: './app/vge/echartsMapvLayerDemo/square_graph.png' }
-            ],
-            selItem: ''
-        };
-    },
-    methods: {
-        close() {
-            this.$store.commit('setCesiumEarthComAction', { name: 'Echarts-MapV', on_off: 2 });
-        },
-        toggleActive(echartsItem) {
-            clearLayer();
-            setView();
-            switch (echartsItem) {
-                case '迁徙图1':
-                    echarts = createMigrate1();
-                    break;
-                case '迁徙图2':
-                    echarts = createMigrate2();
-                    break;
-                case '迁徙图3':
-                    echarts = createMigrate3();
-                    break;
-                case '流出线':
-                    echarts = createOutflow();
-                    break;
-                case '流入线':
-                    echarts = createInflow();
-                    break;
-                case '散点图':
-                    echarts = createScatter();
-                    break;
-                case '迁徙图':
-                    mapv = createMigrate();
-                    break;
-                case '大迁徙图':
-                    mapv = createBigmigrate();
-                    break;
-                case '强力图':
-                    mapv = createHeatmap();
-                    break;
-                case '强边界图':
-                    mapv = createStrongboundary();
-                    break;
-                case '蜂巢图':
-                    mapv = createBeehive();
-                    break;
-                case '方格图':
-                    mapv = createSquaregraph();
-                    break;
-            }
-            this.selItem = echartsItem;
-        },
-        clearAlllayer() {
-            clearLayer();
-            this.selItem = '';
-        }
-    },
-    computed: {
-        show() {
-            return this.$store.getters.comStatus('Echarts-MapV');
-        }
-    }
-};
 </script>
 
 <style lang='scss' scoped>

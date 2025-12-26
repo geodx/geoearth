@@ -40,14 +40,11 @@
     </div>
 </template>
 
-<script>
-export default {
-    name: 'disaster'
-};
+<script lang="ts" setup>
 </script>
 
-<style lang='less' scoped>
-@import "../assets/css/common-theme.less";
-@import "../assets/css/green-theme.less";
-@import "../assets/css/yellow-theme.less";
+<style lang='scss' scoped>
+@use "../assets/css/common-theme.scss";
+@use "../assets/css/green-theme.scss";
+@use "../assets/css/yellow-theme.scss";
 </style>

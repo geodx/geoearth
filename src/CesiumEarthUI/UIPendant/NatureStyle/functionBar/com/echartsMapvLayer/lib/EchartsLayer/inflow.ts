@@ -1,9 +1,11 @@
 /****************************************************************************
- 名称：用于展示echarts迁出图
+ 名称：用于展示echarts迁入图
  最后修改日期：2022-04-18
  ****************************************************************************/
 
-function createOutflow() {
+import CesiumEarth from "@/lib/CesiumEarth"
+
+function createInflow() {
   let options = getEchartsOption()
   let echartsLayer = new CesiumEarth.EchartsLayer(CesiumEarth.getMainViewer(), options)
   return echartsLayer
@@ -213,8 +215,7 @@ function getEchartsOption() {
       },
     ],
   ]
-
-  const convertData = function (data) {
+  function convertData(data) {
     const res = []
     for (let i = 0; i < data.length; i++) {
       const dataItem = data[i]
@@ -223,19 +224,19 @@ function getEchartsOption() {
       if (fromCoord && toCoord) {
         res.push([
           {
-            coord: toCoord,
+            coord: fromCoord,
             value: dataItem[0].value,
           },
           {
-            coord: fromCoord,
+            coord: toCoord,
           },
         ])
       }
     }
     return res
   }
-  const series = []
-  ;[['北京市', chinaDatas]].forEach(function (item, i) {
+  const series = [];
+  [['北京市', chinaDatas]].forEach(function (item, i) {
     series.push(
       {
         type: 'lines',
@@ -250,7 +251,6 @@ function getEchartsOption() {
         },
         lineStyle: {
           normal: {
-            type: 'solid',
             width: 1, //尾迹线条宽度
             opacity: 1, //尾迹线条透明度
             color: '#00EAFF', //线的颜色
@@ -269,7 +269,6 @@ function getEchartsOption() {
           brushType: 'stroke', //波纹绘制方式 stroke, fill
           scale: 4, //波纹圆环最大限制，值越大波纹越大
         },
-        tooltip: {},
         label: {
           normal: {
             show: true,
@@ -301,8 +300,7 @@ function getEchartsOption() {
             value: chinaGeoCoordMap[dataItem[0].name].concat([dataItem[0].value]),
           }
         }),
-      },
-      //流出点
+      }, //流入点
       {
         type: 'effectScatter',
         coordinateSystem: 'cesium',
@@ -314,7 +312,7 @@ function getEchartsOption() {
         },
         itemStyle: {
           normal: {
-            color: 'yellow', //颜色
+            color: '#ff0617', //颜色
           },
         },
         label: {
@@ -347,8 +345,7 @@ function getEchartsOption() {
     animation: !1,
     series: series,
   }
-
   return option
 }
 
-export default createOutflow
+export default createInflow

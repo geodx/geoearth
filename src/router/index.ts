@@ -8,6 +8,11 @@ const router = createRouter({
       redirect: '/login'
     },
     {
+      name: 'largeScreen',
+      path: '/largeScreen',
+      component: () => import('../views/LargeScreen/index.vue')
+    },
+    {
       name: 'login',
       path: '/login',
       component: () => import('../views/Login/index.vue')

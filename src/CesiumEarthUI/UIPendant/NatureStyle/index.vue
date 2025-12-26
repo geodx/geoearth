@@ -16,64 +16,45 @@
 </template>
 
 
-<script>
+<script lang="ts" setup>
 import './assets/icon/iconfont.js';
 import tileHeader from './titleHeader/titleHeader.vue';
 import Weather from './leftPanel/weather.vue';
 import EarlyWarning from './leftPanel/earlyWarning.vue';
 import Disaster from './leftPanel/disaster.vue';
 import FunctionBar from './functionBar/functionBar.vue';
-import VGEUtils from '../../components/VGEUtils.vue';
+import { useCesiumEarthStore } from '@/stores/CesiumEarthStore.js';
+import { onMounted, computed } from 'vue';
 
-
-export default {
-    name: 'natureStyleScreen',
-    components: {
-        VGEUtils,
-        tileHeader,
-        FunctionBar,
-        Disaster,
-        EarlyWarning,
-        Weather
-    },
-    data() {
-        return {};
-    },
-    computed: {
-        infoWindowsShow() {
-            return this.$store.getters.comStatus('infoWindows');
-        },
-        tileHeaderShow() {
-            return this.$store.getters.comStatus('titleHeader');
-        },
-        themeColor() {
-            return this.$store.state.VGEEarthStore.themeColor;
-        }
-    },
-    methods: {
-        // 演示模式下，按下 Enter 键，自动主题颜色
-        keydownEvent() {
-            const that = this;
-            document.onkeydown = function (e) {
-                let e1 = e || event || window.event;
-                if (e1.keyCode === 13) {
-                    that.$store.commit('setThemeColor', that.themeColor === 'yellow' ? 'green' : 'yellow');
-                }
-            };
-        }
-    },
-    mounted() {
-        if (this.$store.state.VGEEarthStore.demoModel) {
-            this.keydownEvent();
-        }
+const ceStore = useCesiumEarthStore()
+onMounted(() => {
+    if (ceStore.demoModel) {
+        document.addEventListener("keydown", keydownEvent)
     }
-};
+})
+const infoWindowsShow = computed(() => {
+    // return    ceStore.comStatus('infoWindows')
+    return true
+})
+const tileHeaderShow = computed(() => {
+    return ceStore.comStatus('titleHeader')
+})
+const themeColor = computed(() => {
+    return ceStore.themeColor;
+})
+// 演示模式下，按下 Enter 键，自动主题颜色
+function keydownEvent(e: KeyboardEvent) {
+    if (e.key === "Enter") {
+        ceStore.setLegendCurrent(themeColor.value === 'yellow' ? 'green' : 'yellow')
+    }
+}
+
 </script>
 
 <style lang='scss' scoped>
-@use "./../assets/css/common-theme.scss";
-@use "./../assets/css/green-theme.scss";
-@use "./../assets/css/yellow-theme.scss";
+@use "./assets/css/common-theme.scss";
+@use "./assets/css/green-theme.scss";
+@use "./assets/css/yellow-theme.scss";
 </style>
 
 
