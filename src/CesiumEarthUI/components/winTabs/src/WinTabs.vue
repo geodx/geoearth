@@ -36,9 +36,11 @@
 
 <script lang="ts" setup>
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
+import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
 import { ElTabs } from 'element-plus';
 import tabsStyle from './tabsStyle.json';
 import { nextTick, onMounted, ref } from 'vue';
+import App from '@/App.vue';
 const ready = ref(false)
 const x = ref(100)
 const y = ref(100)
@@ -124,7 +126,7 @@ function close() {
 </script>
 
 <style lang="scss" scoped>
-@import "./iconBtn.css";
+@use "./iconBtn.css";
 
 .winTabs {
 	z-index: 100;

@@ -5,7 +5,7 @@ import App from './App.vue'
 import router from './router'
 
 import './assets/global/css/scrollbar.scss';
-import './assets/global/ts/index';
+// import './assets/global/ts/index';
 
 const app = createApp(App)
 

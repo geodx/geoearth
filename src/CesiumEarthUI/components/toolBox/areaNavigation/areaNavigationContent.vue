@@ -139,7 +139,7 @@ const municipality = new Set([
     , '中西区', '湾仔区', '东区', '南区', '九龙城区', '油尖旺区', '观塘区', '黄大仙区', '深水埗区', '新界', '北区', '大埔区', '沙田区', '西贡区', '元朗区', '屯门区', '荃湾区', '葵青区', '离岛区'
     , '黄浦区', '徐汇区', '长宁区', '静安区', '普陀区', '虹口区', '杨浦区', '闵行区', '宝山区', '嘉定区', '浦东新区', '金山区', '松江区', '青浦区', '奉贤区', '崇明区'
 ])
-const aLiYun = 'https://vge-webgl.oss-cn-beijing.aliyuncs.com/';
+const aLiYun = 'https://cesium-webgl.oss-cn-beijing.aliyuncs.com/';
 let earth: CesiumEarth.Earth
 onMounted(async () => {
     earth = await earthStore.getEarth()

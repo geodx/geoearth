@@ -48,7 +48,7 @@ $baseColor: #f4bb42;
     }
   }
 
-  .vge-infoWindows {
+  .cesium-infoWindows {
     .left-panel {
       background: url('../img/bg-left-panel-yellow.png') no-repeat;
       background-size: 100% 100%;
@@ -92,8 +92,8 @@ $baseColor: #f4bb42;
     }
   }
 
-  .vge-functionBar {
-    .vge-functionBar-btns {
+  .cesium-functionBar {
+    .cesium-functionBar-btns {
       background: rgba(33, 45, 33, 0.8);
     }
 
