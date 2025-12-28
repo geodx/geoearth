@@ -47,7 +47,7 @@
   }
 }
 
-.vge-infoWindows {
+.cesium-infoWindows {
   position: absolute;
   right: 105px;
   top: 8vh;
@@ -219,7 +219,7 @@
   }
 }
 
-.vge-functionBar {
+.cesium-functionBar {
   position: absolute;
   left: 0;
   top: 12vh;
@@ -250,7 +250,7 @@
     }
   }
 
-  .vge-functionBar-btns {
+  .cesium-functionBar-btns {
     padding: 0 8px !important;
     height: 40px;
     display: flex;

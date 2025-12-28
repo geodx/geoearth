@@ -1,7 +1,7 @@
 <template>
     <div class="theme-green">
-        <div v-show="show" class="vge-functionBar">
-            <div class="vge-functionBar-btns">
+        <div v-show="show" class="cesium-functionBar">
+            <div class="cesium-functionBar-btns">
                 <div @click="changeSelected('toolBox')">
                     <img v-if="selected === 'toolBox'" :src="toolSelected" alt="">
                     <img v-else alt="" src="../assets/img/tool.png">
@@ -23,7 +23,7 @@
                     <span :style="{ color: selected === 'baseMap' ? baseColor : '#fff' }">分析</span>
                 </div>
             </div>
-            <baseMap v-if="false"></baseMap>
+            <BaseMap></BaseMap>
             <toolBox></toolBox>
             <echarts_mapv></echarts_mapv>
         </div>
@@ -116,7 +116,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@use "./../assets/css/common-theme.scss";
-@use "./../assets/css/green-theme.scss";
-@use "./../assets/css/yellow-theme.scss";
+@use "../assets/css/common-theme.scss";
+@use "../assets/css/green-theme.scss";
+@use "../assets/css/yellow-theme.scss";
 </style>

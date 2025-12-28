@@ -125,7 +125,7 @@ class FlyPath {
         this.params = {
             style: _params.style || {},
             model: {
-                uri: _params.model?.uri || 'https://vge-webgl.oss-cn-beijing.aliyuncs.com/Model/wrj.glb',
+                uri: _params.model?.uri || 'https://cesium-webgl.oss-cn-beijing.aliyuncs.com/Model/wrj.glb',
                 colorBlendMode: _params.model?.colorBlendMode || ColorBlendMode.HIGHLIGHT,
                 color: _params.model?.color || Color.WHITE,
                 scale: _params.model?.scale || 0.1,

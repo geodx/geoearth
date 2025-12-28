@@ -1,12 +1,12 @@
 <template>
 	<div class="info-section">
 		<ul style="width: 100%;max-width: 1800px">
-			<!--			<li style="overflow: hidden;width: 350px">-->
-			<!--				<p>-->
-			<!--					鼠标灵敏度：-->
-			<!--					<input id="range" type="range" value="5">-->
-			<!--				</p>-->
-			<!--			</li>-->
+			<li style="overflow: hidden;width: 350px">
+				<p>
+					鼠标灵敏度：
+					<input id="range" type="range" value="5">
+				</p>
+			</li>
 			<li style="overflow: hidden;width: 350px">
 				<p>
 					场景清晰度：

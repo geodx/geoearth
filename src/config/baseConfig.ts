@@ -2,7 +2,7 @@ import CesiumEarth from "@/lib/cesium-earth";
 
 Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NjYwM2E1NS00OTRlLTRiMjEtYjhhZS05MzEzNDIwNGUzMjgiLCJpZCI6MjM5OTcsImlhdCI6MTY3OTI3ODE4OX0.X_5SfpOtpL-gSbGjAP2Z6ohp1jmI5k_UtjzA72iFPcQ';
 
-console.log(`%c📜 MetaVGE-3DVis-Vue3 编译版本：2024年08月09日`, 'color: #84709b; font-size: 14px; font-weight: bold;');
+console.log(`%c📜 Metacesium-3DVis-Vue3 编译版本：2024年08月09日`, 'color: #84709b; font-size: 14px; font-weight: bold;');
 window.GISResourcesUrl = 'http://xxx:9001';
 window.AppBaseUrl = 'http://xxx:3060';
 

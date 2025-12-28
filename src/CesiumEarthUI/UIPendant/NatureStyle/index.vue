@@ -6,7 +6,7 @@
 <template>
     <div :class="{ 'theme-green': themeColor === 'green', 'theme-yellow': themeColor === 'yellow' }">
         <tileHeader v-if="tileHeaderShow"></tileHeader>
-        <div v-show="infoWindowsShow" class="vge-infoWindows">
+        <div v-show="infoWindowsShow" class="cesium-infoWindows">
             <weather></weather>
             <disaster></disaster>
             <earlyWarning></earlyWarning>

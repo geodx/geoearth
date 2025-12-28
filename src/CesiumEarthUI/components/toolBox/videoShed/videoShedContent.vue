@@ -34,7 +34,7 @@
                         </el-form-item>
                     </el-form>
                     <video id="testVideo" autoplay="autoplay" controls
-                        src="https://vge-webgl.oss-cn-beijing.aliyuncs.com/MetaVGE-3DVis-Vue3/Video/lukou.mp4"
+                        src="https://cesium-webgl.oss-cn-beijing.aliyuncs.com/Metacesium-3DVis-Vue3/Video/lukou.mp4"
                         style="height:150px;width:250px;"></video>
                 </div>
             </div>

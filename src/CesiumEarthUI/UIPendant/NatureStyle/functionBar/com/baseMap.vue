@@ -77,9 +77,7 @@
                 </div>
             </div>
             <div class="show-terrain">
-                <a-checkbox>
-                    显示地形
-                </a-checkbox>
+                显示地形
             </div>
         </div>
     </div>
