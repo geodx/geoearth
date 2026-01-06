@@ -31,7 +31,7 @@ const UIConfig = {
 
         // 工具箱内模块
         { name: '图上量算', type: 'ToolBoxItem', open: false, comName: 'measureTool', config: { inToolBox: true, iconClass: 'cesium-shuipingliangsuan' }, role: 'all' },
-        { name: '剖面分析', type: 'ToolBoxItem', open: false, comName: 'geologicalSection', config: { inToolBox: true, iconClass: 'cesium-shuipingliangsuan', role: 'all' } },
+        { name: '剖面分析', type: 'ToolBoxItem', open: false, comName: 'geologicalSection', config: { inToolBox: true, iconClass: 'cesium-shuipingliangsuan' }, role: 'all' },
         { name: '坐标定位', type: 'ToolBoxItem', open: false, comName: 'coordinates', config: { inToolBox: true, iconClass: 'cesium-dingwei' }, role: 'all' },
         { name: '地区导航', type: 'ToolBoxItem', open: false, comName: 'areaNavigation', config: { inToolBox: true, iconClass: 'cesium-daohang1' }, role: 'all' },
         { name: '视角书签', type: 'ToolBoxItem', open: false, comName: 'visualMarker', config: { inToolBox: true, iconClass: 'cesium-biaoqian' }, role: 'all' },
@@ -39,10 +39,10 @@ const UIConfig = {
         { name: '卷帘对比', type: 'ToolBoxItem', open: false, comName: 'ImageLayerSplitMana', config: { inToolBox: true, iconClass: 'cesium-juanlian' }, role: 'all' },
         { name: '时序图层', type: 'ToolBoxItem', open: false, comName: 'ImageLayerTimeLine', config: { inToolBox: true, iconClass: 'cesium-timeline' }, role: 'all' },
         { name: '路线规划', type: 'ToolBoxItem', open: false, comName: 'pathPlanning', config: { inToolBox: true, iconClass: 'cesium-zhuanyiluxian' }, role: 'all' },
-        // { name: '路径漫游', type: 'ToolBoxItem', open: false, comName: 'pathRoaming', config: { inToolBox: false, iconClass: 'cesium-zhuanyiluxian' }, role: 'all' },
+        { name: '路径漫游', type: 'ToolBoxItem', open: false, comName: 'pathRoaming', config: { inToolBox: true, iconClass: 'cesium-zhuanyiluxian' }, role: 'all' },
         { name: '天空盒', type: 'ToolBoxItem', open: false, comName: 'skyBoxTool', config: { inToolBox: true, iconClass: 'cesium-jiejing' }, role: 'all' },
         { name: 'VR立体', type: 'ToolBoxItem', open: false, comName: 'vr3d', config: { inToolBox: true, iconClass: 'cesium-zhuanyiluxian' }, role: 'all' },
-        { name: '实时天气', type: 'ToolBoxItem', open: false, comName: 'weather', config: { inToolBox: false, iconClass: 'cesium-duoyun' }, role: 'all' },
+        { name: '实时天气', type: 'ToolBoxItem', open: false, comName: 'weather', config: { inToolBox: true, iconClass: 'cesium-duoyun' }, role: 'all' },
         { name: '几何特效', type: 'ToolBoxItem', open: false, comName: 'featureEffect', config: { inToolBox: true, iconClass: 'cesium-texiao' }, role: 'all' },
         { name: '场景特效', type: 'ToolBoxItem', open: false, comName: 'specialEffect', config: { inToolBox: true, iconClass: 'cesium-texiao' }, role: 'all' },
         { name: '视图管理', type: 'ToolBoxItem', open: false, comName: 'linkView', config: { inToolBox: true, iconClass: 'cesium-texiao' }, role: 'all' },

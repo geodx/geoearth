@@ -20,6 +20,31 @@ import { computed, ref, watch } from 'vue';
 const ceStore = useCesiumEarthStore()
 const toolList = ref<any[]>([])
 const selItem = ref('图上量算')
+
+const show = computed(() => { return ceStore.comStatus('toolBox') })
+const comActions = computed(() => {
+    return ceStore.comActions.filter(item =>
+        item.type === 'ToolBoxItem' && item.config.inToolBox === true
+    );
+})
+// mounted(){
+//   // 读取历史更改的插件
+//   let VGEConfig = localStorage.getItem('VGEConfig');
+//   VGEConfig = VGEConfig ? JSON.parse(VGEConfig) : null;
+//   if (VGEConfig && VGEConfig.Version === CesiumEarth.ConfigTool.config.Version) {
+//       this.$store.commit("readCom", VGEConfig.comActions)
+//   }
+// },
+watch(
+    comActions,
+    (val) => {
+        console.log(val);
+
+        toolList.value = val
+    },
+    { deep: true, immediate: true }
+)
+
 function toggleActive(ToolBoxItem: any) {
     // 验证是否为点击事件，是则继续执行click事件，否则不执行
     let isClick = document.getElementById('tool')?.getAttribute('data-flag');
@@ -42,36 +67,15 @@ function toggleActive(ToolBoxItem: any) {
 
     selItem.value = ToolBoxItem.name;
 }
-const show = computed(() => { return ceStore.comStatus('toolBox') })
-const comActions = computed(() => {
-    return ceStore.comActions.filter(item =>
-        item.type === 'ToolBoxItem' && item.config.inToolBox === true
-    );
-})
-// mounted(){
-//   // 读取历史更改的插件
-//   let VGEConfig = localStorage.getItem('VGEConfig');
-//   VGEConfig = VGEConfig ? JSON.parse(VGEConfig) : null;
-//   if (VGEConfig && VGEConfig.Version === CesiumEarth.ConfigTool.config.Version) {
-//       this.$store.commit("readCom", VGEConfig.comActions)
-//   }
-// },
-watch(
-    comActions,
-    (val) => {
-        toolList.value = val
-    },
-    { deep: true, immediate: true }
-)
 
 </script>
 
 
 
-<style scoped>
-@import "../../assets/css/common-theme.scss";
-@import "../../assets/css/green-theme.scss";
-@import "../../assets/css/yellow-theme.scss";
+<style lang="scss" scoped>
+@use "../../assets/css/common-theme.scss";
+@use "../../assets/css/green-theme.scss";
+@use "../../assets/css/yellow-theme.scss";
 
 .tool-double {
     width: 220px;

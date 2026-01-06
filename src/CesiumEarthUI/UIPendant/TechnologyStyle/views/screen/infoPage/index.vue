@@ -1,15 +1,14 @@
 <template>
 	<div class="info-section">
 		<ul style="width: 100%;max-width: 1800px">
-			<li style="overflow: hidden;width: 350px">
-				<p>
-					鼠标灵敏度：
+			<!-- <li style="overflow: hidden;width: 350px">
+				<p> 鼠标灵敏度：
 					<input id="range" type="range" value="5">
 				</p>
-			</li>
+			</li> -->
 			<li style="overflow: hidden;width: 350px">
 				<p>
-					场景清晰度：
+					<span class="text-ellipsis label-div">场景清晰度：</span>
 					<el-button style="margin-right:4px" @click="updateQuality(32)"
 						:class="viewerQuality === 32 ? 'sel-active' : ''">
 						<span>普通</span>
@@ -59,7 +58,7 @@ import { useEarthStore } from '@/stores/EarthStore';
 import { onMounted, ref } from 'vue';
 const earthStore = useEarthStore()
 
-const timeLabel = ref('2024年1月22日 10时43分15秒88毫秒')
+const timeLabel = ref()
 const FPS = ref(0)
 const viewerQuality = ref(8)
 let earth: CesiumEarth.Earth
@@ -86,15 +85,14 @@ function init() {
 		position.value.lat = `${lat.toFixed(5)} °`;
 		position.value.height = `${height.toFixed(2)} m`;
 		position.value.cameraHeight = `${cameraHeight.toFixed(2)} m`;
-	}
-	);
+	})
 	setInterval(() => {
 		FPS.value = earth.getFPS();
-	}, 20);
+	}, 500)
 }
 
 function update() {
-	let now = new Date();
+	const now = new Date();
 	timeLabel.value = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ` + now.toLocaleTimeString();
 }
 function updateQuality(quality: number) {
