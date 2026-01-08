@@ -14,7 +14,7 @@ import { StartAnimation } from './lib/StartAnimation';
 import { DrawShape } from '../DrawShape';
 import { MeasureTool } from '../MeasureTool';
 import { InfoBox } from './lib/InfoBox';
-import { CesiumDateFormatter, CesiumTimeFormatter } from './lib/locale-zh';
+import { CesiumDateFormatter, CesiumDateTimeFormatter, CesiumTimeFormatter } from './lib/locale-zh';
 import { AsyncTool } from '../Utils';
 import { debugManage } from './lib/deBugManage/debugManage';
 import { OverviewMap } from './lib/overview/OverviewMap';
@@ -103,16 +103,16 @@ class Earth {
         this.measureTool = new MeasureTool(this.viewer3D);
         this.infoBox = new InfoBox(this.viewer3D);
 
-        // 调整鼠标滚轮缩放速度，默认为 5，太快了
+        // 调整鼠标滚轮缩放速度
         this.viewer3D.scene.screenSpaceCameraController.zoomFactor = 3;
 
         if (this.viewer3D.animation) {
             this.viewer3D.animation.viewModel.dateFormatter = CesiumDateFormatter;
             this.viewer3D.animation.viewModel.timeFormatter = CesiumTimeFormatter;
         }
-        // if (this.viewer3D.timeline) {
-        // this.viewer3D.timeline.makeLabel = CesiumDateTimeFormatter;
-        // }
+        if (this.viewer3D.timeline) {
+            (this.viewer3D.timeline as any).makeLabel = CesiumDateTimeFormatter;
+        }
     }
 
     // 初始化屏幕事件
@@ -122,9 +122,9 @@ class Earth {
 
         const values: ListenType.ScreenSpaceEventType[] = Object.values(ListenType.ScreenSpaceEventType).filter((v): v is number => typeof v === 'number')
         values.forEach(value => {
-            handler.setInputAction((movement: ScreenSpaceEventType) => {
-                EventManage.screenEvent.raiseEvent(value, ScopeType.global, movement);
-                EventManage.screenEvent.raiseEvent(value, ScopeType.Viewer3D, movement);
+            handler.setInputAction((eventType: ScreenSpaceEventType) => {
+                EventManage.screenEvent.raiseEvent(value, ScopeType.global, eventType);
+                EventManage.screenEvent.raiseEvent(value, ScopeType.Viewer3D, eventType);
             }, value);
         });
     }
@@ -214,7 +214,7 @@ class Earth {
     };
 
     destroy() {
-        this.viewer3D.destroy()
+        if (!this.viewer3D.isDestroyed()) this.viewer3D.destroy()
     }
 }
 

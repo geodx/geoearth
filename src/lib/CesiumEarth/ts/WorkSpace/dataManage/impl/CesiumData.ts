@@ -1,6 +1,6 @@
 import { Viewer } from 'cesium';
 import type { CesiumDataImpl } from './CesiumDataImpl';
-import type { ResourceItem } from '../../../Config/ResourceItem';
+import type { ResourceItem } from '../../../Config';
 
 abstract class CesiumData<T> implements CesiumDataImpl<T> {
   viewer: Viewer;

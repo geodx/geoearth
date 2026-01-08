@@ -2,7 +2,7 @@ import { ScopeType } from './ScopeType';
 
 interface ListenItem {
   listenType: number,
-  callback: (args: any) => void;
+  callback: Function;
   scope: ScopeType
 }
 

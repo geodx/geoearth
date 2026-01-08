@@ -14,7 +14,7 @@ const MapBoxLayerList: ResourceItem[] = [
         offlineCache: false,
         properties: {
             scheme: 'layer-xyz-3857',
-            url: 'https://bj.webgpu.top:3006/DBService/api.mapbox.com-globe-0-11/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}.jpeg',
+            url: "https://nas.vgemap.site:3006/DBService/api.mapbox.com-globe-0-11/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}.jpeg",
             minimumLevel: 0,
             maximumLevel: 8
         }

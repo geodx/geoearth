@@ -21,6 +21,8 @@ import { CesiumLayer } from "./dataManage/CesiumLayer";
 import { CesiumTerrain } from "./dataManage/CesiumTerrain";
 import { Cesium3DTiles } from "./dataManage/Cesium3DTiles";
 import { AsyncTool } from "../Utils";
+import { CesiumPoi } from "./dataManage/CesiumPoi";
+import { CesiumGLTF } from "./dataManage/CesiumGLTF";
 
 
 
@@ -32,7 +34,8 @@ class WorkSpace {
   public layerManage: CesiumLayer;
   public terrainManage: CesiumTerrain;
   public _3DTileManage: Cesium3DTiles;
-
+  public poiManage: CesiumPoi;
+  public gltfManage: CesiumGLTF;
   constructor(viewer: Viewer, scopeType: ScopeType) {
     this.scopeType = scopeType;
     this.viewer = viewer;
@@ -40,6 +43,8 @@ class WorkSpace {
     this.layerManage = new CesiumLayer(viewer);
     this.terrainManage = new CesiumTerrain(viewer);
     this._3DTileManage = new Cesium3DTiles(viewer);
+    this.gltfManage = new CesiumGLTF(viewer);
+    this.poiManage = new CesiumPoi(viewer);
 
     this.sourceEvent = EventManage.sourceEvent;
     this.listenSource();
@@ -67,6 +72,7 @@ class WorkSpace {
       });
     });
   };
+
   addData = async (sourceItem: ResourceItem) => {
     let resourceInstance = null;
     let loadErr;
@@ -95,15 +101,15 @@ class WorkSpace {
       case DataTypeEnum.terrain:
         resourceInstance = await this.terrainManage.addData(sourceItem);
         break;
-      // case DataTypeEnum.gltf:
-      //   [loadErr, resourceInstance] = await this.gltfMana.addData(sourceItem);
-      //   break;
-      // case DataTypeEnum.Cesium3DTile:
-      //   [loadErr, resourceInstance] = await this._3DTileMana.addData(sourceItem);
-      //   break;
-      // case DataTypeEnum.poi:
-      //   [loadErr, resourceInstance] = await this.poiMana.addData(sourceItem);
-      //   break;
+      case DataTypeEnum.gltf:
+        [loadErr, resourceInstance] = await this.gltfManage.addData(sourceItem);
+        break;
+      case DataTypeEnum.Cesium3DTile:
+        [loadErr, resourceInstance] = await this._3DTileManage.addData(sourceItem);
+        break;
+      case DataTypeEnum.poi:
+        [loadErr, resourceInstance] = await this.poiManage.addData(sourceItem);
+        break;
       default: {
         console.log('无效资源项');
       }
@@ -128,13 +134,12 @@ class WorkSpace {
     removeRes = removeRes || this._3DTileManage.removeByPid(pid);
     // removeRes = removeRes || this.geoJsonManage.removeByPid(pid);
     // removeRes = removeRes || this.waterManage.removeByPid(pid);
-    // removeRes = removeRes || this.gltfManage.removeByPid(pid);
-    // removeRes = removeRes || this.poiManage.removeByPid(pid);
+    removeRes = removeRes || this.gltfManage.removeByPid(pid);
+    removeRes = removeRes || this.poiManage.removeByPid(pid);
 
     if (removeRes) {
       this.sourceEvent.raiseEvent(listenType.DataEventType.removeData, this.scopeType, sourceItem);
     }
-
     return removeRes;
   };
   // 飞向资源
@@ -144,8 +149,8 @@ class WorkSpace {
     this._3DTileManage.getSourcesItemsByPid(pid) && this._3DTileManage.flyToByPid(pid);
     // this.geoJsonManage.getSourcesItemsByPid(pid) && this.geoJsonMana.flyToByPid(pid);
     // this.waterManage.getSourcesItemsByPid(pid) && this.waterMana.flyToByPid(pid);
-    // this.gltfManage.getSourcesItemsByPid(pid) && this.gltfMana.flyToByPid(pid);
-    // this.poiManage.getSourcesItemsByPid(pid) && this.poiMana.flyToByPid(pid);
+    this.gltfManage.getSourcesItemsByPid(pid) && this.gltfManage.flyToByPid(pid);
+    this.poiManage.getSourcesItemsByPid(pid) && this.poiManage.flyToByPid(pid);
   };
   getNodeByPid = (pid: string) => {
     return this.getNodes().find(item => item.pid === pid);
@@ -157,8 +162,8 @@ class WorkSpace {
     nodes = nodes.concat(this._3DTileManage.sourcesItems);
     // nodes = nodes.concat(this.geoJsonManage.sourcesItems);
     // nodes = nodes.concat(this.waterManage.sourcesItems);
-    // nodes = nodes.concat(this.gltfManage.sourcesItems);
-    // nodes = nodes.concat(this.poiManage.sourcesItems);
+    nodes = nodes.concat(this.gltfManage.sourcesItems);
+    nodes = nodes.concat(this.poiManage.sourcesItems);
     return nodes;
   }
   getInstances(pid: string) {
@@ -167,8 +172,8 @@ class WorkSpace {
     instances = instances || this._3DTileManage.instancesMap.get(pid);
     // instances = instances || this.geoJsonManage.instancesMap.get(pid);
     // instances = instances || this.waterManage.instancesMap.get(pid);
-    // instances = instances || this.gltfManage.instancesMap.get(pid);
-    // instances = instances || this.poiManage.instancesMap.get(pid);
+    instances = instances || this.gltfManage.instancesMap.get(pid);
+    instances = instances || this.poiManage.instancesMap.get(pid);
 
     return instances;
   }

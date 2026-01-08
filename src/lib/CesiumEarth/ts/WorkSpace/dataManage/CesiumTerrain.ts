@@ -59,7 +59,7 @@ class CesiumTerrain extends CesiumData<TerrainProvider> {
         });
       });
     } else {
-      return await SceneUtils.viewerFlyToLonLat(110, 40, 15000000);
+      return await SceneUtils.viewerFlyToLonLat(this.viewer, 110, 40, 15000000);
     }
   }
 
