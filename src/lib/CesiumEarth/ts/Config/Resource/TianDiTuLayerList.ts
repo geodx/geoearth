@@ -1,6 +1,6 @@
 import { DataTypeEnum } from '../Enum/DataTypeEnum';
-import { ResourceItem } from '../ResourceItem/ResourceItem';
 import { LayerSchemeEnum } from '../Enum/LayerSchemeEnum';
+import type { ResourceItem } from '../ResourceItem';
 
 
 //天地图申请的密钥

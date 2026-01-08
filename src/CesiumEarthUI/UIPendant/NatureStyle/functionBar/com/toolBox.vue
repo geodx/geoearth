@@ -38,8 +38,6 @@ const comActions = computed(() => {
 watch(
     comActions,
     (val) => {
-        console.log(val);
-
         toolList.value = val
     },
     { deep: true, immediate: true }

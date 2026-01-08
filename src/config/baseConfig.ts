@@ -1,28 +1,20 @@
-import CesiumEarth from "@/lib/cesium-earth";
+import CesiumEarth from "@/lib/CesiumEarth";
+import { Ion } from "cesium";
 
-Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NjYwM2E1NS00OTRlLTRiMjEtYjhhZS05MzEzNDIwNGUzMjgiLCJpZCI6MjM5OTcsImlhdCI6MTY3OTI3ODE4OX0.X_5SfpOtpL-gSbGjAP2Z6ohp1jmI5k_UtjzA72iFPcQ';
+Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NjYwM2E1NS00OTRlLTRiMjEtYjhhZS05MzEzNDIwNGUzMjgiLCJpZCI6MjM5OTcsImlhdCI6MTY3OTI3ODE4OX0.X_5SfpOtpL-gSbGjAP2Z6ohp1jmI5k_UtjzA72iFPcQ';
 
 console.log(`%c📜 Metacesium-3DVis-Vue3 编译版本：2024年08月09日`, 'color: #84709b; font-size: 14px; font-weight: bold;');
-window.GISResourcesUrl = 'http://xxx:9001';
-window.AppBaseUrl = 'http://xxx:3060';
-
-window.QISWSUrl = 'xxx:8766/';                            // QIS 空间分析服务的 WebSocket 地址
-window.GeoServerLiveUrl = 'http://xxx:8086/geoserver/st/wms?service=WMS';             // GeoServer 实时生成图层地址
-window.GeoServerLocalUrl = 'https://xxxxxx:3004/geoserver/VGE/wms?service=WMS';          // GeoServer 本地提前配置的图层地址
 
 
-const baseConfig = {};
+const QISWSUrl = 'xxx:8766/'                            // QIS 空间分析服务的 WebSocket 地址
 
-window.appName = '虚拟地理环境大数据可视化系统';
-window.appTitle = '虚拟地理环境大数据可视化系统';
 
 // const homeView = {longitude: 117.316034, latitude: 42.411409, height: 55150};
 const homeView = { longitude: 108.387, latitude: 30.71, height: 4000000 };
 
-const layerList = [];
-const terrainList = [];
-const modelList = [];
-
+const layerList: any[] = [];
+const terrainList: any[] = [];
+const modelList: any[] = [];
 const cesium3DTileSetList = [
     {
         pid: 'd76023df-981d-d4d5-5f46-21864b706b0e',
@@ -69,27 +61,31 @@ const cesium3DTileSetList = [
         }
     }
 ];
-const geoJsonList = [];
-const poiList = [];
+const geoJsonList: any[] = [];
+const poiList: any[] = [];
 
-baseConfig.GISResourcesUrl = window.GISResourcesUrl;   // GIS资源路径
-baseConfig.AppBaseUrl = window.AppBaseUrl;             // 项目主后台服务基本路径
-baseConfig.appName = appName;                   // 完整项目名
-baseConfig.appTitle = appTitle;                 // 项目简名 用于加载在标签栏上
-baseConfig.homeView = homeView;
-baseConfig.startAnimation = false;
-baseConfig.layerList = layerList;
-baseConfig.terrainList = terrainList;
-baseConfig.modelList = modelList;
-baseConfig.cesium3DTileSetList = cesium3DTileSetList;
-baseConfig.geoJsonList = geoJsonList;
-baseConfig.poi = poiList;
+const baseConfig = {
+    GISResourcesUrl: 'http://xxx:9001',     // GIS资源路径
+    AppBaseUrl: 'http://xxx:3060',           // 项目主后台服务基本路径
+    appName: '虚拟地理环境大数据可视化系统',   // 完整项目名
+    appTitle: '虚拟地理环境大数据可视化系统',   // 项目简名 用于加载在标签栏上
+    homeView: homeView,
+    startAnimation: false,
+    layerList: layerList,
+    terrainList: terrainList,
+    modelList: modelList,
+    // cesium3DTileSetList: cesium3DTileSetList,
+    geoJsonList: geoJsonList,
+    poi: poiList,
+};
 
-CesiumEarth.ConfigTool.addMapBoxOnAliYun(true);
-CesiumEarth.ConfigTool.addAMapSatelliteLayerOnLine(false);
-CesiumEarth.ConfigTool.addAMapLayerOnLine(false);
-CesiumEarth.ConfigTool.addTerrainOnAliYun(true);
-CesiumEarth.ConfigTool.addBingMapOnAliYun(true);
-CesiumEarth.ConfigTool.addTianDiTuLayerList(['cia_w']);
+
+// CesiumEarth.ConfigTool.addMapBoxOnAliYun(true);
+// CesiumEarth.ConfigTool.addAMapSatelliteLayerOnLine(false);
+// CesiumEarth.ConfigTool.addAMapLayerOnLine(false);
+// CesiumEarth.ConfigTool.addTerrainOnAliYun(true);
+// CesiumEarth.ConfigTool.addBingMapOnAliYun(true);
+// CesiumEarth.ConfigTool.addTianDiTuLayerList(['cia_w']);
 CesiumEarth.ConfigTool.loadConfig(baseConfig);
 
+export default QISWSUrl  

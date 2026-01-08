@@ -1,4 +1,6 @@
+import type { ScreenSpaceEventType, CameraEventType } from 'cesium';
 import type { ListenItem } from './ListenItem';
+import type { ConfigEventType, ViewerEventType, DataEventType } from './ListenType';
 import { ScopeType } from './ScopeType';
 
 interface EventImpl {
@@ -13,7 +15,7 @@ interface EventImpl {
    * @param callback      事件回调
    * @param scope         事件触发范围
    */
-  addEventListener(listenType: number, scope: ScopeType, callback: void): boolean
+  addEventListener(listenType: ConfigEventType | ViewerEventType | ScreenSpaceEventType | CameraEventType | DataEventType, scope: ScopeType, callback: Function): boolean
 
 
   /**

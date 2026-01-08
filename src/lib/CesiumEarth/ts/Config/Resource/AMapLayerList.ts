@@ -1,5 +1,5 @@
 import { DataTypeEnum } from '../Enum/DataTypeEnum';
-import { ResourceItem } from '../ResourceItem/ResourceItem';
+import type { ResourceItem } from '../ResourceItem';
 
 const AMapLayerList: ResourceItem[] = [
     {

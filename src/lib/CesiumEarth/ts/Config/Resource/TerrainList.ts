@@ -23,16 +23,15 @@ const TerrainList: ResourceItem[] = [
         catalog: '地形图层',
         dataType: DataTypeEnum.terrain,
         showInTree: true,
-        netRootPaths: [
-            'https://bj.webgpu.top:3006/DBService/Terrain-China/'
-        ],
+        netRootPaths: ["https://nas.vgemap.site:3006/DBService/Terrain-China/"],
         defaultLoad: true,
         show: true,
         offlineCache: false,
         decryptionKey: "SDcVrdKWEgjKPTGQgZ6zopwGq0R4FtrqQWPVsVdblFTKDA0q8vjiINRKLV16fdaYrRaZNwr613Mu/K5rMIkeXmku8nyAd7tTSNMULVZMrQc9+Qv4GMeu6vcPfRxY5Cn4R4O1VQWSbpoDkv9hwEsoIb8pHcs6JRlnbVBaEwna8T/R5EAy21YArQJcAOKJo2dejdSc3JKz1uLUSr/i0iMdFthhTGl3grgzySDVLfMrUjA=",
         properties: {
             scheme: 'CesiumTerrainProvider',
-            url: 'https://bj.webgpu.top:3006/DBService/Terrain-China/'
+            url: "https://nas.vgemap.site:3006/DBService/Terrain-China/",
+
         }
     }
 ];

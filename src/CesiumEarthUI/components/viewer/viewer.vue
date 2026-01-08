@@ -13,10 +13,9 @@ const earthStore = useEarthStore()
 const loading = ref(false)
 let earth: CesiumEarth.Earth
 function initEarth() {
-
   // earth.openDeBug();
-  earth.createNavigation();
-  earth.openOverviewMap()
+  // earth.createNavigation();
+  // earth.openOverviewMap()
   earth.viewer3D.scene.globe.depthTestAgainstTerrain = true;
 
   earth.thenLoadComplete().then(() => {
@@ -26,17 +25,12 @@ function initEarth() {
 
 onMounted(async () => {
   loading.value = true;
-  earth = new CesiumEarth.Earth('MapContainer', {
-    infoBox: false,
-    selectionIndicator: false,
-    vrButton: false,
-    geocoder: false // 是否显示地名查找控件
-  });
+  earth = new CesiumEarth.Earth('MapContainer');
   earthStore.setEarth(earth)
   initEarth();
 
 })
-// onBeforeUnmount(() => { if (earth) earth.destroy() })
+onBeforeUnmount(() => { if (earth) earth.destroy() })
 </script>
 
 
