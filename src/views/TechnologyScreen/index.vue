@@ -2,8 +2,8 @@
   <div class="main">
     <EarthUI></EarthUI>
     <!-- <TileHeader></TileHeader> -->
-    <!-- <info-page></info-page> -->
     <!-- <function-bar></function-bar> -->
+    <!-- <info-page></info-page> -->
   </div>
 </template>
 

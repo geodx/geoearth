@@ -10,41 +10,47 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
     super(viewer)
   }
 
-  async addData(resourceItem: ResourceItem): Promise<unknown> {
+  async addData(resourceItem: ResourceItem): Promise<ImageryLayer | null> {
     const prop = resourceItem.properties as ImageryLayerProps
+    resourceItem.properties = prop as ImageryLayerProps
     const url = prop.url
+
     let layer = null
     switch (prop.scheme) {
-      case LayerSchemeEnum['layer-wms']:
-        layer = this.addWebMapTileServiceImageryProvider(url, resourceItem)
-        break
-      case LayerSchemeEnum['layer-tms']:
-        layer = this.addImageryXYZ_TMS_Provider(url, resourceItem)
-        break
-      case LayerSchemeEnum['layer-wmts']:
-        layer = this.addWebMapTileServiceImageryProvider(url, resourceItem)
-        break
-      case LayerSchemeEnum['layer-singleTileImagery']:
+      case LayerSchemeEnum.layer_singleTileImagery:
         layer = this.addSingleTileImagery(url, resourceItem)
         break
-      case LayerSchemeEnum['layer-xyz-3857']:
+      case LayerSchemeEnum.layer_wms:
+        layer = this.addWebMapTileServiceImageryProvider(url, resourceItem)
+        break
+      case LayerSchemeEnum.layer_tms:
+        layer = this.addImageryXYZ_TMS_Provider(url, resourceItem)
+        break
+      case LayerSchemeEnum.layer_wmts:
+        layer = this.addWebMapTileServiceImageryProvider(url, resourceItem)
+        break
+      case LayerSchemeEnum.layer_xyz_3857:
         layer = this.addImageryXYZ_3857_Provider(url, resourceItem)
         break
-      case LayerSchemeEnum['layer-xyz-4326']:
+      case LayerSchemeEnum.layer_xyz_4326:
         layer = this.addImageryXYZ_4326_Provider(url, resourceItem)
         break
-      case LayerSchemeEnum['layer-arcgisMapServer']:
+      case LayerSchemeEnum.layer_arcgisMapServer:
         layer = this.addArcGisMapServerImagery(url, resourceItem)
         break
-      case LayerSchemeEnum['layer-geoserver']:
+      case LayerSchemeEnum.layer_geoserver:
         layer = this.addGeoserverWMS(url, resourceItem)
         break
-      case LayerSchemeEnum['IonImageryProvider']: {
-        const img = await IonImageryProvider.fromAssetId((resourceItem.properties as ImageryLayerProps).assetId)
+      case LayerSchemeEnum.ionImageryProvider: {
+        if (!prop.assetId) {
+          console.log('缺少图层assetId', prop)
+          return null
+        }
+        const img = await IonImageryProvider.fromAssetId(prop.assetId)
         layer = this.addImageryProvider(img, resourceItem)
         break
       }
-      case LayerSchemeEnum['WebMercatorTilingScheme2x2']:
+      case LayerSchemeEnum.webMercatorTilingScheme2x2:
         layer = this.addImageryWebMercatorTilingScheme2x2_Provider(url, resourceItem)
         break
       default: {
@@ -69,7 +75,7 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
         })
       })
     } else {
-      return await SceneUtils.viewerFlyToLonLat(110, 40, 15000000, this.viewer)
+      return await SceneUtils.viewerFlyToLonLat(this.viewer, 110, 40, 15000000)
     }
   }
 
@@ -90,7 +96,6 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
   }
 
   async addSingleTileImagery(url: string, param: ResourceItem) {
-    url = url || (await import('../../../img/earth/worldimage2.png')).default
     const properties = param.properties as ImageryLayerProps
     let layerRectangle = properties.rectangle
     if (Array.isArray(layerRectangle)) {
@@ -112,7 +117,7 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
 
   // 添加 wmts 服务的地图
   addWebMapTileServiceImageryProvider(url: string, param: ResourceItem) {
-    const properties = param.properties as ImageryLayerProps
+    const properties = param.properties
     const queryParameters = properties.queryParameters || {}
     const resource = new Resource({ url, queryParameters })
     const paramDefault = {
@@ -152,7 +157,6 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
     const properties = param.properties as ImageryLayerProps
     const queryParameters = properties.queryParameters || {}
     const resource = new Resource({ url, queryParameters })
-
     let rectangle = Rectangle.MAX_VALUE
     if (properties.rectangle) {
       rectangle = properties.rectangle
@@ -161,7 +165,6 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
     const imageryProvider = new UrlTemplateImageryProvider({
       ...param.properties,
       url: resource,
-      // show: param.show || true,
       tilingScheme: new WebMercatorTilingScheme(),
       rectangle: rectangle
     })
@@ -188,7 +191,6 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
     const imageryProvider = new UrlTemplateImageryProvider({
       ...param.properties,
       url: resource,
-      // show: param.show || true,
       tilingScheme: new GeographicTilingScheme({
         numberOfLevelZeroTilesX: 2,
         numberOfLevelZeroTilesY: 1
@@ -226,8 +228,7 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
     const resource = new Resource({ url, queryParameters })
     const provider = new WebMapServiceImageryProvider({
       url: resource,
-      // show: param.show || true,
-      layers: properties.layers,
+      layers: properties.layers || '0',
       parameters: {
         service: 'WMS',
         format: 'image/png',
@@ -242,6 +243,7 @@ class CesiumLayer extends CesiumData<ImageryLayer> {
     if (layer) {
       layer.pid = resourceItem.pid
       layer.param = resourceItem
+      layer.show = resourceItem.show || true
       // 如果该图层是底图，则把该图层降到最底层
       const properties = resourceItem.properties as ImageryLayerProps
       if (properties.baseLayer) {

@@ -27,6 +27,8 @@ class BaseEvent implements EventImpl {
 
   raiseEvent(listenType: number, scope: ScopeType, funcParam: any): void {
     this.listenCallbacks.forEach(item => {
+      console.log(item);
+
       if (item.listenType === listenType && item.scope === scope && typeof item.callback === 'function') {
         item.callback(funcParam);
       }

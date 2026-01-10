@@ -5,14 +5,13 @@ import { LayerSchemeEnum } from './Enum/LayerSchemeEnum';
 /****************************************************************************
  名称：默认 配置参数
  ****************************************************************************/
-
 const DefaultConfig: ConfigImpl = {
-  Version: 'V2024-08-07',
+  Version: 'V2026-01-09',
   computerSpeed: 1,
   Token: '',
   appName: 'CesiumEarth WebGL平台',
   appTitle: 'CesiumEarth',
-  appIcon: './img/icon.png',
+  appIcon: '../../img/icon.png',
   homeView: { longitude: 110, latitude: 40, height: 20000000 },
   startAnimation: false,
   GISResourcesUrl: '',
@@ -30,8 +29,9 @@ const DefaultConfig: ConfigImpl = {
       show: true,
       offlineCache: false,
       properties: {
+        url: new URL("../../img/earth/worldimage2.png", import.meta.url).href,
         baseLayer: true,
-        scheme: LayerSchemeEnum['layer-singleTileImagery'],
+        scheme: LayerSchemeEnum.layer_singleTileImagery,
         tileWidth: 2048,
         tileHeight: 1024
       }

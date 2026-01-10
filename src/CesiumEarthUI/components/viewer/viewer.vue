@@ -13,7 +13,7 @@ const earthStore = useEarthStore()
 const loading = ref(false)
 let earth: CesiumEarth.Earth
 function initEarth() {
-  // earth.openDeBug();
+  earth.openDeBug();
   // earth.createNavigation();
   // earth.openOverviewMap()
   earth.viewer3D.scene.globe.depthTestAgainstTerrain = true;

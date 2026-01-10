@@ -36,6 +36,7 @@ class WorkSpace {
   public _3DTileManage: Cesium3DTiles;
   public poiManage: CesiumPoi;
   public gltfManage: CesiumGLTF;
+
   constructor(viewer: Viewer, scopeType: ScopeType) {
     this.scopeType = scopeType;
     this.viewer = viewer;
@@ -96,19 +97,19 @@ class WorkSpace {
     // 注释
     switch (String(sourceItem.dataType)) {
       case DataTypeEnum.layer:
-        resourceInstance = await this.layerManage.addData(sourceItem);
+        [loadErr, resourceInstance] = await AsyncTool.awaitWrap(this.layerManage.addData(sourceItem));
         break;
       case DataTypeEnum.terrain:
-        resourceInstance = await this.terrainManage.addData(sourceItem);
+        [loadErr, resourceInstance] = await AsyncTool.awaitWrap(this.terrainManage.addData(sourceItem));
         break;
       case DataTypeEnum.gltf:
-        [loadErr, resourceInstance] = await this.gltfManage.addData(sourceItem);
+        [loadErr, resourceInstance] = await AsyncTool.awaitWrap(this.gltfManage.addData(sourceItem));
         break;
       case DataTypeEnum.Cesium3DTile:
-        [loadErr, resourceInstance] = await this._3DTileManage.addData(sourceItem);
+        [loadErr, resourceInstance] = await AsyncTool.awaitWrap(this._3DTileManage.addData(sourceItem));
         break;
       case DataTypeEnum.poi:
-        [loadErr, resourceInstance] = await this.poiManage.addData(sourceItem);
+        [loadErr, resourceInstance] = await AsyncTool.awaitWrap(this.poiManage.addData(sourceItem));
         break;
       default: {
         console.log('无效资源项');

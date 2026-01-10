@@ -16,8 +16,8 @@ const config: ConfigImpl = DefaultConfig;
  */
 const ConfigTool = {
   /**
-     * 获取配置参数
-     */
+   * 获取配置参数
+   */
   get config() {
     // 设置页面标题
     window.document.title = config.appTitle;
@@ -33,8 +33,6 @@ const ConfigTool = {
       link.rel = 'shortcut icon';
       document.getElementsByTagName('head')[0]?.appendChild(link)
     }
-
-
     return config;
   },
   loadConfig(newConfig: ConfigImpl | any) {
