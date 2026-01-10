@@ -60,7 +60,6 @@ class Earth {
     // 默认生成的量测工具
     public measureTool: MeasureTool;
 
-
     public infoBox: InfoBox;
     // 初始化坐标与高度的监听
     public initMonitorCoordinates = initMonitorCoordinates;
@@ -83,7 +82,6 @@ class Earth {
 
         EventManage.viewerEvent.raiseEvent(ListenType.ViewerEventType.init, ScopeType.Viewer3D, {});
         EventManage.viewerEvent.raiseEvent(ListenType.ViewerEventType.init, ScopeType.global, {});
-
         this.startAnimation = new StartAnimation(this.viewer3D)
         // 载入资源
         this.viewer3DWorkSpace = new WorkSpace(this.viewer3D, ScopeType.Viewer3D);
@@ -98,21 +96,21 @@ class Earth {
         });
 
         this.viewer3D.scene.debugShowFramesPerSecond = true;
-        this.viewer3D.resolutionScale = window.devicePixelRatio;
-        this.drawShape = new DrawShape(this.viewer3D);
-        this.measureTool = new MeasureTool(this.viewer3D);
-        this.infoBox = new InfoBox(this.viewer3D);
+        // this.viewer3D.resolutionScale = window.devicePixelRatio;
+        // this.drawShape = new DrawShape(this.viewer3D);
+        // this.measureTool = new MeasureTool(this.viewer3D);
+        // this.infoBox = new InfoBox(this.viewer3D);
 
-        // 调整鼠标滚轮缩放速度
-        this.viewer3D.scene.screenSpaceCameraController.zoomFactor = 3;
+        // // 调整鼠标滚轮缩放速度
+        // this.viewer3D.scene.screenSpaceCameraController.zoomFactor = 3;
 
-        if (this.viewer3D.animation) {
-            this.viewer3D.animation.viewModel.dateFormatter = CesiumDateFormatter;
-            this.viewer3D.animation.viewModel.timeFormatter = CesiumTimeFormatter;
-        }
-        if (this.viewer3D.timeline) {
-            (this.viewer3D.timeline as any).makeLabel = CesiumDateTimeFormatter;
-        }
+        // if (this.viewer3D.animation) {
+        //     this.viewer3D.animation.viewModel.dateFormatter = CesiumDateFormatter;
+        //     this.viewer3D.animation.viewModel.timeFormatter = CesiumTimeFormatter;
+        // }
+        // if (this.viewer3D.timeline) {
+        //     (this.viewer3D.timeline as any).makeLabel = CesiumDateTimeFormatter;
+        // }
     }
 
     // 初始化屏幕事件

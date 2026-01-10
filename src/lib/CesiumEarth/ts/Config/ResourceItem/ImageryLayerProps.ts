@@ -20,16 +20,35 @@ import { Rectangle } from "cesium";
 import type { LayerSchemeEnum } from "../Enum/LayerSchemeEnum";
 
 interface ImageryLayerProps {
-  scheme: LayerSchemeEnum,
-  baseLayer?: boolean,
-  minimumLevel: number,
-  maximumLevel: number,
-  url: string,
-  rectangle: Rectangle,
-  queryParameters: string,
-  tileWidth: number,
-  tileHeight: number,
-  layers: string,
-  assetId: number,
+  scheme: LayerSchemeEnum
+  baseLayer: boolean
+  minimumLevel?: number,
+  maximumLevel?: number
+
+  tileWidth: number
+  tileHeight: number
+  url: string
+
+  queryParameters?: object
+  assetId?: number
+  rectangle?: Rectangle
+  layers?: string
+  scale?: number
+  position?: {
+    longitude: number,
+    latitude: number,
+    height?: number
+  }
+  orientation?: any
+  DistanceDisplayCondition?: {
+    near: number,
+    far: number
+  }
+  minimumPixelSize?: number
+  motion?: {
+    path: [number, number][],
+    speed: number
+  }
 }
+
 export type { ImageryLayerProps };

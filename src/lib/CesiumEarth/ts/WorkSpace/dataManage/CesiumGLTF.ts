@@ -4,36 +4,36 @@ import { CesiumData } from './impl/CesiumData';
 import { Resource, Cartesian3, HeadingPitchRoll, Transforms, HeightReference, DistanceDisplayCondition, HeadingPitchRange } from 'cesium';
 import type { ResourceItem } from '../../Config';
 import * as turf from "@turf/turf";
+import type { ImageryLayerProps } from '../../Config/ResourceItem/ImageryLayerProps';
 
 class CesiumGLTF extends CesiumData<Entity> {
-    private readonly dataSourceToo: CustomDataSource;
+    private readonly dataSourceTool: CustomDataSource;
 
     constructor(viewer: Viewer) {
         super(viewer);
-        this.dataSourceToo = new CustomDataSource('工作区 GLTF - 附加实体集合');
-        this.viewer.dataSources.add(this.dataSourceToo);
+        this.dataSourceTool = new CustomDataSource('工作区 GLTF - 附加实体集合');
+        this.viewer.dataSources.add(this.dataSourceTool);
     }
 
     async addData(sourceItem: ResourceItem): Promise<any> {
-        let prop = (sourceItem.properties) as any;
+        let prop = sourceItem.properties as ImageryLayerProps;
         let url = prop.url;
         let queryParameters = prop.queryParameters || {};
         let scale = prop.scale || 1;
         // 对地形进行深度测试
         this.viewer.scene.globe.depthTestAgainstTerrain = true;
         let resource = new Resource({ url, queryParameters });
-
+        if (!prop.position) return console.log('缺少模型位置属性position', prop);
         let position = Cartesian3.fromDegrees(prop.position.longitude, prop.position.latitude, prop.position.height || 0);
-
         let heading = Math.toRadians(135);
         let pitch = 0;
         let roll = 0;
         let hpr = new HeadingPitchRoll(heading, pitch, roll);
-        let orientation = sourceItem.properties.orientation ? sourceItem.properties.orientation : Transforms.headingPitchRollQuaternion(
+        let orientation = prop.orientation ? prop.orientation : Transforms.headingPitchRollQuaternion(
             position,
             hpr
         );
-        let option = ({
+        let option = {
             id: sourceItem.pid,
             name: sourceItem.name,
             position: position,
@@ -41,9 +41,8 @@ class CesiumGLTF extends CesiumData<Entity> {
             model: {
                 uri: resource,
                 scale: scale
-                // maximumScale: 20000
-            }
-        } as any);
+            } as any
+        };
         if (prop.position.height === null) {
             option.model.heightReference = HeightReference.CLAMP_TO_GROUND;
         }
@@ -58,10 +57,10 @@ class CesiumGLTF extends CesiumData<Entity> {
         prop.minimumPixelSize && (option.model.minimumPixelSize = prop.minimumPixelSize);
 
 
-        let entity = this.dataSourceToo.entities.add(option);
+        const entity = this.dataSourceTool.entities.add(option);
 
         // 添加实体运动
-        if (prop?.motion?.path && prop?.motion?.speed) {
+        if (prop.motion?.path && prop.motion?.speed) {
             MotionEntity(entity, turf.lineString(prop.motion.path), prop.motion.speed);
         }
 
@@ -92,7 +91,7 @@ class CesiumGLTF extends CesiumData<Entity> {
         let instance = this.getInstancesByPid(pid);
         this.sourcesItems = this.sourcesItems.filter(item => item.pid !== pid);
         if (instance) {
-            removeRes = this.dataSourceToo.entities.removeById(pid);
+            removeRes = this.dataSourceTool.entities.removeById(pid);
             this.instancesMap.delete(pid);
         }
         return removeRes;

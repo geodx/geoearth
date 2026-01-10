@@ -14,9 +14,10 @@ interface ResourceItem {
   showInTree: boolean,
   defaultLoad: boolean,
   show: boolean,
-  netRootPaths?: string[],
   offlineCache: boolean,
+  netRootPaths?: string[],
   decryptionKey?: string,
+
   properties: ImageryLayerProps | Cesium3DTileProps;
 }
 

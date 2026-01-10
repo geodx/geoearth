@@ -109,11 +109,11 @@ class Cesium3DTiles extends CesiumData<Cesium3DTileset> {
       // debugShowMemoryUsage: false,//可选的 仅用于调试。 当为真时，绘制标签以指示每个图块使用的纹理和几何内存（以兆字节为单位）。
       // debugShowUrl: false//可选的 仅用于调试。 当为 true 时，绘制标签以指示每个图块的 url。
     };
-
-    for (const propKey in prop) {
-      // @ts-ignore
-      tileSetOptions[propKey] = prop[propKey];
-    }
+    Object.assign(tileSetOptions, prop);
+    // for (const propKey in prop) {
+    //   tileSetOptions[propKey] = prop[propKey];
+    // }
+    console.log(tileSetOptions);
 
     let tileSet = await Cesium3DTileset.fromUrl(resource, tileSetOptions);
 
@@ -122,9 +122,9 @@ class Cesium3DTiles extends CesiumData<Cesium3DTileset> {
 
     // 设置模型的位置偏移修正
     const offset = prop.offset;
-    const lon = offset?.lon;
-    const lat = offset?.lat;
-    const height = offset?.height;
+    const lon = offset.lon;
+    const lat = offset.lat;
+    const height = offset.height;
     if (offset) {
       offSetTileSetByCartographic(tileSet, lon, lat, height);
     }
@@ -177,6 +177,7 @@ class Cesium3DTiles extends CesiumData<Cesium3DTileset> {
 
 
 export { Cesium3DTiles };
+
 function offSetTileSetByCartographic(tileSet: Cesium3DTileset, lon: number, lat: number, height: number) {
   throw new Error('Function not implemented.');
 }
