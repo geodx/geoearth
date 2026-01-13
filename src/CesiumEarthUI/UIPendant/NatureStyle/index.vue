@@ -33,8 +33,7 @@ onMounted(() => {
     }
 })
 const infoWindowsShow = computed(() => {
-    // return    ceStore.comStatus('infoWindows')
-    return true
+    return ceStore.comStatus('infoWindows')
 })
 const tileHeaderShow = computed(() => {
     return ceStore.comStatus('titleHeader')

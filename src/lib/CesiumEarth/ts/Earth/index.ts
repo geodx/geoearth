@@ -94,23 +94,23 @@ class Earth {
                 this.loadComplete = true;
             }
         });
-
         this.viewer3D.scene.debugShowFramesPerSecond = true;
+        this.viewer3D.resolutionScale = 0.8
         // this.viewer3D.resolutionScale = window.devicePixelRatio;
-        // this.drawShape = new DrawShape(this.viewer3D);
-        // this.measureTool = new MeasureTool(this.viewer3D);
-        // this.infoBox = new InfoBox(this.viewer3D);
+        this.drawShape = new DrawShape(this.viewer3D);
+        this.measureTool = new MeasureTool(this.viewer3D);
+        this.infoBox = new InfoBox(this.viewer3D);
 
         // // 调整鼠标滚轮缩放速度
-        // this.viewer3D.scene.screenSpaceCameraController.zoomFactor = 3;
+        this.viewer3D.scene.screenSpaceCameraController.zoomFactor = 3;
 
-        // if (this.viewer3D.animation) {
-        //     this.viewer3D.animation.viewModel.dateFormatter = CesiumDateFormatter;
-        //     this.viewer3D.animation.viewModel.timeFormatter = CesiumTimeFormatter;
-        // }
-        // if (this.viewer3D.timeline) {
-        //     (this.viewer3D.timeline as any).makeLabel = CesiumDateTimeFormatter;
-        // }
+        if (this.viewer3D.animation) {
+            this.viewer3D.animation.viewModel.dateFormatter = CesiumDateFormatter;
+            this.viewer3D.animation.viewModel.timeFormatter = CesiumTimeFormatter;
+        }
+        if (this.viewer3D.timeline) {
+            (this.viewer3D.timeline as any).makeLabel = CesiumDateTimeFormatter;
+        }
     }
 
     // 初始化屏幕事件
