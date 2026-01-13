@@ -5,10 +5,8 @@
  ****************************************************************************/
 
 import { ScreenSpaceEventHandler, Viewer, Math, EllipsoidTerrainProvider, ScreenSpaceEventType, Cartesian2 } from 'cesium';
-import { getTerrainMostDetailedHeight } from '../../Utils/SceneUtils/getTerrainMostDetailedHeight';
-
-import { getCameraHeight } from '../../Utils/CameraUtils/getCameraHeight';
-import { getCameraInfo } from '../../Utils/CameraUtils/getCameraInfo';
+import { getTerrainMostDetailedHeight } from '../../cesium.earth';
+import { getCameraHeight, getCameraInfo } from '../../Utils';
 
 
 function initMonitorCoordinates(viewer: Viewer, moveFun: Function) {
@@ -55,8 +53,6 @@ function initMonitorCoordinates(viewer: Viewer, moveFun: Function) {
 
         // 存在模型，读取高程
         // ...待实现
-
-
         cameraHeight = getCameraHeight(viewer) || 3000000;
         orientation = getCameraInfo(viewer).orientation;
         if (onEarth) {

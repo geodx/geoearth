@@ -1,48 +1,49 @@
+import { number } from "echarts";
+
 /****************************************************************************
  名称：常用工具函数集合 - 日期类
 
  ****************************************************************************/
-let DateTool = {
+const formateDateTime = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+const DateTool = {
+
+
     /**
-     * 日期格式化
-     * @param d
+     * 日期格式化 yyyy-MM-dd hh:mm:ss
+     * @param d {string | number | Date | undefined}
      * @returns {string|null}
      * @constructor
      */
-    fullFormat(d: string | number | Date) {
+    getFormattedDateTime(d?: string | number | Date): string {
         let date = null;
         if (d instanceof Date) {
             date = d;
-        } else if (typeof (d) === 'string') {
+        } else if (typeof d === 'string' || typeof d === 'number') {
             date = new Date(d);
         } else {
-            return new Date();
+            date = new Date();
         }
-        let str = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日${date.getHours()}时${date.getMinutes()}分${date.getSeconds()}秒${date.getMilliseconds()}毫秒`;
-        return str;
+        return formateDateTime(date);
     },
 
-    simpleFormat(d: string | number | Date) {
-        let date = null;
-        if (d instanceof Date) {
-            date = d;
-        } else if (typeof (d) === 'string') {
-            date = new Date(d);
-        } else {
-            return new Date();
-        }
-        let str = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-        return str;
-    },
+
 
     // 获取指定月份的天数
-    GetDaysOfMonth(sYear: number, sMonth: number) {
+    getDaysOfMonth(sYear: number, sMonth: number) {
         let o = new Date(sYear, sMonth, 0);
         return o.getDate();
     },
 
     //获取某天是星期几
-    GetWeekOfDay(sYear: number, sMonth: number, sDay: number | undefined) {
+    getWeekOfDay(sYear: number, sMonth: number, sDay: number | undefined) {
         let str = '';
         let date = new Date(sYear, sMonth - 1, sDay);
         switch (date.getDay()) { //getDay()返回是0-6
@@ -76,7 +77,7 @@ let DateTool = {
 
 
     // 获取年积日
-    GetNumOfTheDate(DateStr: string | Date) {
+    getNumOfTheDate(DateStr: string | Date) {
         let d1 = new Date(DateStr);
         let d2 = new Date(d1.getTime());
         d2.setMonth(0);
@@ -86,7 +87,7 @@ let DateTool = {
     },
 
     // 返回两个日期的 天数差
-    GetDayDiffBetweenDates(DateStr1: string | Date, DateStr2: string | Date) {
+    getDayDiffBetweenDates(DateStr1: string | Date, DateStr2: string | Date) {
         let d1 = new Date(DateStr1);
         let d2 = new Date(DateStr2);
         let def = d1.getTime() - d2.getTime();

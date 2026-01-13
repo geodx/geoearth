@@ -1,14 +1,16 @@
 <template>
 	<div class="info-section">
 		<ul style="width: 100%;max-width: 1800px">
-			<!-- <li style="overflow: hidden;width: 350px">
-				<p> 鼠标灵敏度：
+			<!-- <li class="hidden-sm-and-down" style="overflow: hidden;width: 28rem">
+				<p>
+					<span class="text-ellipsis label-div">鼠标灵敏度：</span>
+
 					<input id="range" type="range" value="5">
 				</p>
 			</li> -->
-			<li style="overflow: hidden;width: 350px">
+			<li class="hidden-sm-and-down" style="overflow: hidden;width: 28rem">
 				<p>
-					<span class="text-ellipsis label-div">场景清晰度：</span>
+					场景清晰度：
 					<el-button style="margin-right:4px" @click="updateQuality(32)"
 						:class="viewerQuality === 32 ? 'sel-active' : ''">
 						<span>普通</span>
@@ -19,18 +21,16 @@
 						:class="viewerQuality === 1 ? 'sel-active' : ''"><span>超清</span></el-button>
 				</p>
 			</li>
-			<li style="overflow: hidden;min-width: 350px">
+
+			<li class="text-ellipsis" style="text-align: right;width: 85rem">
 				<p>
-					<span class="text-ellipsis label-div">同步数据时间：{{ timeLabel }}</span>
+					<span class="text-ellipsis label-div">{{ timeLabel }}</span>
 				</p>
-				<el-button style="margin-right:4px" @click="update"><span>刷新</span></el-button>
-			</li>
-			<li class="text-ellipsis" style="text-align: right;width: 600px">
-				<p>
+				<p style="width: 106px;">
 					<span class="label-div">经度:</span>
 					<span class="content">{{ position.lon }}</span>
 				</p>
-				<p>
+				<p style="width: 106px;">
 					<span class="label-div">纬度:</span>
 					<span class="content">{{ position.lat }}</span>
 				</p>
@@ -54,6 +54,7 @@
 
 <script lang="ts" setup>
 import type CesiumEarth from '@/lib/CesiumEarth';
+import { DateTool } from '@/lib/CesiumEarth/ts/Utils';
 import { useEarthStore } from '@/stores/EarthStore';
 import { onMounted, ref } from 'vue';
 const earthStore = useEarthStore()
@@ -72,12 +73,15 @@ onMounted(async () => {
 	earth = await earthStore.getEarth()
 	earth.thenLoadComplete().then(() => {
 		init()
-		// 2024年1月22日 10时43分15秒88毫秒
-		let now = new Date();
-		timeLabel.value = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ` + now.toLocaleTimeString();
 	});
 
 })
+// onUnmounted(() => {
+//   if (timer) {
+//     clearInterval(timer)
+//     timer = undefined
+//   }
+// })
 function init() {
 	// 初始化显示经纬度的标签
 	earth.initMonitorCoordinates(earth.viewer3D, function (log: number, lat: number, height: number, cameraHeight: number) {
@@ -89,11 +93,13 @@ function init() {
 	setInterval(() => {
 		FPS.value = earth.getFPS();
 	}, 500)
+	setInterval(() => {
+		update()
+	}, 1000)
 }
 
 function update() {
-	const now = new Date();
-	timeLabel.value = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ` + now.toLocaleTimeString();
+	timeLabel.value = DateTool.getFormattedDateTime()
 }
 function updateQuality(quality: number) {
 	viewerQuality.value = quality;
@@ -114,7 +120,12 @@ function reload() {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	-o-text-overflow: ellipsis;
+}
+
+.hidden-sm-and-down {
+	@media (max-width: 991px) {
+		display: none !important;
+	}
 }
 
 .info-section {
@@ -135,6 +146,7 @@ function reload() {
 		margin: 0 !important;
 
 		li {
+
 			display: flex;
 			height: 100%;
 			padding: 0 6px;
@@ -169,6 +181,8 @@ function reload() {
 			border: 0;
 
 			span {
+				align-items: center;
+				display: inline-flex;
 				font-size: 11px;
 				line-height: 20px;
 				background: linear-gradient(to bottom, #99FEFF 0%, #FFFFFF 100%);

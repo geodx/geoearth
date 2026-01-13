@@ -3,10 +3,10 @@ import { Ion } from "cesium";
 
 Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NjYwM2E1NS00OTRlLTRiMjEtYjhhZS05MzEzNDIwNGUzMjgiLCJpZCI6MjM5OTcsImlhdCI6MTY3OTI3ODE4OX0.X_5SfpOtpL-gSbGjAP2Z6ohp1jmI5k_UtjzA72iFPcQ';
 
-console.log(`%c📜 Metacesium-3DVis-Vue3 编译版本：2024年08月09日`, 'color: #84709b; font-size: 14px; font-weight: bold;');
+console.log(`%c📜 CesiumEarth-Vue3 编译版本：2026年01月09日`, 'color: #84709b; font-size: 14px; font-weight: bold;');
 
 
-const QISWSUrl = 'xxx:8766/'                            // QIS 空间分析服务的 WebSocket 地址
+const QISWSUrl = 'xxx:8766/'     // QIS 空间分析服务的 WebSocket 地址
 
 
 // const homeView = {longitude: 117.316034, latitude: 42.411409, height: 55150};
