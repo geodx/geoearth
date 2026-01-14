@@ -1,13 +1,13 @@
 <template>
 	<div class="info-section">
 		<ul style="width: 100%;max-width: 1800px">
-			<!-- <li class="hidden-sm-and-down" style="overflow: hidden;width: 28rem">
+			<li class="hidden-sm-and-down" style="overflow: hidden;width: 28rem">
 				<p>
 					<span class="text-ellipsis label-div">鼠标灵敏度：</span>
 
 					<input id="range" type="range" value="5">
 				</p>
-			</li> -->
+			</li>
 			<li class="hidden-sm-and-down" style="overflow: hidden;width: 28rem">
 				<p>
 					场景清晰度：
@@ -22,7 +22,7 @@
 				</p>
 			</li>
 
-			<li class="text-ellipsis" style="text-align: right;width: 85rem">
+			<li class="text-ellipsis" style="text-align: right;width: 55rem">
 				<p>
 					<span class="text-ellipsis label-div">{{ timeLabel }}</span>
 				</p>
@@ -117,6 +117,7 @@ function reload() {
 </script>
 <style lang='scss' scoped>
 .text-ellipsis {
+	box-sizing: border-box;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
@@ -137,8 +138,13 @@ function reload() {
 	min-height: 30px;
 	background: #03313D;
 	display: flex;
-	justify-content: right;
+	justify-content: flex-end;
 	align-items: center;
+
+	box-sizing: border-box;
+	font-size: 14px;
+	font-family: "'Helvetica Neue', Helvetica, Arial, sans-serif";
+	line-height: 20px;
 
 	ul {
 		display: flex;

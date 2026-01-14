@@ -5,13 +5,12 @@ import {
     CallbackProperty, Cartesian3, Entity, Color, Viewer, Math
 } from 'cesium';
 
-import type { Feature, Geometry, GeometryCollection } from 'GeoJSON';
+import type { Feature } from 'geojson';
 import { getMostDetailedHeight, type WorldDegree } from '../../cesium.earth';
 import { CartographicTool } from '../../Utils';
 import { PolylineLightingMaterial } from '../Material/Polyline';
 import * as turf from "@turf/turf";
 import { CallbackPositionProperty } from 'cesium';
-import type { AllGeoJSON } from '@turf/turf';
 
 /**
  * 名称：Entity 快捷创建库

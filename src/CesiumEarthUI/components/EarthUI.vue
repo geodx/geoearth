@@ -1,8 +1,8 @@
 <template>
   <div class="cesium-utils">
     <viewer></viewer>
-    <!-- <toolBox></toolBox> -->
-    <!-- <load-bar></load-bar> -->
+    <toolBox></toolBox>
+    <load-bar></load-bar>
   </div>
 </template>
 

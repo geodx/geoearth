@@ -1,6 +1,5 @@
 import { JulianDate, CallbackProperty, Cartesian3, Entity } from 'cesium';
 import * as turf from "@turf/turf";
-import type { Feature } from 'GeoJSON';
 import { CallbackPositionProperty } from 'cesium';
 
 /**

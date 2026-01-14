@@ -1,4 +1,4 @@
-import './loadResources'
+
 
 import type { JulianDate } from "cesium";
 declare module 'cesium' {
