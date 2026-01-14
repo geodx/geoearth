@@ -2,7 +2,7 @@
   <div class="main">
     <EarthUI></EarthUI>
     <!-- <TileHeader></TileHeader> -->
-    <!-- <function-bar></function-bar> -->
+    <function-bar></function-bar>
     <info-page></info-page>
   </div>
 </template>

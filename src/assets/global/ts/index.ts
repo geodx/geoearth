@@ -7,3 +7,9 @@ document.onselectstart = function () {
 };
 
 document.ondragstart = (e: Event) => e.preventDefault();
+
+if (window.devicePixelRatio !== 1) {
+    console.warn(
+        `当前浏览器缩放或系统缩放非100%(dpr=${window.devicePixelRatio})，UI尺寸可能失真`
+    )
+}

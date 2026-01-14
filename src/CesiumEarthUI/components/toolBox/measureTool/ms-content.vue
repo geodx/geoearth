@@ -7,16 +7,15 @@
 	<win-tabs :initCSS="{ width: 350, height: 180, left: 400, top: 300 }" @close="close">
 		<tab-pane label="量测工具">
 			<div id="measurePane" style="text-align: center">
-				<button class="btn btn-sm btn-success" type="button" @click="measureHeight">测高程</button>
-				<button class="btn btn-sm btn-success" type="button" @click="verticalDistance">测高差</button>
-				<button class="btn btn-sm btn-success" type="button" @click="spaceDistance">测距离</button>
-				<button class="btn btn-sm btn-success" type="button" @click="surfaceArea">测面积</button>
-				<button class="btn btn-sm btn-success" type="button" @click="measureTriangle">测角度</button>
-				<button class="btn btn-sm btn-success" type="button" @click="perimeter">测周长</button>
-				<button v-show="false" class="btn btn-sm btn-success" type="button" @click="surfaceArea">三角测量
-				</button>
-				<button class="btn btn-sm btn-danger" type="button" @click="stopMeasure">结束绘制</button>
-				<button class="btn btn-sm btn-warning" type="button" @click="removeAll">重置</button>
+				<el-button size="small" type="success" @click="measureHeight">测高程</el-button>
+				<el-button size="small" type="success" @click="verticalDistance">测高差</el-button>
+				<el-button size="small" type="success" @click="spaceDistance">测距离</el-button>
+				<el-button size="small" type="success" @click="surfaceArea">测面积</el-button>
+				<el-button size="small" type="success" @click="measureTriangle">测角度</el-button>
+				<el-button size="small" type="success" @click="perimeter">测周长</el-button>
+				<!-- <el-button size="small" type="success" @click="surfaceArea">三角测量</el-button> -->
+				<el-button size="small" type="danger" @click="stopMeasure">结束绘制</el-button>
+				<el-button size="small" type="warning" @click="removeAll">重置</el-button>
 			</div>
 		</tab-pane>
 	</win-tabs>

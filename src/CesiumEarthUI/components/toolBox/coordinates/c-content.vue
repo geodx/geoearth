@@ -274,7 +274,7 @@ const mercator = ref({
     y: 0
 })
 const show = computed(() => {
-    // return $store.state.VGEEarthStore.comActions.coordinates; 
+    // return $store.state.CesiumEarthStore.comActions.coordinates; 
     // return ceStore.comActions.
 
 })
@@ -333,7 +333,7 @@ function pickPoint() {
     let that = this;
     remove();
     addImage();
-    let drawShape = new VGEEarth.DrawShape(VGEEarth.getMainViewer());
+    let drawShape = new CesiumEarth.DrawShape(CesiumEarth.getMainViewer());
     drawShape.drawPoint({
         coordinateType: 'cartographicObj',
         endCallback: function (ps) {

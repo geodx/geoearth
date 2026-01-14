@@ -18,25 +18,25 @@ const DefaultConfig: ConfigImpl = {
   demoServerUrl: 'http://localhost:3008/',
   AppBaseUrl: '',
   flag: 'l' + String.fromCharCode((new Date().getMinutes())),
-  // layerList: [
-  //   {
-  //     pid: '8765c4e9-0e21-1cb9-4f3f-1852c9a67208',
-  //     name: '全球影像底图',
-  //     catalog: '基础影像',
-  //     dataType: DataTypeEnum.layer,
-  //     showInTree: false,
-  //     defaultLoad: true,
-  //     show: true,
-  //     offlineCache: false,
-  //     properties: {
-  //       url: new URL("../../img/earth/worldimage2.png", import.meta.url).href,
-  //       baseLayer: true,
-  //       scheme: LayerSchemeEnum.layer_singleTileImagery,
-  //       tileWidth: 2048,
-  //       tileHeight: 1024
-  //     }
-  //   }
-  // ],
+  layerList: [
+    {
+      pid: '8765c4e9-0e21-1cb9-4f3f-1852c9a67208',
+      name: '全球影像底图',
+      catalog: '基础影像',
+      dataType: DataTypeEnum.layer,
+      showInTree: false,
+      defaultLoad: true,
+      show: true,
+      offlineCache: false,
+      properties: {
+        url: new URL("../../img/earth/worldimage2.png", import.meta.url).href,
+        baseLayer: true,
+        scheme: LayerSchemeEnum.layer_singleTileImagery,
+        tileWidth: 2048,
+        tileHeight: 1024
+      }
+    }
+  ],
   terrainList: [],
   modelList: [],
   cesium3DTileSetList: [],

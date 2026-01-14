@@ -14,7 +14,7 @@ function initViewerStata(viewer: Viewer) {
   viewer.scene.skyAtmosphere!.show = false;
   viewer.scene.globe.show = false;
 
-  viewer.scene.globe.baseColor = Color.WHITE; // 没有影像图层时地球的底色
+  viewer.scene.globe.baseColor = Color.BLACK; // 没有影像图层时地球的底色
   // viewer.scene.globe.depthTestAgainstTerrain = true; // 开启深度检测
   // 去除Cesium版权信息 
   viewer.creditDisplay.container.remove()

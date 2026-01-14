@@ -40,7 +40,6 @@ import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
 import { ElTabs } from 'element-plus';
 import tabsStyle from './tabsStyle.json';
 import { nextTick, onMounted, ref } from 'vue';
-import App from '@/App.vue';
 const ready = ref(false)
 const x = ref(100)
 const y = ref(100)

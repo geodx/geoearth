@@ -11,7 +11,7 @@ const UIConfig = {
             { id: 'APIBook', name: 'API文档', type: 'url', defaultOptions: false, url: 'http://8.146.208.114:3000/CesiumEarth-SDK-API/index.html' }
         ],
         right: [
-            { id: 'codeBase', name: '开源代码', type: 'url', defaultOptions: false, url: 'https://github.com/WangShan010/Metacesium-3DVis-Vue3' },
+            { id: 'codeBase', name: '开源代码', type: 'url', defaultOptions: false, url: 'https://github.com/WangShan010/Metaearth-3DVis-Vue3' },
             { id: 'CodeView', name: '代码示例', type: 'url', defaultOptions: false, url: './#/example' },
             { id: 'productsView', name: '案例展示', type: 'menu', defaultOptions: false }
         ]
@@ -30,24 +30,24 @@ const UIConfig = {
 
 
         // 工具箱内模块
-        { name: '图上量算', type: 'ToolBoxItem', open: false, comName: 'measureTool', config: { inToolBox: true, iconClass: 'cesium-shuipingliangsuan' }, role: 'all' },
-        { name: '剖面分析', type: 'ToolBoxItem', open: false, comName: 'geologicalSection', config: { inToolBox: true, iconClass: 'cesium-shuipingliangsuan' }, role: 'all' },
-        { name: '坐标定位', type: 'ToolBoxItem', open: false, comName: 'coordinates', config: { inToolBox: true, iconClass: 'cesium-dingwei' }, role: 'all' },
-        { name: '地区导航', type: 'ToolBoxItem', open: false, comName: 'areaNavigation', config: { inToolBox: true, iconClass: 'cesium-daohang1' }, role: 'all' },
-        { name: '视角书签', type: 'ToolBoxItem', open: false, comName: 'visualMarker', config: { inToolBox: true, iconClass: 'cesium-biaoqian' }, role: 'all' },
-        { name: '图上标绘', type: 'ToolBoxItem', open: false, comName: 'plotTool', config: { inToolBox: true, iconClass: 'cesium-Icon_lujinghuizhi' }, role: 'all' },
-        { name: '卷帘对比', type: 'ToolBoxItem', open: false, comName: 'ImageLayerSplitMana', config: { inToolBox: true, iconClass: 'cesium-juanlian' }, role: 'all' },
-        { name: '时序图层', type: 'ToolBoxItem', open: false, comName: 'ImageLayerTimeLine', config: { inToolBox: true, iconClass: 'cesium-timeline' }, role: 'all' },
-        { name: '路线规划', type: 'ToolBoxItem', open: false, comName: 'pathPlanning', config: { inToolBox: true, iconClass: 'cesium-zhuanyiluxian' }, role: 'all' },
-        { name: '路径漫游', type: 'ToolBoxItem', open: false, comName: 'pathRoaming', config: { inToolBox: true, iconClass: 'cesium-zhuanyiluxian' }, role: 'all' },
-        { name: '天空盒', type: 'ToolBoxItem', open: false, comName: 'skyBoxTool', config: { inToolBox: true, iconClass: 'cesium-jiejing' }, role: 'all' },
-        { name: 'VR立体', type: 'ToolBoxItem', open: false, comName: 'vr3d', config: { inToolBox: true, iconClass: 'cesium-zhuanyiluxian' }, role: 'all' },
-        { name: '实时天气', type: 'ToolBoxItem', open: false, comName: 'weather', config: { inToolBox: true, iconClass: 'cesium-duoyun' }, role: 'all' },
-        { name: '几何特效', type: 'ToolBoxItem', open: false, comName: 'featureEffect', config: { inToolBox: true, iconClass: 'cesium-texiao' }, role: 'all' },
-        { name: '场景特效', type: 'ToolBoxItem', open: false, comName: 'specialEffect', config: { inToolBox: true, iconClass: 'cesium-texiao' }, role: 'all' },
-        { name: '视图管理', type: 'ToolBoxItem', open: false, comName: 'linkView', config: { inToolBox: true, iconClass: 'cesium-texiao' }, role: 'all' },
-        { name: '粒子系统', type: 'ToolBoxItem', open: false, comName: 'particleSystem', config: { inToolBox: true, iconClass: 'cesium-texiao' }, role: 'all' },
-        { name: '插件管理', type: 'ToolBoxItem', open: false, comName: 'PluginManagement', config: { inToolBox: true, iconClass: 'cesium-texiao' }, role: 'all' },
+        { name: '图上量算', type: 'ToolBoxItem', open: false, comName: 'measureTool', config: { inToolBox: true, iconClass: 'earth-shuipingliangsuan' }, role: 'all' },
+        { name: '剖面分析', type: 'ToolBoxItem', open: false, comName: 'geologicalSection', config: { inToolBox: true, iconClass: 'earth-shuipingliangsuan' }, role: 'all' },
+        { name: '坐标定位', type: 'ToolBoxItem', open: false, comName: 'coordinates', config: { inToolBox: true, iconClass: 'earth-dingwei' }, role: 'all' },
+        { name: '地区导航', type: 'ToolBoxItem', open: false, comName: 'areaNavigation', config: { inToolBox: true, iconClass: 'earth-daohang1' }, role: 'all' },
+        { name: '视角书签', type: 'ToolBoxItem', open: false, comName: 'visualMarker', config: { inToolBox: true, iconClass: 'earth-biaoqian' }, role: 'all' },
+        { name: '图上标绘', type: 'ToolBoxItem', open: false, comName: 'plotTool', config: { inToolBox: true, iconClass: 'earth-Icon_lujinghuizhi' }, role: 'all' },
+        { name: '卷帘对比', type: 'ToolBoxItem', open: false, comName: 'ImageLayerSplitMana', config: { inToolBox: true, iconClass: 'earth-juanlian' }, role: 'all' },
+        { name: '时序图层', type: 'ToolBoxItem', open: false, comName: 'ImageLayerTimeLine', config: { inToolBox: true, iconClass: 'earth-timeline' }, role: 'all' },
+        { name: '路线规划', type: 'ToolBoxItem', open: false, comName: 'pathPlanning', config: { inToolBox: true, iconClass: 'earth-zhuanyiluxian' }, role: 'all' },
+        { name: '路径漫游', type: 'ToolBoxItem', open: false, comName: 'pathRoaming', config: { inToolBox: true, iconClass: 'earth-zhuanyiluxian' }, role: 'all' },
+        { name: '天空盒', type: 'ToolBoxItem', open: false, comName: 'skyBoxTool', config: { inToolBox: true, iconClass: 'earth-jiejing' }, role: 'all' },
+        { name: 'VR立体', type: 'ToolBoxItem', open: false, comName: 'vr3d', config: { inToolBox: true, iconClass: 'earth-zhuanyiluxian' }, role: 'all' },
+        { name: '实时天气', type: 'ToolBoxItem', open: false, comName: 'weather', config: { inToolBox: true, iconClass: 'earth-duoyun' }, role: 'all' },
+        { name: '几何特效', type: 'ToolBoxItem', open: false, comName: 'featureEffect', config: { inToolBox: true, iconClass: 'earth-texiao' }, role: 'all' },
+        { name: '场景特效', type: 'ToolBoxItem', open: false, comName: 'specialEffect', config: { inToolBox: true, iconClass: 'earth-texiao' }, role: 'all' },
+        { name: '视图管理', type: 'ToolBoxItem', open: false, comName: 'linkView', config: { inToolBox: true, iconClass: 'earth-texiao' }, role: 'all' },
+        { name: '粒子系统', type: 'ToolBoxItem', open: false, comName: 'particleSystem', config: { inToolBox: true, iconClass: 'earth-texiao' }, role: 'all' },
+        { name: '插件管理', type: 'ToolBoxItem', open: false, comName: 'PluginManagement', config: { inToolBox: true, iconClass: 'earth-texiao' }, role: 'all' },
 
         { name: '水体特效', type: 'Pendant', open: false, comName: 'waterSpecial', role: 'all' },
         { name: '火焰粒子', type: 'Pendant', open: false, comName: 'firePlot', role: 'all' },

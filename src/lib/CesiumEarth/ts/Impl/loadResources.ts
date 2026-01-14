@@ -1,9 +1,12 @@
-let VGEEarth_SDK_isLoaded: boolean = false
-if (!VGEEarth_SDK_isLoaded) {
-    VGEEarth_SDK_isLoaded = true;
+import { DefaultConfig } from "../Config";
+import * as Cesium from "cesium"
 
-    console.log(`%c⭐ 开发工具包：%cVGEEarth%c${DefaultConfig.Version}%c，基于 Cesium ^${window.Cesium.VERSION}\n` +
-        `‍💻 版权所有：虚拟地理实验室 VGELab\n` +
+let CesiumEarth_SDK_isLoaded: boolean = false
+if (!CesiumEarth_SDK_isLoaded) {
+    CesiumEarth_SDK_isLoaded = true;
+
+    console.log(`%c⭐ 开发工具包：%cCesiumEarth%c${DefaultConfig.Version}%c，基于 Cesium ^${Cesium.VERSION}\n` +
+        `‍💻 版权所有： ©️geoearth.dev\n` +
         `📀 帮助文档：http://8.146.208.114:8083`,
         'color:green;font-size:14px;font-weight: bold;',
         'padding: 0 5px; border-radius: 3px 0 0 3px; color: #fff; background: #e52; font-weight: bold;',

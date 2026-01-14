@@ -4,7 +4,7 @@ import { DrawShape } from '../DrawShape';
 import { CartographicTool, GISMathUtils } from '../Utils';
 import { EntityFactory } from '../ExpandEntity/EntityFactory';
 import { getMostDetailedHeight } from '../Utils/SceneUtils';
-import type { Feature, GeoJSON, GeoJsonProperties, Geometry, Polygon } from 'GeoJSON';
+import type { Feature, Polygon } from 'geojson'
 
 
 /**

@@ -20,12 +20,13 @@ interface LoadItem {
 }
 const loadList = ref<LoadItem[]>([])
 onMounted(async () => {
+
     const earth: CesiumEarth.Earth = await earthStore.getEarth()
     earth.thenLoadComplete().then(() => {
         earth.viewer3DWorkSpace._3DTileManage.loadTileCallFunMap.set('LoadBarVue', (s: any, numberOfPendingRequests: any) => {
             loadList.value = loadList.value.filter(item => item.id !== s.pid);
             loadList.value.push({ id: s.pid, name: s.name, numberOfPendingRequests });
-            console.log(loadList.value);
+            console.log("loadList：", loadList.value);
         });
     });
 })

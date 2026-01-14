@@ -24,3 +24,7 @@
   transition: background-color 0.3s;
   cursor: pointer;
 }
+:root {
+  --el-component-size: 36px;
+  box-sizing: border-box;
+}

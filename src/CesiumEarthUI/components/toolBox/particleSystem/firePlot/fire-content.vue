@@ -47,14 +47,14 @@ export default {
         //添加粒子
         pickPoint() {
             let that = this;
-            let drawShape = new VGEEarth.DrawShape(VGEEarth.getMainViewer());
+            let drawShape = new CesiumEarth.DrawShape(CesiumEarth.getMainViewer());
             drawShape.drawPoint({
                 coordinateType: 'cartographicObj',
                 endCallback: function (ps) {
                     let entity = earth.viewer3D.entities.add({
                         position: Cesium.Cartesian3.fromDegrees(ps[0].longitude, ps[0].latitude, ps[0].height)
                     });
-                    particlePlot = new VGEEarth.FirePlot(entity);
+                    particlePlot = new CesiumEarth.FirePlot(entity);
                     particleStore.plots.push(particlePlot);
                     that.particleListener();//开启监听
                     // console.log(particlePlot.style)
@@ -68,9 +68,9 @@ export default {
         //监听点击粒子
         particleListener() {
             let that = this;
-            VGEEarth.EventMana.screenEvent.addEventListener(
-                VGEEarth.EventMana.ListenType.ScreenSpaceEventType.LEFT_CLICK,
-                VGEEarth.EventMana.ScopeType.Viewer3D,
+            CesiumEarth.EventMana.screenEvent.addEventListener(
+                CesiumEarth.EventMana.ListenType.ScreenSpaceEventType.LEFT_CLICK,
+                CesiumEarth.EventMana.ScopeType.Viewer3D,
                 function (e) {
                     let pick = earth.viewer3D.scene.pick(e.position);
                     if (!pick) {
@@ -135,7 +135,7 @@ export default {
 
         close() {
             this.clear();
-            this.$store.commit('setVGEEarthComAction', { name: 'firePlot', on_off: 2 });
+            this.$store.commit('setCesiumEarthComAction', { name: 'firePlot', on_off: 2 });
         }
     }
 };
