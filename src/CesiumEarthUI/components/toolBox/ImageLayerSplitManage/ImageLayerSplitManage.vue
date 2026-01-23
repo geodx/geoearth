@@ -9,7 +9,7 @@ import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 const ceStore = useCesiumEarthStore()
 
 const show = computed(() => {
-    return ceStore.comStatus('ImageLayerSplitMana');
+    return ceStore.comStatus('ImageLayerSplitManage');
 })
 
 </script>

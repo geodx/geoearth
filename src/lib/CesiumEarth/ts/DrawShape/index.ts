@@ -15,7 +15,6 @@ import { PolylineLightingMaterial } from '../ExpandEntity/Material/Polyline';
 import { getRectanglePoint } from './getRectanglePoint';
 import { getInclinedRectangle } from './getInclinedRectangle';
 import { GISMathUtils } from '../Utils';
-import { CallbackPositionProperty } from 'cesium';
 
 
 
@@ -305,7 +304,6 @@ class DrawShape {
               width: 12,
               clampToGround: true,
               arcType: ArcType.RHUMB,
-              // @ts-ignore
               material: new PolylineLightingMaterial(Color.GREEN)
             }
           });
@@ -479,14 +477,11 @@ class DrawShape {
             }, false);
           }
           if (!this.drawEntities) {
-            // @ts-ignore
             this.drawEntities = this.dataSourceTool.entities.add({
               position: circleCenter,
               name: 'Red ellipse on surface',
               ellipse: {
-                // @ts-ignore
                 semiMinorAxis: dynamicPositions,
-                // @ts-ignore
                 semiMajorAxis: dynamicPositions,
                 material: Color.RED.withAlpha(0.5)
               }
@@ -758,7 +753,6 @@ class DrawShape {
         outlineColor: Color.BLUE
       }
     });
-    // @ts-ignore
     this.drawEntities.drawYPlan = 'drawYPlan';
 
     handler.setInputAction((movement: { position: Cartesian3 | any; }) => {
@@ -768,9 +762,7 @@ class DrawShape {
         defined(pickedObject.id.plane) &&
         pickedObject.id.drawYPlan == 'drawYPlan') {
         selectedPlane = pickedObject.id.plane;
-        // @ts-ignore
         selectedPlane.material = Color.RED.withAlpha(0.5);
-        // @ts-ignore
         selectedPlane.outlineColor = Color.RED;
         this.viewer.scene.screenSpaceCameraController.enableInputs = false;
       }
@@ -778,9 +770,7 @@ class DrawShape {
 
     handler.setInputAction(() => {
       if (defined(selectedPlane)) {
-        // @ts-ignore
         selectedPlane.material = Color.BLUE.withAlpha(0.5);
-        // @ts-ignore
         selectedPlane.outlineColor = Color.BLUE;
         selectedPlane = undefined;
       }

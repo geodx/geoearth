@@ -115,7 +115,7 @@ onMounted(() => {
 
 })
 function update3DTilesMatrix() {
-    let tileSet = earth.viewer3DWorkSpace._3DTileMana.getByPid(this.selTileSetPid);
+    let tileSet = earth.viewer3DWorkSpace._3DTileManage.getByPid(selTileSetPid);
     if (tileSet) {
         let tileSetEditor = new CesiumEarth.TileSetPlugin.PositionEditor(earth.viewer3D, tileSet);
         this.opts = tileSetEditor.getParams();

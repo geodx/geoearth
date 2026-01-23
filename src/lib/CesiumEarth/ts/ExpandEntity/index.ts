@@ -17,3 +17,4 @@ export * as Material from './Material/index';
 export { MotionEntity } from './MotionEntity/index';
 export * as NormalEntity from './NormalEntity/index';
 export { RegionLabel } from './RegionLabel/index';
+export * as SuperiorEntity from './SuperiorEntity/index';

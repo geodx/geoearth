@@ -22,7 +22,7 @@
                     </div>
                 </div>
                 <!--表单内容区-->
-                <form v-if="pccradio === '1'" autocomplete="off" class="form-horizontal" name="navText">
+                <form v-if="pccradio === 1" autocomplete="off" class="form-horizontal" name="navText">
                     <div class="viewTen">
                         <div>
                             <label>坐标系：</label>
@@ -193,10 +193,16 @@ import { TabPane, WinTabs } from '../../winTabs'
 import toClipboard from './lib/toClipboard';
 import coordinateOffset from './img/CoordinateOffset';
 import CoordPlot from './coordPlot.vue';
-import { ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore.js';
+import CesiumEarth from '@/lib/CesiumEarth';
+import { useEarthStore } from '@/stores/EarthStore';
+import { Cartesian3, NearFarScalar, VerticalOrigin, Cartographic, Math as CesiumMath } from 'cesium';
+import proj4 from 'proj4';
+import { CoordinateType } from '@/lib/CesiumEarth/ts/DrawShape/CoordinateType';
+import { ElMessage } from 'element-plus';
 const ceStore = useCesiumEarthStore()
-
+const earthStore = useEarthStore()
 const firstGuide = ref(true)
 const coordinateSystem = ref(0) //弧度下拉窗显隐 
 const system = ref(0)        //平面坐标下拉窗显隐
@@ -232,7 +238,6 @@ const alert = ref({
     b3: 0
 })
 const alert10 = ref({
-
     lon: 0,
     lat: 0
 })
@@ -242,16 +247,16 @@ const C3toDu = ref({
     alt: 0
 })
 const gcto84 = ref({
-    x: 0,
-    y: 0
+    lon: 0,
+    lat: 0
 })
 const bdto84 = ref({
-    x: 0,
-    y: 0
+    lon: 0,
+    lat: 0
 })
 const mctTo84 = ref({
-    x: 0,
-    y: 0
+    lon: 0,
+    lat: 0
 })
 const EPSG3857 = ref({
     x: 0,
@@ -262,66 +267,66 @@ const EPSG4326 = ref({
     y: 0
 })
 const gcj02 = ref({
-    x: 0,
-    y: 0
+    lat: 0,
+    lon: 0
 })
 const bd09 = ref({
-    x: 0,
-    y: 0
+    lat: 0,
+    lon: 0
 })
 const mercator = ref({
-    x: 0,
-    y: 0
+    y: 0,
+    x: 0
 })
-const show = computed(() => {
-    // return $store.state.CesiumEarthStore.comActions.coordinates; 
-    // return ceStore.comActions.
-
+onUnmounted(() => {
+    document.onmousemove = null;
 })
-
-mounted() {
-    firstGuide.value = localStorage.getItem('firstGuide');
-    if (firstGuide) {
-        firstGuide = false;
+let earth: CesiumEarth.Earth;
+onMounted(async () => {
+    firstGuide.value = localStorage.getItem('firstGuide') === 'true';
+    if (firstGuide.value) {
+        firstGuide.value = false;
     } else {
-        firstGuide = true;
+        firstGuide.value = true
         localStorage.setItem('firstGuide', 'true');
     }
-}
-watch(() => alert.value, (newValue, oldValue) => {
-    changeDuLon(alert.b1, alert.b2, alert.b3);
-    changeDuLat(alert.v1, alert.v2, alert.v3);
+
+    earth = await earthStore.getEarth()
 })
-watch(() => cartesian3.value.value, (newValue, oldValue) => {
+watch(() => alert.value, (newValue, oldValue) => {
+    changeDuLon(alert.value.b1, alert.value.b2, alert.value.b3);
+    changeDuLat(alert.value.v1, alert.value.v2, alert.value.v3);
+})
+watch(() => cartesian3.value, (newValue, oldValue) => {
     c3toDu(cartesian3.value.x, cartesian3.value.y, cartesian3.value.z)
 })
 watch(() => gcj02.value, (newValue, oldValue) => {
-    gcj02towgs84(gcj02.lat, gcj02.lon)
+    gcj02towgs84(gcj02.value.lat, gcj02.value.lon)
 })
-watch(() => bd09.value, (newValue, oldValue) => {
-    bd09towgs84(bd09.lat, bd09.lon)
+watch(() => bd09, (newValue, oldValue) => {
+    bd09towgs84(bd09.value.lat, bd09.value.lon)
 })
 watch(() => mercator.value, (newValue, oldValue) => {
-    mercatorToWgs84(mercator.y, mercator.x)
+    mercatorToWgs84(mercator.value.y, mercator.value.x)
 })
 
 
 /**
-       * 添加点entity
-       */
-function addMarkEntity(lon, lat, height) {
-    window.earth.viewer3D.entities.removeById('coordinatePonint');
+ * 添加点entity
+ */
+function addMarkEntity(lon: number, lat: number, height: number) {
+    earth.viewer3D.entities.removeById('coordinatePonint');
 
-    let point = window.earth.viewer3D.entities.add({//创建定位点
+    earth.viewer3D.entities.add({//创建定位点
         id: 'coordinatePonint',
         name: 'coordinates',
-        position: Cesium.Cartesian3.fromDegrees(lon, lat, height),
+        position: Cartesian3.fromDegrees(lon, lat, height),
         billboard: {
             image: new URL('./img/coordinates.png', import.meta.url).href,//定位的图片样式
             width: 15,
             height: 21,
-            scaleByDistance: new Cesium.NearFarScalar(1.5e2, 2.0, 1.5e7, 0.5),
-            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+            scaleByDistance: new NearFarScalar(1.5e2, 2.0, 1.5e7, 0.5),
+            verticalOrigin: VerticalOrigin.BOTTOM,
             disableDepthTestDistance: Number.POSITIVE_INFINITY
         }
     });
@@ -330,30 +335,29 @@ function addMarkEntity(lon, lat, height) {
  * 获取坐标 高程 画点
  */
 function pickPoint() {
-    let that = this;
     remove();
     addImage();
-    let drawShape = new CesiumEarth.DrawShape(CesiumEarth.getMainViewer());
+    const drawShape = new CesiumEarth.DrawShape(earth.viewer3D);
     drawShape.drawPoint({
-        coordinateType: 'cartographicObj',
-        endCallback: function (ps) {
+        coordinateType: CoordinateType.cartographicObj,
+        endCallback: function (ps: any[]) {
             //经纬度
-            let lon = Math.floor(ps[0].longitude * 1000000) / 1000000;
-            let lat = Math.floor(ps[0].latitude * 1000000) / 1000000;
-            degrees.latitude = ps[0].latitude;
-            degrees.longitude = ps[0].longitude;
-            degrees.height = ps[0].height;
+            const lon = Math.floor(ps[0].longitude * 1000000) / 1000000;
+            const lat = Math.floor(ps[0].latitude * 1000000) / 1000000;
+            degrees.value.latitude = ps[0].latitude;
+            degrees.value.longitude = ps[0].longitude;
+            degrees.value.height = ps[0].height;
             //cartesian3
-            let ellipsoid = earth.viewer3D.scene.globe.ellipsoid;
-            let cartographic = Cesium.Cartographic.fromDegrees(ps[0].longitude, ps[0].latitude);
-            let cartesian3 = ellipsoid.cartographicToCartesian(cartographic);
+            const ellipsoid = earth.viewer3D.scene.globe.ellipsoid;
+            const cartographic = Cartographic.fromDegrees(ps[0].longitude, ps[0].latitude);
+            const cartesian3 = ellipsoid.cartographicToCartesian(cartographic);
             cartesian3.x = cartesian3.x;
             cartesian3.y = cartesian3.y;
             cartesian3.z = cartesian3.z;
             //EPSG:3857
-            let a = proj4('EPSG:4326', 'EPSG:3857', { x: cartographic.latitude, y: cartographic.longitude });
-            EPSG3857.x = a.x;
-            EPSG3857.y = a.y;
+            const a = proj4('EPSG:4326', 'EPSG:3857', { x: cartographic.latitude, y: cartographic.longitude });
+            EPSG3857.value.x = a.x;
+            EPSG3857.value.y = a.y;
 
             wgs84togcj02(ps[0].latitude, ps[0].longitude);
             gcj02tobd09();
@@ -370,62 +374,62 @@ function pickPoint() {
 /**
  * 世界坐标转经纬度
  */
-function c3toDu(x, y, z) {
-    let ellipsoid = earth.viewer3D.scene.globe.ellipsoid;
-    let cartesian3 = new Cesium.Cartesian3(x, y, z);
-    let cartographic = ellipsoid.cartesianToCartographic(cartesian3);
-    C3toDu.lat = Cesium.Math.toDegrees(cartographic.latitude);
-    C3toDu.lon = Cesium.Math.toDegrees(cartographic.longitude);
-    C3toDu.alt = cartographic.height;
+function c3toDu(x: number, y: number, z: number) {
+    const ellipsoid = earth.viewer3D.scene.globe.ellipsoid;
+    const cartesian3 = new Cartesian3(x, y, z);
+    const cartographic = ellipsoid.cartesianToCartographic(cartesian3);
+    C3toDu.value.lat = CesiumMath.toDegrees(cartographic.latitude);
+    C3toDu.value.lon = CesiumMath.toDegrees(cartographic.longitude);
+    C3toDu.value.alt = cartographic.height;
 }
 /**
  * 墨卡托转WGS84
  */
-function mercatorToWgs84(y, x) {
-    let resultmercatorToWgs84 = coordinateOffset.mercator_decrypt(y, x);
-    mctTo84.lat = resultmercatorToWgs84.lat;
-    mctTo84.lon = resultmercatorToWgs84.lon;
+function mercatorToWgs84(y: number, x: number) {
+    const resultmercatorToWgs84 = coordinateOffset.mercator_decrypt(y, x);
+    mctTo84.value.lat = resultmercatorToWgs84.lat;
+    mctTo84.value.lon = resultmercatorToWgs84.lon;
 }
 /**
  * 百度坐标转WGS-84
  */
-function bd09towgs84(lat, lon) {
-    let resultbdtogc = coordinateOffset.bd_decrypt(lat, lon);
-    let resultgctogc = coordinateOffset.gcj_decrypt(resultbdtogc.lat, resultbdtogc.lon);
-    bdto84.lat = resultgctogc.lat;
-    bdto84.lon = resultgctogc.lon;
+function bd09towgs84(lat: number, lon: number) {
+    const resultbdtogc = coordinateOffset.bd_decrypt(lat, lon);
+    const resultgctogc = coordinateOffset.gcj_decrypt(resultbdtogc.lat, resultbdtogc.lon);
+    bdto84.value.lat = resultgctogc.lat;
+    bdto84.value.lon = resultgctogc.lon;
 }
 /**
  * 国测局坐标转WGS-84
  */
-function gcj02towgs84(lat, lon) {
-    let result84 = coordinateOffset.gcj_decrypt(lat, lon);
-    gcto84.lat = result84.lat;
-    gcto84.lon = result84.lon;
+function gcj02towgs84(lat: number, lon: number) {
+    const result84 = coordinateOffset.gcj_decrypt(lat, lon);
+    gcto84.value.lat = result84.lat;
+    gcto84.value.lon = result84.lon;
 }
 /**
  * wgs84转gcj02
  */
-function wgs84togcj02(lng, lat) {
-    let resultgc = coordinateOffset.gcj_encrypt(lng, lat);
-    gcj02.lat = resultgc.lat;
-    gcj02.lon = resultgc.lon;
+function wgs84togcj02(lng: number, lat: number) {
+    const resultgc = coordinateOffset.gcj_encrypt(lng, lat);
+    gcj02.value.lat = resultgc.lat;
+    gcj02.value.lon = resultgc.lon;
 }
 /**
  * gcj02转bd09
  */
 function gcj02tobd09() {
-    let resultbd = coordinateOffset.bd_encrypt(gcj02.lat, gcj02.lon);
-    bd09.lat = resultbd.lat;
-    bd09.lon = resultbd.lon;
+    const resultbd = coordinateOffset.bd_encrypt(gcj02.value.lat, gcj02.value.lon);
+    bd09.value.lat = resultbd.lat;
+    bd09.value.lon = resultbd.lon;
 }
 /**
  * wgs84转Web mercator
  */
-function wgs84tomercator(lng, lat) {
-    let resultmt = coordinateOffset.mercator_encrypt(lng, lat);
-    mercator.y = resultmt.lat;
-    mercator.x = resultmt.lon;
+function wgs84tomercator(lng: number, lat: number) {
+    const resultmt = coordinateOffset.mercator_encrypt(lng, lat);
+    mercator.value.y = resultmt.lat;
+    mercator.value.x = resultmt.lon;
 }
 /**
  * 关闭按钮 移除点
@@ -443,18 +447,18 @@ function openHelp() {
  * @param latitude 经度
  * @param longitude 纬度
  */
-function formatDegree(latitude, longitude) {
-    if (latitude != null && latitude != '') {
+function formatDegree(latitude: number, longitude: number) {
+    if (latitude) {
         latitude = Math.abs(latitude);  //返回数的绝对值
-        alert.v1 = Math.floor(latitude);//度   //对数进行下舍入
-        alert.v2 = Math.floor((latitude - alert.v1) * 60);//分
-        alert.v3 = Math.round((latitude - alert.v3) * 3600 % 60);//秒  //把数四舍五入为最接近的整数
+        alert.value.v1 = Math.floor(latitude);//度   //对数进行下舍入
+        alert.value.v2 = Math.floor((latitude - alert.value.v1) * 60);//分
+        alert.value.v3 = Math.round((latitude - alert.value.v3) * 3600 % 60);//秒  //把数四舍五入为最接近的整数
     }
-    if (longitude != null && longitude != '') {
+    if (longitude) {
         longitude = Math.abs(longitude);  //返回数的绝对值
-        alert.b1 = Math.floor(longitude);//度   //对数进行下舍入
-        alert.b2 = Math.floor((longitude - alert.b1) * 60);//分
-        alert.b3 = Math.round((longitude - alert.b3) * 3600 % 60);//秒  //把数四舍五入为最接近的整数
+        alert.value.b1 = Math.floor(longitude);//度   //对数进行下舍入
+        alert.value.b2 = Math.floor((longitude - alert.value.b1) * 60);//分
+        alert.value.b3 = Math.round((longitude - alert.value.b3) * 3600 % 60);//秒  //把数四舍五入为最接近的整数
     }
 }
 /**
@@ -463,51 +467,50 @@ function formatDegree(latitude, longitude) {
  * @param fen
  * @param miao
  */
-function changeDuLon(du, fen, miao) {
+function changeDuLon(du: number, fen: number, miao: number) {
     let mFen = 0;
-    if (miao != null && miao != '') {
+    if (miao) {
         mFen = Number(miao / 60);
     }
     let fDu = 0;
-    if (fen != null && fen != '') {
+    if (fen) {
         fDu = (Number(fen) + mFen) / 60;
     } else {
         fDu = mFen;
     }
     let lDu = 0;
-    if (du != null && du != '') {
-        lDu = (Number(du) + fDu).toFixed(6);
+    if (du) {
+        lDu = Number((Number(du) + fDu).toFixed(6));
     } else {
-        lDu = fDu.toFixed(6);
+        lDu = Number(fDu.toFixed(6));
     }
-    alert10.lon = lDu;
+    alert10.value.lon = lDu;
 }
-function changeDuLat(du, fen, miao) {
+function changeDuLat(du: number, fen: number, miao: number) {
     let mFen = 0;
-    if (miao != null && miao != '') {
+    if (miao) {
         mFen = Number(miao / 60);
     }
     let fDu = 0;
-    if (fen != null && fen != '') {
+    if (fen) {
         fDu = (Number(fen) + mFen) / 60;
     } else {
         fDu = mFen;
     }
     let lDu = 0;
-    if (du != null && du != '') {
-        lDu = (Number(du) + fDu).toFixed(6);
+    if (du) {
+        lDu = Number((Number(du) + fDu).toFixed(6));
     } else {
-        lDu = fDu.toFixed(6);
+        lDu = Number(fDu.toFixed(6));
     }
-    alert10.lat = lDu;
+    alert10.value.lat = lDu;
 }
-
+let mv: HTMLImageElement | null = null;
 /**
  * 添加跟随鼠标的图标
  */
 function addImage() {
-    let mv = document.createElement('img');
-    mv = mv;
+    mv = document.createElement('img');
     mv.src = new URL('./img/coordinates.png', import.meta.url).href;
     mv.style.position = 'absolute';
     mv.style.left = '-100px';
@@ -515,7 +518,7 @@ function addImage() {
     document.body.append(mv);
 
     document.onmousemove = function (e) {
-        e = e || window.event;
+        if (!mv) return
         mv.style.left = e.clientX - mv.width / 2 + 'px';
         mv.style.top = e.clientY - mv.height + 'px';
     };
@@ -532,56 +535,57 @@ function remove() {
 /**
  * 视角飞行 高度3000
  */
-function coordinatePoint(lon, lat) {
-    window.earth.viewer3D.entities.removeById('coordinatePonint');
-    addMarkEntity(lon, lat, degrees.height);
-    window.earth.viewer3D.camera.flyTo({//定位过去
-        destination: Cesium.Cartesian3.fromDegrees(lon, lat, 3000)
+function coordinatePoint(lon: number, lat: number) {
+    earth.viewer3D.entities.removeById('coordinatePonint');
+    addMarkEntity(lon, lat, degrees.value.height);
+    earth.viewer3D.camera.flyTo({//定位过去
+        destination: Cartesian3.fromDegrees(lon, lat, 3000)
     });
 }
+
+const watchCoordinate = ref(0);
+const watchCoordinate2 = ref(0);
 /**
  * 坐标定位
  */
 function coordinate() {
     remove();
     if (pccradio.value == 1) {
-        if (coordinateSystem === 0) {
-            coordinatePoint($refs.watchCoordinate.value, $refs.watchCoordinate2.value);
-        } else if (coordinateSystem === 1) {
-            coordinatePoint(gcto84.lon, gcto84.lat);
-        } else if (coordinateSystem === 2) {
-            coordinatePoint(bdto84.lon, bdto84.lat);
+        if (coordinateSystem.value === 0) {
+            coordinatePoint(watchCoordinate.value, watchCoordinate2.value);
+        } else if (coordinateSystem.value === 1) {
+            coordinatePoint(gcto84.value.lon, gcto84.value.lat);
+        } else if (coordinateSystem.value === 2) {
+            coordinatePoint(bdto84.value.lon, bdto84.value.lat);
         }
     } else if (pccradio.value == 2) {
-        coordinatePoint(alert10.lon, alert10.lat);
+        coordinatePoint(alert10.value.lon, alert10.value.lat);
     } else if (pccradio.value == 3) {
-        if (system === 0) {
-            coordinatePoint(C3toDu.lon, C3toDu.lat);
-        } else if (system === 1) {
-            coordinatePoint($refs.watchCoordinate.value, $refs.watchCoordinate2.value);
-        } else if (system === 2) {
-            coordinatePoint(mctTo84.lon, mctTo84.lat);
+        if (system.value === 0) {
+            coordinatePoint(C3toDu.value.lon, C3toDu.value.lat);
+        } else if (system.value === 1) {
+            coordinatePoint(watchCoordinate.value, watchCoordinate2.value);
+        } else if (system.value === 2) {
+            coordinatePoint(mctTo84.value.lon, mctTo84.value.lat);
         }
     }
 }
 function toCopy() {
     toClipboard(
         JSON.stringify({
-            lon: alert10.lon,
-            lat: alert10.lat,
-            height: degrees.height
-        }, null, 4)
-        , () => {
-            $message({
+            lon: alert10.value.lon,
+            lat: alert10.value.lat,
+            height: degrees.value.height
+        }, null, 4),
+        () => {
+            ElMessage({
                 message: '设备标识码 - 复制到粘贴板成功',
                 type: 'success'
             });
         });
 }
 
-function beforeDestroy() {
-    document.onmousemove = null;
-}
+
 
 </script>
 

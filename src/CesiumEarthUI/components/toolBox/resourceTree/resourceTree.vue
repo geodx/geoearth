@@ -2,15 +2,15 @@
 	<div v-if="show" class="layer">
 		<div class="tool-title">
 			<div>
-				<img alt="" src="./img/layer.png">
+				<img alt="" src="./img/layer.png" />
 				<span>地图数据</span>
 			</div>
-			<img alt="" class="close-btn" src="./img/close.png" @click="close">
+			<img alt="" class="close-btn" src="./img/close.png" @click="close" />
 		</div>
 		<div class="layer-tree">
 			<!-- 加载数据图层 -->
 			<div id="treeDom" class="ztree" style="padding: 5px 10px"></div>
-			<div id="ctrlTree" :class="{ 'openLoad': isReloadTree, 'closeLoad': !isReloadTree }" @click="toggleReload">
+			<div id="ctrlTree" :class="{ openLoad: isReloadTree, closeLoad: !isReloadTree }" @click="toggleReload">
 				<span style="padding-right: 10px">实时数据接入</span>
 				<el-text v-if="isReloadTree" size="large" :type="isReloadTree ? 'success' : 'warning'"
 					style="font-size: 14px">◉ 开启中
@@ -34,59 +34,69 @@ const ceStore = useCesiumEarthStore()
 
 const isReloadTree = ref(false)
 
-let reloadTimer: number;
+let reloadTimer: number
 
 let earth: CesiumEarth.Earth
 onMounted(async () => {
 	earth = await earthStore.getEarth()
 })
 onUnmounted(() => {
-	clearInterval(reloadTimer);
+	clearInterval(reloadTimer)
 })
 
 const show = computed(() => {
 	let s = ceStore.comStatus('resourceTree')
 	nextTick(() => {
 		if (s) {
-			let t = new CesiumEarth.TreeManage.ZTreeManage(earth.viewer3D,
+			let t = new CesiumEarth.TreeManage.ZTreeManage(
+				earth.viewer3D,
 				CesiumEarth.EventManage.ScopeType.Viewer3D,
-				{ font: { 'color': 'white' } }
-			);
+				{ font: { color: 'white' } },
+			)
 			reloadTimer = setInterval(() => {
-				reloadTree();
-				t.upDateTreeNode();
-			}, 2000);
+				reloadTree()
+				t.upDateTreeNode()
+			}, 2000)
 		}
-	});
-	return s;
+	})
+	return s
 })
 function toggleReload() {
 	isReloadTree.value = !isReloadTree.value
 	if (isReloadTree.value === false) {
-		CesiumEarth.ConfigTool.config.cesium3DTileSetList = CesiumEarth.ConfigTool.config.cesium3DTileSetList.filter(item => {
-			return item.properties.type !== 'realtime';
-		});
+		CesiumEarth.ConfigTool.config.cesium3DTileSetList =
+			CesiumEarth.ConfigTool.config.cesium3DTileSetList.filter((item) => {
+				return item.properties.type !== 'realtime'
+			})
 		if (zTreeManage) {
-			zTreeManage.upDateTreeNode();
+			zTreeManage.upDateTreeNode()
 		}
 	} else {
-		reloadTree();
+		reloadTree()
 	}
 }
 function close() {
 	ceStore.setCesiumEarthComAction('resourceTree', 2)
 }
 async function reloadTree() {
-	if (isReloadTree.value === false) return;
+	if (isReloadTree.value === false) return
 
-	const realTimeData = await fetch('http://127.0.0.1:3000/TileServer/getTileSetList').then(res => res.json());
-	const configTileSetList = CesiumEarth.ConfigTool.config.cesium3DTileSetList;
+	const realTimeData = await fetch('http://127.0.0.1:3000/TileServer/getTileSetList').then((res) =>
+		res.json(),
+	)
+	const configTileSetList = CesiumEarth.ConfigTool.config.cesium3DTileSetList
 
-	const newItems = realTimeData.filter((realTimeItem: ResourceItem) => configTileSetList.find(item => item.pid === realTimeItem.pid) === undefined);
-	const removedItems = configTileSetList.filter((item: ResourceItem) => realTimeData.find(realTimeItem => realTimeItem.pid === item.pid) === undefined);
+	const newItems = realTimeData.filter(
+		(realTimeItem: ResourceItem) =>
+			configTileSetList.find((item) => item.pid === realTimeItem.pid) === undefined,
+	)
+	const removedItems = configTileSetList.filter(
+		(item: ResourceItem) =>
+			realTimeData.find((realTimeItem) => realTimeItem.pid === item.pid) === undefined,
+	)
 
 	for (let i = 0; i < newItems.length; i++) {
-		const item = newItems[i];
+		const item = newItems[i]
 		const tileSet3D = {
 			pid: item.pid,
 			name: item.name,
@@ -94,22 +104,24 @@ async function reloadTree() {
 			dataType: 'Cesium3DTile',
 			properties: {
 				type: 'realtime',
-				url: 'http://127.0.0.1:3000' + item.url
-			}
-		};
-		CesiumEarth.ConfigTool.addResourceItem(tileSet3D);
+				url: 'http://127.0.0.1:3000' + item.url,
+			},
+		}
+		CesiumEarth.ConfigTool.addResourceItem(tileSet3D)
 	}
 	for (let j = 0; j < removedItems.length; j++) {
-		const removedItem = removedItems[j];
+		const removedItem = removedItems[j]
 		// 剔除掉
-		CesiumEarth.ConfigTool.config.cesium3DTileSetList = CesiumEarth.ConfigTool.config.cesium3DTileSetList.filter(item => item.pid !== removedItem.pid);
-		if (removedItem) earth.viewer3DWorkSpace.removeDataByPid(removedItem.pid);
+		CesiumEarth.ConfigTool.config.cesium3DTileSetList =
+			CesiumEarth.ConfigTool.config.cesium3DTileSetList.filter(
+				(item) => item.pid !== removedItem.pid,
+			)
+		if (removedItem) earth.viewer3DWorkSpace.removeDataByPid(removedItem.pid)
 	}
 }
-
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .layer {
 	background: rgba(33, 45, 33, 0.8);
 	position: absolute;
@@ -136,7 +148,7 @@ async function reloadTree() {
 	padding: 0 10px;
 	font-size: 16px;
 	font-weight: 400;
-	color: #FFFFFF;
+	color: #ffffff;
 	line-height: 35px;
 	border-bottom: 1px solid rgba(185, 197, 185, 0.2);
 
@@ -170,13 +182,12 @@ async function reloadTree() {
 }
 
 .openLoad {
-	background-color: rgba(168, 244, 103, 0.3)
+	background-color: rgba(168, 244, 103, 0.3);
 }
 
 .closeLoad {
 	background-color: rgb(23, 30, 32);
 }
-
 
 .el-text:hover {
 	color: #66afe9;
