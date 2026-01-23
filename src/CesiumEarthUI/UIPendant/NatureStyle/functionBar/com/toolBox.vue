@@ -19,7 +19,7 @@ import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 import { computed, ref, watch } from 'vue';
 const ceStore = useCesiumEarthStore()
 const toolList = ref<any[]>([])
-const selItem = ref('图上量算')
+const selItem = ref('')
 
 const show = computed(() => { return ceStore.comStatus('toolBox') })
 const comActions = computed(() => {

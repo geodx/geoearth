@@ -4,6 +4,7 @@ import { getMostDetailedHeight } from './getMostDetailedHeight';
 import { getTerrainMostDetailedHeight } from './getTerrainMostDetailedHeight';
 import { FlyToWorkspace } from './FlyToWorkspace/index';
 import { WeatherEffect } from './WeatherEffect/index';
+import { isOnBack } from "./isOnBack";
 
 const SceneUtils = {
   // 全屏
@@ -148,8 +149,8 @@ export {
   FlyToWorkspace,
   WeatherEffect,
   getMostDetailedHeight,
-  getTerrainMostDetailedHeight
-
+  getTerrainMostDetailedHeight,
+  isOnBack
 };
 
 

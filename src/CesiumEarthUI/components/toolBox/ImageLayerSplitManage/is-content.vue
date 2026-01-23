@@ -4,7 +4,7 @@
 ****************************************************************************/
 <template>
 
-    <div id="ImageLayerSplitMana" class="main-menu-tool-warp">
+    <div id="ImageLayerSplitManage" class="main-menu-tool-warp">
         <div style="padding-bottom: 10px;position: relative">
             数据分组
             <el-select v-model="selGroup" placeholder="请选择数据分组" size="small" style="width: 160px">
@@ -153,13 +153,13 @@ function exit() {
     layers.value = [];
     layerMap.clear();
     selGroup.value = '';
-    ceStore.setCesiumEarthComAction('ImageLayerSplitMana', 2)
+    ceStore.setCesiumEarthComAction('ImageLayerSplitManage', 2)
 }
 
 </script>
 
 <style lang="scss" scoped>
-#ImageLayerSplitMana {
+#ImageLayerSplitManage {
     position: absolute;
     background-color: rgba(33, 45, 33, 0.8);
     width: 461px;
@@ -173,7 +173,7 @@ function exit() {
     border-radius: 3px;
 }
 
-#ImageLayerSplitMana i {
+#ImageLayerSplitManage i {
     line-height: 28px;
     font-size: 22px;
     padding-left: 5px;

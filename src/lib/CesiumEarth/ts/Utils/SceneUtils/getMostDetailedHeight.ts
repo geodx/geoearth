@@ -14,8 +14,9 @@ async function getMostDetailedHeight(viewer: Viewer, positions: WorldDegree[]) {
     let inTerrainList = [];
     if (inModelHeightList.length === 0) {
         for (let i = 0; i < positions.length; i++) {
-            const longitude = positions[i]!.longitude
-            const latitude = positions[i]!.latitude
+            const longitude = positions[i]?.longitude
+            const latitude = positions[i]?.latitude
+            if (!longitude || !latitude) continue
             inTerrainList.push({
                 longitude: longitude,
                 latitude: latitude,

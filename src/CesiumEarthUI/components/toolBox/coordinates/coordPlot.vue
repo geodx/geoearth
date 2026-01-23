@@ -19,7 +19,7 @@
 import CesiumEarth from '@/lib/CesiumEarth';
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 import { useEarthStore } from '@/stores/EarthStore';
-import type { Cartesian3 } from 'cesium';
+import { Cartesian3 } from 'cesium';
 import { onMounted, onUnmounted, ref } from 'vue';
 const ceStore = useCesiumEarthStore()
 const earthStore = useEarthStore()
@@ -36,15 +36,16 @@ onMounted(async () => {
 	dynamicLabelList = [];
 	pointList = [];
 })
+
 onUnmounted(() => {
 	removeMarkLabel()
 })
 
 function saveShareContent(content: any, fileName: string) {
-	let downLink = document.createElement('a');
+	const downLink = document.createElement('a');
 	downLink.download = fileName;
 	//字符内容转换为blod地址
-	let blob = new Blob([content]);
+	const blob = new Blob([content]);
 	downLink.href = URL.createObjectURL(blob);
 	// 链接插入到页面
 	document.body.appendChild(downLink);
@@ -56,39 +57,37 @@ function saveShareContent(content: any, fileName: string) {
 async function addMarkLabel() {
 	earth.drawShape.drawPoint({
 		endCallback: async (positions: Cartesian3[]) => {
-			let position = CesiumEarth.CartographicTool.formCartesian3(positions[0]!);
-			let [cartesianHasHeight] = await CesiumEarth.getMostDetailedHeight(earth.viewer3D, [{
+
+			const position = CesiumEarth.CartographicTool.formCartesian3(positions[0]!);
+			const [cartesianHasHeight] = await CesiumEarth.getMostDetailedHeight(earth.viewer3D, [{
 				longitude: position.longitude,
 				latitude: position.latitude,
 				height: 0
 			}]);
 
-			let height = cartesianHasHeight?.height;
+			const height = cartesianHasHeight!.height;
 
+			const lon = position.longitude;
+			const lat = position.latitude;
 
-			let lon = position.longitude;
-			let lat = position.latitude;
-
-			let dom = document.createElement('div');
+			const dom = document.createElement('div');
 			dom.innerHTML = `<div style="text-align: left">
-                      <div>经度：${lon.toFixed(5)}°</div>
-                      <div>纬度：${lat.toFixed(5)}°</div>
-                      <div>高程：${height?.toFixed(4)} m</div>
-                  </div>`;
+			          <div>经度：${lon.toFixed(5)}°</div>
+			          <div>纬度：${lat.toFixed(5)}°</div>
+			          <div>高程：${height?.toFixed(4)} m</div>
+			      </div>`;
 
-			let point = new CesiumEarth.SuperiorEntity.GradientLabelPoint(
-				earth.viewer3D, {
-				longitude: lon,
-				latitude: lat,
-				height: height
-			}, dom
+			const point = new CesiumEarth.SuperiorEntity.GradientLabelPoint(
+				earth.viewer3D,
+				{ longitude: lon, latitude: lat, height: height },
+				dom,
+				true
 			);
-
 			point.init();
+
 			dynamicLabelList.push(point);
 			pointList.push({ lon: lon, lat: lat, height: height });
-
-			if (continuous) {
+			if (continuous.value) {
 				await addMarkLabel();
 			}
 		}

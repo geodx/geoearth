@@ -34,7 +34,7 @@ export { Material } from './ExpandEntity';
 export { MotionEntity } from './ExpandEntity';
 export { NormalEntity } from './ExpandEntity';
 export { RegionLabel } from './ExpandEntity';
-// export { SuperiorEntity } from './ExpandEntity';
+export { SuperiorEntity } from './ExpandEntity';
 export { EntityFactory } from './ExpandEntity/EntityFactory';
 
 export { FlyCylinder } from './ExpandEntity/Material/Polyline';
