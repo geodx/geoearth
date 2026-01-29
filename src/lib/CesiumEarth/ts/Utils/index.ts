@@ -12,6 +12,8 @@ export { getCameraRectanglePoint } from './CameraUtils/index';
 export { getCameraRectangleGeoJson } from './CameraUtils/index';
 export { getScreenCenterPoint } from './CameraUtils/index';
 
+export { BookmarkManager } from './CameraView';
+
 export { Cartesian3Tool } from './CoordinateTool';
 export { CartographicArrTool } from './CoordinateTool';
 export { CartographicTool } from './CoordinateTool';

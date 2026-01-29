@@ -4,7 +4,6 @@ import { PolylineBaseMaterial } from './PolylineBaseMaterial';
 
 
 // 动态线材质 脉冲
-
 class PolylineLinkPulseMaterial extends PolylineBaseMaterial {
     private _time: number = (new Date()).getTime();
     private url: string;

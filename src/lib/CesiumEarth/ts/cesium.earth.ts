@@ -56,7 +56,7 @@ export { BouncePointDecorator } from './ExpandEntity/NormalEntity';
 export { buildBillboard } from './ExpandEntity/NormalEntity';
 
 
-// HandlerMana
+// HandlerManage
 export { HandlerManage } from './HandlerManage';
 
 // Declare
@@ -86,6 +86,8 @@ export { getCameraRectangle } from './Utils';
 export { getCameraRectanglePoint } from './Utils';
 export { getCameraRectangleGeoJson } from './Utils';
 export { getScreenCenterPoint } from './Utils';
+// Utils  CameraView
+export { BookmarkManager } from './Utils';
 
 // Utils  CoordinateTool
 export { Cartesian3Tool } from './Utils';
