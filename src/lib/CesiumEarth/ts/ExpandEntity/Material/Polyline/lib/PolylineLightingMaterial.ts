@@ -4,7 +4,7 @@ import { PolylineBaseMaterial } from "./PolylineBaseMaterial";
 
 class PolylineLightingMaterial extends PolylineBaseMaterial {
 
-    private _definitionChanged: any
+    private _definitionChanged: Event
     private _color: any
 
     constructor(color: Color) {
@@ -29,9 +29,7 @@ class PolylineLightingMaterial extends PolylineBaseMaterial {
     };
 
     getValue(time: JulianDate, result: any) {
-        if (!result) {
-            result = {};
-        }
+        if (!result) result = {}
         result.color = Color.clone(this._color ?? Color.WHITE, result.color)
         return result;
     };

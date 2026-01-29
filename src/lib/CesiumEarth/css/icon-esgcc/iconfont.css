@@ -1,8 +1,10 @@
 @font-face {
-  font-family: "iconfont"; /* Project id 3652650 */
+  font-family: "iconfont";
+  /* Project id 3652650 */
   src: url('iconfont.woff2?t=1663551654898') format('woff2'),
-       url('iconfont.woff?t=1663551654898') format('woff'),
-       url('iconfont.ttf?t=1663551654898') format('truetype');
+    url('iconfont.woff?t=1663551654898') format('woff'),
+    url('iconfont.ttf?t=1663551654898') format('truetype');
+  font-display: swap;
 }
 
 .iconfont {
@@ -516,4 +518,3 @@
 .icon-esgcc-canshuxinxi:before {
   content: "\e7ec";
 }
-

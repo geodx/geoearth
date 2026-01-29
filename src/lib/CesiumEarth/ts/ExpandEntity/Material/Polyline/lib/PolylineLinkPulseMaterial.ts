@@ -1,5 +1,5 @@
 // 动态线材质 脉冲线 
-import { Color, defined, Property, Material, Event } from 'cesium';
+import { Color, JulianDate, Material, Event, } from "cesium";
 import { PolylineBaseMaterial } from './PolylineBaseMaterial';
 
 
@@ -9,22 +9,21 @@ class PolylineLinkPulseMaterial extends PolylineBaseMaterial {
     private _time: number = (new Date()).getTime();
     private url: string;
     private duration: number;
-    private color: Color;
-    private _color: undefined;
+    private _color: Color;
+    private _definitionChanged: Event
 
     constructor(options: any) {
         super();
         this._definitionChanged = new Event();
-        this._color = undefined;
-        this.color = options.color;
+        this._color = options.color;
         this.duration = options.duration;
-        this.url = options.url || '../img/脉冲线材质.png';
+        this.url = options.url || new URL('../img/脉冲线材质.png', import.meta.url).href;
         this._time = (new Date()).getTime();
         this.init();
     }
 
     get isConstant() {
-        return true;
+        return this.getConstant(this._color);
     }
 
     get definitionChanged() {
@@ -35,11 +34,9 @@ class PolylineLinkPulseMaterial extends PolylineBaseMaterial {
         return 'PolylineLinkPulse';
     };
 
-    getValue(time: number, result: any) {
-        if (!defined(result)) {
-            result = {};
-        }
-        result.color = Color.clone(this.color ?? Color.WHITE, result.color)
+    getValue(time: JulianDate, result: any) {
+        if (!result) result = {}
+        result.color = Color.clone(this._color ?? Color.WHITE, result.color)
         result.image = this.url;
         result.time = (((new Date()).getTime() - this._time) % this.duration) / this.duration;
         return result;

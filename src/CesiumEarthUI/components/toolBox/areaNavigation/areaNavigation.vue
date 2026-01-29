@@ -7,7 +7,7 @@
 
 
 <template>
-    <win-tabs v-if="show" :initCSS="{ width: 300, height: 530, left: 500, top: 140 }" @close="close">
+    <win-tabs v-if="true" :initCSS="{ width: 300, height: 530, left: 500, top: 140 }" @close="close">
         <tab-pane label="地区导航">
             <areaNavigationContent></areaNavigationContent>
         </tab-pane>
