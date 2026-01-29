@@ -11,7 +11,7 @@ let Utils = {
     // 使用window.speechSynthesis.speak()播放该消息。了解有关Web 语音 API 的 SpeechSynthesisUtterance 接口的详细信息
     speechSynthesis: (message: string) => {
         const msg = new SpeechSynthesisUtterance(message);
-        msg.voice = window.speechSynthesis.getVoices()[0];
+        msg.voice = window.speechSynthesis.getVoices()[0]!;
         window.speechSynthesis.speak(msg);
     },
 
@@ -51,21 +51,19 @@ let Utils = {
 
     readFile({ errFunc, endFunc }: { errFunc: Function, endFunc: Function }) {
         document.getElementById('_ef')?.remove();
-
         let inputObj = document.createElement('input');
         inputObj.setAttribute('id', '_ef');
         inputObj.setAttribute('type', 'file');
         inputObj.setAttribute('style', 'display:none');
         document.body.appendChild(inputObj);
         inputObj.onchange = function (d) {
-            // @ts-ignore
-            let file = inputObj.files[0];
+            const fl = inputObj.files || errFunc('未选择任何文件');
+            let file = fl[0];
             let fileName = file.name;
             let filePath = inputObj.value;
             let fileType = fileName.substring(fileName.lastIndexOf('.'));
             let reader = new FileReader();
             reader.readAsText(file, 'UTF-8');
-
             reader.onload = function (evt: any) {
                 try {
                     let fileData = evt.target.result;
@@ -74,6 +72,7 @@ let Utils = {
                     errFunc && errFunc('文件已损坏', e);
                 }
             };
+            inputObj.remove();
         };
         inputObj.click();
     }

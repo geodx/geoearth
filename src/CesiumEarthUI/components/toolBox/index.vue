@@ -9,7 +9,7 @@
     <Weather></Weather>
     <!-- <ImageLayerSplitManage></ImageLayerSplitManage> -->
     <ImageLayerTimeLine></ImageLayerTimeLine>
-    <!-- <visualMarker></visualMarker> -->
+    <visualMarker></visualMarker>
     <areaNavigation></areaNavigation>
     <!-- <featureEffect></featureEffect> -->
     <!-- <VideoShed></VideoShed> -->
