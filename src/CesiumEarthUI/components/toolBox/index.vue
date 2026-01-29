@@ -10,7 +10,7 @@
     <!-- <ImageLayerSplitManage></ImageLayerSplitManage> -->
     <ImageLayerTimeLine></ImageLayerTimeLine>
     <!-- <visualMarker></visualMarker> -->
-    <!-- <areaNavigation></areaNavigation> -->
+    <areaNavigation></areaNavigation>
     <!-- <featureEffect></featureEffect> -->
     <!-- <VideoShed></VideoShed> -->
     <coordinates></coordinates>

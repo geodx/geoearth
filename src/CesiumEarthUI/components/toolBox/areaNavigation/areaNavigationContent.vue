@@ -139,7 +139,10 @@ const municipality = new Set([
     , '中西区', '湾仔区', '东区', '南区', '九龙城区', '油尖旺区', '观塘区', '黄大仙区', '深水埗区', '新界', '北区', '大埔区', '沙田区', '西贡区', '元朗区', '屯门区', '荃湾区', '葵青区', '离岛区'
     , '黄浦区', '徐汇区', '长宁区', '静安区', '普陀区', '虹口区', '杨浦区', '闵行区', '宝山区', '嘉定区', '浦东新区', '金山区', '松江区', '青浦区', '奉贤区', '崇明区'
 ])
-const aLiYun = 'https://cesium-webgl.oss-cn-beijing.aliyuncs.com/';
+//数据来源 https://datav.aliyun.com/portal/school/atlas/area_selector
+
+const aLiYun = 'https://geo.datav.aliyun.com/areas_v3/bound/';
+
 let earth: CesiumEarth.Earth
 onMounted(async () => {
     earth = await earthStore.getEarth()
@@ -174,7 +177,6 @@ function addPolygon(coordinates: any) {
         id: 'areaPolygon',
         name: 'areaPolygon',
         polyline: {
-            id: 'glowingLine',
             width: 12,
             positions: Cartesian3.fromDegreesArray(arr),
             material: new CesiumEarth.Material.Polyline.PolylineLinkPulseMaterial({
@@ -194,18 +196,16 @@ function flyToProvince(adcode: any) {
     provinceShow.value = false;
     cityShow.value = true;
     areaShow.value = false;
-    request.get(aLiYun + `geo.datav.aliyun.com/areas_v3/bound/100000.json`).then(res => {
+    request.get(aLiYun + `100000.json`).then(res => {
         provinceFeatures = res.data.features;
         provinceFeatures.forEach((element: any) => {
             if (element.properties.adcode === adcode) {
                 provinceName.value = element.properties.name;
-                // let entity = addPolygon1(element.geometry.coordinates);
-                // window.earth.viewer3D.flyTo(entity);// 飞向实体
                 media(element.geometry.coordinates);
             }
         });
     });
-    request.get(aLiYun + `geo.datav.aliyun.com/areas_v3/bound/${adcode}.json`).then(res => {
+    request.get(aLiYun + `${adcode}.json`).then(res => {
         cityFeatures.value = res.data.features;
         status.value = 2;
         cityAdcode = adcode;
@@ -217,7 +217,7 @@ function flyToProvince(adcode: any) {
  */
 function flyToCity(cityInfo: any) {
     if (municipality.has(provinceName.value)) {
-        request.get(aLiYun + `geo.datav.aliyun.com/areas_v3/bound/${cityInfo.properties.adcode}.json`).then(res => {
+        request.get(aLiYun + `${cityInfo.properties.adcode}.json`).then(res => {
             // let entity = addPolygon(cityInfo.geometry.coordinates);
             // window.earth.viewer3D.flyTo(entity);// 飞向实体
             media(cityInfo.geometry.coordinates);
@@ -230,7 +230,7 @@ function flyToCity(cityInfo: any) {
         provinceShow.value = false;
         cityShow.value = false;
         areaShow.value = true;
-        request.get(aLiYun + `geo.datav.aliyun.com/areas_v3/bound/${cityInfo.properties.adcode}.json`).then(
+        request.get(aLiYun + `${cityInfo.properties.adcode}.json`).then(
             res => {
                 areaFeatures.value = res.data.features;
                 // let entity = addPolygon(cityInfo.geometry.coordinates);
@@ -247,7 +247,7 @@ function flyToCity(cityInfo: any) {
  */
 function flyToArea(areaInfo: any) {
     provinceName.value = areaInfo.properties.name;
-    request.get(aLiYun + `geo.datav.aliyun.com/areas_v3/bound/${areaInfo.properties.adcode}.json`).then(res => {
+    request.get(aLiYun + `${areaInfo.properties.adcode}.json`).then(res => {
         areaFeatures.value = res.data.features;
 
         // let entity = addPolygon(areaInfo.geometry.coordinates);
@@ -264,7 +264,7 @@ function flyTaiwan(adcode: any) {
     provinceShow.value = true;
     cityShow.value = false;
     areaShow.value = false;
-    request.get(aLiYun + `geo.datav.aliyun.com/areas_v3/bound/${adcode}.json`).then(res => {
+    request.get(aLiYun + `${adcode}.json`).then(res => {
         provinceFeatures = res.data.features;
         provinceFeatures.forEach((element: any) => {
             if (element.properties.adcode === adcode) {
@@ -281,7 +281,7 @@ function flyTaiwan(adcode: any) {
  * @param adcode
  */
 function cityBack(adcode: any) {
-    request.get(aLiYun + `geo.datav.aliyun.com/areas_v3/bound/${cityAdcode}.json`).then(res => {
+    request.get(aLiYun + `${cityAdcode}.json`).then(res => {
         provinceFeatures = res.data.features;
         provinceFeatures.forEach((element: any) => {
             if (element.properties.adcode === adcode) {
@@ -295,7 +295,7 @@ function cityBack(adcode: any) {
     provinceShow.value = false;
     cityShow.value = true;
     areaShow.value = false;
-    request.get(aLiYun + `geo.datav.aliyun.com/areas_v3/bound/${adcode}.json`).then(
+    request.get(aLiYun + `${adcode}.json`).then(
         res => {
             areaFeatures.value = res.data.features;
             status.value = 3;

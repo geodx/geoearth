@@ -22,7 +22,7 @@
                     </div>
                 </div>
                 <!--表单内容区-->
-                <form v-if="pccradio === 1" autocomplete="off" class="form-horizontal" name="navText">
+                <form v-if="pccradio == 1" autocomplete="off" class="form-horizontal" name="navText">
                     <div class="viewTen">
                         <div>
                             <label>坐标系：</label>
@@ -316,7 +316,6 @@ watch(() => mercator.value, (newValue, oldValue) => {
  */
 function addMarkEntity(lon: number, lat: number, height: number) {
     earth.viewer3D.entities.removeById('coordinatePonint');
-
     earth.viewer3D.entities.add({//创建定位点
         id: 'coordinatePonint',
         name: 'coordinates',
@@ -543,8 +542,8 @@ function coordinatePoint(lon: number, lat: number) {
     });
 }
 
-const watchCoordinate = ref(0);
-const watchCoordinate2 = ref(0);
+const watchCoordinate = ref();
+const watchCoordinate2 = ref();
 /**
  * 坐标定位
  */
@@ -552,7 +551,7 @@ function coordinate() {
     remove();
     if (pccradio.value == 1) {
         if (coordinateSystem.value === 0) {
-            coordinatePoint(watchCoordinate.value, watchCoordinate2.value);
+            coordinatePoint(Number(watchCoordinate.value.value), Number(watchCoordinate2.value.value));
         } else if (coordinateSystem.value === 1) {
             coordinatePoint(gcto84.value.lon, gcto84.value.lat);
         } else if (coordinateSystem.value === 2) {
@@ -564,7 +563,7 @@ function coordinate() {
         if (system.value === 0) {
             coordinatePoint(C3toDu.value.lon, C3toDu.value.lat);
         } else if (system.value === 1) {
-            coordinatePoint(watchCoordinate.value, watchCoordinate2.value);
+            coordinatePoint(Number(watchCoordinate.value.value), Number(watchCoordinate2.value.value));
         } else if (system.value === 2) {
             coordinatePoint(mctTo84.value.lon, mctTo84.value.lat);
         }
@@ -592,6 +591,13 @@ function toCopy() {
 <style lang="scss" scoped>
 .radio.radio-inline {
     margin-top: 0;
+    position: relative;
+    display: inline-block;
+    padding-left: 20px;
+    margin-bottom: 0;
+    font-weight: 400;
+    vertical-align: middle;
+    cursor: pointer;
 }
 
 .radio label {

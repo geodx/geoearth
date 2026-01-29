@@ -5,7 +5,7 @@
 ****************************************************************************/
 
 <template>
-    <CContent v-if="true"></CContent>
+    <CContent v-if="show"></CContent>
 </template>
 <script lang="ts" setup>
 import { computed } from 'vue';

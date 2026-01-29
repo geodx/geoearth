@@ -49,8 +49,11 @@ class Request {
             (response: AxiosResponse) => {
                 const { data, config } = response
                 // 后端返回格式 { code: 200, data: any, msg: string }
-                if (data.code === 200 || data.msg === "操作成功") {
-                    return data.data ?? data
+                // if (data.code === 200 || data.msg === "操作成功") {
+                //     return data.data ?? data
+                // }
+                if (response) {
+                    return response
                 }
                 // 业务错误处理
                 const msg = data.msg || '请求失败'
