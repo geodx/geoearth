@@ -4,7 +4,7 @@
 ****************************************************************************/
 <template>
 
-    <vm-content v-if="true"></vm-content>
+    <vm-content v-if="show"></vm-content>
 
 </template>
 <script lang="ts" setup>
