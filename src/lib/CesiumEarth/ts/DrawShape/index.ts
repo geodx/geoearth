@@ -20,7 +20,7 @@ import { GISMathUtils } from '../Utils';
 
 const commitEndCallBack = (coordinateType: CoordinateType | undefined, endCallback: Function, ps: Cartesian3[]) => {
   if (typeof endCallback === 'function') {
-    let type = coordinateType || CoordinateType.cartesian3;
+    const type = coordinateType || CoordinateType.cartesian3;
     endCallback(coordinateTransform(type, ps));
   }
 };

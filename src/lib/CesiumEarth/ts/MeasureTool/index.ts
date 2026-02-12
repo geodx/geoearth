@@ -47,8 +47,8 @@ class MeasureTool {
     })
   }
   /**
-      * 测高差
-      */
+    * 测高差
+    */
   verticalDistance() {
     this.drawShape.drawHeightDistinct({
       endCallback: (positions: Cartesian3[]) => {

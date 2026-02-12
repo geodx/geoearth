@@ -13,36 +13,30 @@
     </div>
 </template>
 
-<script>
-export default {
-    name: 'polygonEntity',
-    data: function () {
-        return {
-            polygonMaterialIndex: 0,
-            polygonMaterials: [
-                { label: '普通', type: 'normal' }
-            ]
-        };
-    },
-    methods: {
-        async changeSymbol() {
-            let pointItem = this.polygonMaterials[this.polygonMaterialIndex];
-            if (pointItem) {
-                this.$emit('setDrawObj',
-                    {
-                        image: pointItem.url,
-                        name: pointItem.label,
-                        label: pointItem.label,
-                        type: 'polygonEntity'
-                    }
-                );
+<script lang="ts" setup>
+import { onMounted, ref } from 'vue';
+const emit = defineEmits(['setDrawObj'])
+const polygonMaterialIndex = ref(0)
+const polygonMaterials = ref([
+    { label: '普通', type: 'normal', url: '' }
+])
+onMounted(() => {
+    changeSymbol()
+})
+function changeSymbol() {
+    const pointItem = polygonMaterials.value[polygonMaterialIndex.value];
+    if (pointItem) {
+        emit('setDrawObj',
+            {
+                image: pointItem.url,
+                name: pointItem.label,
+                label: pointItem.label,
+                type: 'polygonEntity'
             }
-        }
-    },
-    mounted() {
-        this.changeSymbol();
+        )
     }
-};
+}
+
 </script>
 
 <style lang="scss" scoped></style>

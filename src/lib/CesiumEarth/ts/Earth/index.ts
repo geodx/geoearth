@@ -25,6 +25,7 @@ import { getOptions2D } from './lib/getOptions2D';
 import { sync2DView } from './lib/sync2DView';
 import { loadSource2DData } from './lib/loadSource2DData';
 import { initMonitorCoordinates } from './lib/initMonitorCoordinates';
+import { PlotTool } from '../PlotTool';
 
 /**
  * 名称：用于创建地球的构造类
@@ -59,6 +60,8 @@ class Earth {
     public drawShape: DrawShape;
     // 默认生成的量测工具
     public measureTool: MeasureTool;
+    // 默认生成的标绘工具
+    public plotTool: PlotTool;
 
     public infoBox: InfoBox;
     // 初始化坐标与高度的监听
@@ -95,14 +98,14 @@ class Earth {
             }
         });
         this.viewer3D.scene.debugShowFramesPerSecond = true;
-        this.viewer3D.resolutionScale = 1.125
-        // this.viewer3D.resolutionScale = window.devicePixelRatio;
+        this.viewer3D.resolutionScale = window.devicePixelRatio;
         this.drawShape = new DrawShape(this.viewer3D);
+        this.plotTool = new PlotTool(this.viewer3D)
         this.measureTool = new MeasureTool(this.viewer3D);
         this.infoBox = new InfoBox(this.viewer3D);
 
-        // // 调整鼠标滚轮缩放速度
-        this.viewer3D.scene.screenSpaceCameraController.zoomFactor = 3;
+        // 调整鼠标滚轮缩放速度
+        this.viewer3D.scene.screenSpaceCameraController.zoomFactor = 2;
 
         if (this.viewer3D.animation) {
             this.viewer3D.animation.viewModel.dateFormatter = CesiumDateFormatter;

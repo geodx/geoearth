@@ -66,7 +66,7 @@ export default {
         //监听点击粒子
         particleListener() {
             let that = this;
-            CesiumEarth.EventMana.screenEvent.addEventListener(
+            CesiumEarth.EventManage.screenEvent.addEventListener(
                 CesiumEarth.EventMana.ListenType.ScreenSpaceEventType.LEFT_CLICK,
                 CesiumEarth.EventMana.ScopeType.Viewer3D,
                 function (e) {

@@ -28,16 +28,15 @@
                 </thead>
                 <tbody>
                     <tr v-for="row in TableData">
-                        <td onclick="this.children[1].style.display='inline';this.children[1].focus(); "
-                            style="max-width: 75px">
+                        <td onclick="children[1].style.display='inline';children[1].focus(); " style="max-width: 75px">
                             <div>{{ row.key }}</div>
-                            <input v-model="row.key" class="form-control" onfocusout="this.style.display='none'"
+                            <input v-model="row.key" class="form-control" onfocusout="style.display='none'"
                                 style="margin-top: 5px;display: none" type="text" />
                         </td>
-                        <td onclick="this.children[1].style.display='inline';this.children[1].focus(); "
+                        <td onclick="children[1].style.display='inline';children[1].focus(); "
                             style="text-align: center;max-width: 200px">
                             <div>{{ row.value }}</div>
-                            <input v-model="row.value" class="form-control" onfocusout="this.style.display='none'"
+                            <input v-model="row.value" class="form-control" onfocusout="style.display='none'"
                                 style="margin-top: 5px;display: none" type="text" />
                         </td>
                         <td style="width: 25px">
@@ -58,21 +57,25 @@
 </template>
 
 <script lang="ts" setup>
+import type CesiumEarth from '@/lib/CesiumEarth';
+import { useEarthStore } from '@/stores/EarthStore';
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 
 
-let timer = null;
+let timer: number = 0;
 const entityLength = ref(0)
 const TreeData = ref([])
 const TreeNode = ref()
-const TableData = ref([])
-onMounted(() => {
-    this.initGeoJsonTree();
-
+const TableData = ref<any[]>([])
+const earthStore = useEarthStore()
+let earth: CesiumEarth.Earth
+onMounted(async () => {
+    initGeoJsonTree();
     window.clearInterval(timer);
     timer = setInterval(() => {
-        this.refreshStatus();
+        refreshStatus();
     }, 100);
+    earth = await earthStore.getEarth()
 })
 onUnmounted(() => {
     window.clearInterval(timer);
@@ -85,28 +88,28 @@ watch(() => TableDataStr, (newValue) => {
     // earth.plotTool.GeoJson = JSON.parse(JSON.stringify(earth.plotTool.GeoJson));
 })
 const TableDataStr = computed(() => {
-    return JSON.stringify(this.TableData).length
+    return JSON.stringify(TableData).length
 })
 
 function refreshStatus() {
     let geoJson = earth.plotTool.GeoJson;
-    if (this.entityLength === geoJson.features.length) {
+    if (entityLength.value === geoJson.features.length) {
         return;
     } else {
-        this.entityLength = geoJson.features.length;
+        entityLength.value = geoJson.features.length;
     }
 
-    let TreeData = [];
+    let TreeData: any[] = [];
 
-    geoJson.features.forEach(feature => {
+    geoJson.features.forEach((feature: any) => {
         TreeData.push({
             id: feature.properties.id,
             name: feature.properties.name
         });
     });
 
-    this.TreeData = TreeData;
-    this.initGeoJsonTree();
+    TreeData = TreeData;
+    initGeoJsonTree();
     console.log('刷新状态');
 }
 function initGeoJsonTree() {
@@ -114,8 +117,8 @@ function initGeoJsonTree() {
     // zTree 的参数配置，深入使用请参考 API 文档（setting 配置详解）
     let setting = {
         callback: {
-            onClick: (e, treeId, treeNode) => {
-                earth.plotTool.GeoJson.features.forEach(feature => {
+            onClick: (e: any, treeId: any, treeNode: any) => {
+                earth.plotTool.GeoJson.features.forEach((feature: any) => {
                     if (feature.properties.id === treeNode.id) {
                         let newTable = [];
                         for (const key in feature) {
@@ -124,58 +127,57 @@ function initGeoJsonTree() {
                                 value: feature.properties[key]
                             });
                         }
-                        this.TableData = newTable;
-                        this.TreeNode = treeNode;
+                        TableData.value = newTable;
+                        TreeNode.value = treeNode;
                     }
                 });
             }
         }
     };
     // zTree 的数据属性，深入使用请参考 API 文档（zTreeNode 节点数据详解）
-    let zNodes = this.TreeData;
+    let zNodes = TreeData;
 
-    zTreeObj = $.fn.zTree.init($('#GeoJsonTree'), setting, zNodes);
-    $('.ztree li a').css('color', 'white');
+    // zTreeObj = $.fn.zTree.init($('#GeoJsonTree'), setting, zNodes);
+    // $('.ztree li a').css('color', 'white');
 }
 
 function flyToEntity() {
-    if (this.TreeNode) {
-        let entity = earth.plotTool.dataSourceToo._entityCollection.getById(this.TreeNode.id);
+    if (TreeNode) {
+        let entity = earth.plotTool.dataSourceToo._entityCollection.getById(TreeNode.value.id);
         console.log(entity);
         earth.viewer3D.flyTo(entity);
 
     }
 }
-function delPro(key) {
-    let that = this;
+function delPro(key: any) {
     // 删除树节点上的数据
-    delete this.TreeNode.properties[key];
+    delete TreeNode.value.properties[key];
     // 把节点上的数据
     // that.TableData = [];
-    // for (let key in this.TreeNode.properties) {
-    //     let value = this.TreeNode.properties[key];
+    // for (let key in TreeNode.properties) {
+    //     let value = TreeNode.properties[key];
     //     that.TableData.push({
     //         key: key,
     //         value: value
     //     });
     // }
-    // this.TreeNode.properties = newProps;
+    // TreeNode.properties = newProps;
 }
 function addPro() {
 
     // 删除树节点上的数据
-    this.TreeNode.properties['new'] = '';
+    TreeNode.value.properties['new'] = '';
     // 把节点上的数据
     // that.TableData = [];
-    // for (let key in this.TreeNode.properties) {
-    //     let value = this.TreeNode.properties[key];
+    // for (let key in TreeNode.properties) {
+    //     let value = TreeNode.properties[key];
     //     that.TableData.push({
     //         key: key,
     //         value: value
     //     });
     // }
 
-    // this.TreeNode.properties = newProps;
+    // TreeNode.properties = newProps;
 } 
 </script>
 

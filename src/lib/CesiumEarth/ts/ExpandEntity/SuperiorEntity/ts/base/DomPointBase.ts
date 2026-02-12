@@ -1,9 +1,9 @@
 import { Cartesian2, Cartesian3, Viewer, Entity } from "cesium";
 import { } from "cesium";
 import { PointGraphics, Color, SceneTransforms } from "cesium";
-import { getTerrainMostDetailedHeight, type WorldDegree } from "../../cesium.earth";
 import { Ellipsoid } from "cesium";
-import { isOnBack } from "../../Utils/SceneUtils";
+import { getTerrainMostDetailedHeight, isOnBack } from "../../../../Utils/SceneUtils";
+import type { WorldDegree } from "../../../../cesium.earth";
 
 type domRenderType = {
     directionX?: "left" | "center" | "right";
@@ -30,11 +30,7 @@ export default class DomPointBase {
      * @param {boolean} showPointEntiy (可选)是否显示点的Entity,默认不显示
      * @return {*}
      */
-    constructor(
-        viewer: Viewer,
-        worldDegrees: WorldDegree,
-        showPointEntiy: boolean = false
-    ) {
+    constructor(viewer: Viewer, worldDegrees: WorldDegree, showPointEntiy: boolean = false) {
         this.viewer = viewer;
         this.worldDegrees = worldDegrees; // 经纬度高组成的位置
         this.position = new Cartesian3(); // 算上地形的高
@@ -115,7 +111,6 @@ export default class DomPointBase {
 
             const canvasHeight = this.viewer.scene.canvas.height;
             const windowPosition = new Cartesian2();
-            SceneTransforms
             SceneTransforms.worldToWindowCoordinates(
                 this.viewer.scene,
                 this.position,
@@ -125,7 +120,7 @@ export default class DomPointBase {
 
             // X方向位置(默认left)
             // @ts-ignore
-            const elWidth = this.$container.firstElementChild.offsetWidth;
+            const elWidth = this.$container.firstElementChild?.offsetWidth || 0;
             switch (domRender.directionX) {
                 case "left":
                     this.$container.style.left = windowPosition.x + "px";
@@ -143,9 +138,9 @@ export default class DomPointBase {
                     break;
             }
 
-            // Y方向位置(默认bottom)
+            // Y方向位置(默认bottom) 
             // @ts-ignore
-            const elHeight = this.$container.firstElementChild.offsetHeight;
+            const elHeight = this.$container.firstElementChild?.offsetHeight || 0;
             switch (domRender.directionY) {
                 case "bottom":
                     // 用bottom可以更好的定位底端在点上，比较符合常理
@@ -191,10 +186,7 @@ export default class DomPointBase {
      * @param {WorldDegree} worldDegrees 点经纬度坐标
      * @return {Promise<Cartesian3>} 实际位置
      */
-    protected async computePosition(
-        viewer: Viewer,
-        worldDegrees: WorldDegree
-    ): Promise<Cartesian3> {
+    protected async computePosition(viewer: Viewer, worldDegrees: WorldDegree): Promise<Cartesian3> {
         const terrainHeight = await getTerrainMostDetailedHeight(
             viewer,
             worldDegrees.longitude,

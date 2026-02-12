@@ -5,7 +5,7 @@
 import "./gradientBoardPoint.scss";
 // import "./domPoint/hotSpotBoardPoint.css";
 // import "./domPoint/ledLabelPoint.css";
-// import "./domPoint/sampleBoardPoint.css";
+import "./sampleLablePoint.scss";
 // import "./domPoint/waterPoloPoint.css";
 // spatialAnalysis
 // import "./spatialAnalysis/eagleEyeView.css";

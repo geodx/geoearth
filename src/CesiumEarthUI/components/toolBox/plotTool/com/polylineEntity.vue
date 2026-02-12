@@ -21,39 +21,34 @@
 	</div>
 </template>
 
-<script>
-export default {
-	name: 'polylineEntity',
-	data: function () {
-		return {
-			lineMaterialIndex: 0,
-			lineMaterialWidth: 12,
-			lineMaterials: []
-		};
-	},
-	methods: {
-		async changeSymbol() {
-			let polylineItem = this.lineMaterials[this.lineMaterialIndex];
-			if (polylineItem) {
-				this.$emit('setDrawObj',
-					{
-						type: 'polylineEntity',
-						params: {
-							material: polylineItem.type,
-							width: this.lineMaterialWidth,
-							type: '线要数'
-						}
-					}
-				);
+<script lang="ts" setup>
+import axios from 'axios';
+import { onMounted, ref } from 'vue';
+const emit = defineEmits(['setDrawObj'])
+const lineMaterialIndex = ref(0)
+const lineMaterialWidth = ref(12)
+const lineMaterials = ref()
+onMounted(async () => {
+	const { data: plotList } = await axios.get('./CesiumEarth/Config/plotTool/lineEntity/plotList.json');
+	lineMaterials.value = plotList;
+	changeSymbol();
+})
+function changeSymbol() {
+	let polylineItem = lineMaterials.value[lineMaterialIndex.value];
+	if (polylineItem) {
+		emit('setDrawObj',
+			{
+				type: 'polylineEntity',
+				params: {
+					material: polylineItem.type,
+					width: lineMaterialWidth,
+					type: '线要数'
+				}
 			}
-		}
-	},
-	async mounted() {
-		let { data: plotList } = await axios.get('./CesiumEarth/Config/plotTool/lineEntity/plotList.json');
-		this.lineMaterials = plotList;
-		await this.changeSymbol();
+		);
 	}
-};
+}
+
 </script>
 
 <style lang="scss" scoped></style>

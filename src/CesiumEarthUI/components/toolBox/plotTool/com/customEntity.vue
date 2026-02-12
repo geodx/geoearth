@@ -34,91 +34,76 @@
     </div>
 </template>
 
-<script>
+<script lang="ts" setup>
+import axios from 'axios'
+import { computed, onMounted, ref, watch } from 'vue'
 
-export default {
-    name: 'customEntity',
-    data() {
-        return {
-            selGroup: '信息弹框',
-            groupList: [],
-            plotList: [],
-            selPlotCode: null,
-            selPlot: null
-
-        };
-    },
-    computed: {
-        selPlotStr() {
-            return JSON.stringify(this.selPlot || {});
-        }
-    },
-    watch: {
-        selPlotStr() {
-            this.$emit('setDrawObj', JSON.parse(this.selPlotStr));
-        }
-    },
-    methods: {
-        getPlotByCode(code) {
-            let plot = null;
-            this.groupList.forEach(({ plotList }) => {
-                plot = plot || plotList.find(plotItem => plotItem.code === code);
-            });
-            return plot;
-        },
-        // 为实体添加文字标注
-        setOption(e) {
-            if (e.defaultLabel) {
-                this.selPlot.name = e.value;
-            }
-        },
-
-        // 切换标绘组
-        changeGroup(groupArr) {
-            this.selPlotCode = null;
-            this.selPlot = null;
-            this.plotList = [];
-
-            let groupList = this.groupList;
-            groupArr = JSON.parse(JSON.stringify(groupArr));
-            while (groupArr.length) {
-                let groupName = groupArr.shift();
-                groupList = groupList.find(item => item.groupName === groupName);
-                if (groupList && groupArr.length === 0) {
-                    this.plotList = groupList.plotList;
-                    this.changePlot(this.plotList[0].code);
-                }
-            }
-        },
-
-        // 切换标绘项
-        changePlot(selPlotCode) {
-            if (selPlotCode === undefined) return;
-            let selPlotObj = this.getPlotByCode(selPlotCode);
-            if (!selPlotObj) return;
-
-            this.selPlotCode = selPlotCode;
-            this.selPlot = JSON.parse(JSON.stringify(selPlotObj));
-            this.selPlot.paramList = this.selPlot.paramList || [];
-            this.selPlot.paramList.forEach(item => {
-                if (item.defaultLabel) {
-                    this.selPlot.name = item.value || this.selPlot.name;
-                }
-            });
-
-            this.$emit('setDrawObj', selPlotObj);
-        }
-    },
-    async mounted() {
-        // let {data} = await axios.get('http://localhost:3000/Resources/PlotManager/plotList/list.json');
-        // this.groupList = data.nodes;
-
-        let { data: customPlotList } = await axios.get(new URL('/CesiumEarth/Config/plotTool/custom/plotList.json', import.meta.url).href);
-        this.groupList = customPlotList;
-        this.$emit('setDrawObj', null);
-        this.changeGroup(['信息弹框']);
+const selGroup = ref('信息弹框')
+const groupList = ref<any[]>([])
+const plotList = ref<any[]>([])
+const selPlotCode = ref()
+const selPlot = ref()
+const emit = defineEmits(['setDrawObj'])
+onMounted(async () => {
+    const { data: customPlotList } = await axios.get('CesiumEarth/plotTool/custom/plotList.json');
+    groupList.value = customPlotList;
+    emit('setDrawObj', null);
+    changeGroup(['信息弹框']);
+})
+const selPlotStr = computed(() => {
+    return JSON.stringify(selPlot.value || {});
+})
+watch(() => selPlotStr, (newValue, oldValue) => {
+    emit('setDrawObj', JSON.parse(selPlotStr.value));
+})
+function getPlotByCode(code: string) {
+    let plot: any;
+    groupList.value.forEach(({ plotList }) => {
+        plot = plot || plotList.find((plotItem: any) => plotItem.code === code);
+    });
+    return plot;
+}
+// 为实体添加文字标注
+function setOption(e: any) {
+    if (e.defaultLabel) {
+        selPlot.value.name = e.value;
     }
-};
+}
+
+// 切换标绘组
+function changeGroup(groupArr: any) {
+    selPlotCode.value = null;
+    selPlot.value = null;
+    plotList.value = [];
+    let group: any;
+    groupArr = JSON.parse(JSON.stringify(groupArr));
+    while (groupArr.length) {
+        let groupName = groupArr.shift();
+        group = groupList.value.find((item: any) => item.groupName === groupName)!;
+        if (group && groupArr.length === 0) {
+            plotList.value = group.plotList;
+            changePlot(plotList.value[0].code);
+        }
+    }
+}
+
+// 切换标绘项
+function changePlot(selPlotCodeStr: string) {
+    if (selPlotCodeStr === undefined) return;
+    let selPlotObj = getPlotByCode(selPlotCodeStr);
+    if (!selPlotObj) return;
+
+    selPlotCode.value = selPlotCodeStr;
+    selPlot.value = JSON.parse(JSON.stringify(selPlotObj));
+    selPlot.value.paramList = selPlot.value.paramList || [];
+    selPlot.value.paramList.forEach((item: any) => {
+        if (item.defaultLabel) {
+            selPlot.value.name = item.value || selPlot.value.name;
+        }
+    });
+    emit('setDrawObj', selPlotObj);
+}
+
 </script>
 
 <style lang="scss" scoped></style>

@@ -9,20 +9,16 @@
 				<loadFile></loadFile>
 				<div class="padding-top">
 					标绘：
-					<div class="btn-group" role="group">
-						<button :class="{ 'btn-success': drawType === 'point' }" class="btn btn-sm" type="button"
-							@click="drawType = 'point'">点
-						</button>
-						<button :class="{ 'btn-success': drawType === 'polyline' }" class="btn btn-sm" type="button"
-							@click="drawType = 'polyline'">线
-						</button>
-						<button :class="{ 'btn-success': drawType === 'polygon' }" class="btn btn-sm" type="button"
-							@click="drawType = 'polygon'">面
-						</button>
-						<button :class="{ 'btn-success': drawType === 'custom' }" class="btn btn-sm" type="button"
-							@click="drawType = 'custom'">自定义
-						</button>
-					</div>
+					<el-button-group size="small">
+						<el-button @click="drawType = 'point'"
+							:type="drawType === 'point' ? 'success' : 'default'">点</el-button>
+						<el-button @click="drawType = 'polyline'"
+							:type="drawType === 'polyline' ? 'success' : 'default'">线</el-button>
+						<el-button @click="drawType = 'polygon'"
+							:type="drawType === 'polygon' ? 'success' : 'default'">面</el-button>
+						<el-button @click="drawType = 'custom'"
+							:type="drawType === 'custom' ? 'success' : 'default'">自定义</el-button>
+					</el-button-group>
 				</div>
 
 				<div style="min-height: 320px">
@@ -42,8 +38,7 @@
 							未开启
 						</el-button>
 						<el-button size="small" v-if="continuous === true" type="success"
-							@click="continuous = !continuous">
-							开启
+							@click="continuous = !continuous"> 开启
 						</el-button>
 					</div>
 				</div>
@@ -63,11 +58,11 @@
 				</div>
 
 				<div id="ctrlBtn" class="padding-top">
-					<button :disabled="!drawObj" class="btn btn-success btn-sm" type="button" @click="draw">绘制
-					</button>
-					<button class="btn btn-primary btn-sm" type="button" @click="analyticGeometry">结束绘制</button>
-					<button class="btn btn-warning btn-sm" type="button" @click="cancel">撤销</button>
-					<button class="btn btn-danger btn-sm" type="button" @click="removeAll">清空</button>
+					<el-button :disabled="!drawObj" size="small" type="success" @click="draw">绘制
+					</el-button>
+					<el-button size="small" type="primary" @click="analyticGeometry">结束绘制</el-button>
+					<el-button size="small" type="warning" @click="cancel">撤销</el-button>
+					<el-button size="small" type="danger" @click="removeAll">清空</el-button>
 				</div>
 			</div>
 			<div id="tab3" class="tab-pane">
@@ -97,17 +92,22 @@
 </template>
 
 <script lang="ts" setup>
-import buildVirtualPoint from './lib/buildVirtualPoint.js';
-import imgUrl2Base64 from './lib/imgUrl2Base64.js';
-import notify from './lib/notify.js';
+import buildVirtualPoint from './lib/buildVirtualPoint';
+import imgUrl2Base64 from './lib/imgUrl2Base64';
 import ExportPlot from './com/exportPlot.vue';
 import LoadFile from './com/loadFile.vue';
 import PointEntity from './com/pointEntity.vue';
 import PolylineEntity from './com/polylineEntity.vue';
 import PolygonEntity from './com/polygonEntity.vue';
 import CustomEntity from './com/customEntity.vue';
-import { onMounted, onUnmounted, ref } from 'vue';
-
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { useEarthStore } from '@/stores/EarthStore';
+import CesiumEarth from '@/lib/CesiumEarth';
+import { ScreenSpaceEventHandler, ScreenSpaceEventType, defined, Math, Cartesian3 } from 'cesium';
+import { ElMessage } from 'element-plus';
+import * as turf from "@turf/turf";
+import type { Feature, FeatureCollection } from 'geojson';
+const earthStore = useEarthStore()
 const drawObj = ref()
 const drawType = ref('point')
 // 生成的 GeoJson 是否需要带上高程， 
@@ -117,11 +117,11 @@ const continuous = ref(false)
 const clampToGround = ref(false)
 // 标绘个数 
 const featureNum = ref(0)
-const GeoJson = ref({})
+let GeoJson: FeatureCollection
 // 鼠标选中实体的ID
 const SelEntityID = ref('')
 // 被选中的实体的源数据 
-const SelEntityGeoJson = ref({})
+let SelEntityGeoJson: Feature
 const SelEntityType = ref('')
 // 绘制【点线面】实体的样式
 const DrawType = [
@@ -141,11 +141,10 @@ const DrawType = [
 	},
 	{}
 ]
-let plotTool;
+let earth: CesiumEarth.Earth;
 
-onMounted(() => {
-	plotTool = earth.plotTool;
-	// const exportedData ={}
+onMounted(async () => {
+	earth = await earthStore.getEarth()
 	const exportedData = {
 		'type': 'FeatureCollection',
 		'features': [{
@@ -185,129 +184,124 @@ onMounted(() => {
 		}]
 	};
 	localStorage.setItem('exportedData', JSON.stringify(exportedData));
-	this.setClampToGround(this.clampToGround);
-
-	let geoJson = localStorage.getItem('exportedData');
-	// let geoJson = localStorage.getItem('plotTool-geoJson');
+	setClampToGround(clampToGround.value);
+	const geoJson = localStorage.getItem('exportedData');
+	// const geoJson = localStorage.getItem('plotTool-geoJson');
 	if (geoJson) {
-		plotTool.GeoJson = JSON.parse(geoJson);
-		plotTool.analyticGeometry();
-
+		earth.plotTool.GeoJson = JSON.parse(geoJson);
+		earth.plotTool.analyticGeometry();
 	}
 })
 onUnmounted(() => {
 	// localStorage.setItem('exportedData', JSON.stringify(exportedData));
-	localStorage.setItem('plotTool-geoJson', JSON.stringify(plotTool.GeoJson));
-	this.removeAll();
+	localStorage.setItem('plotTool-geoJson', JSON.stringify(earth.plotTool.GeoJson));
+	removeAll();
 })
 // 由子组件触发的设置绘制样式
-function setDrawObj(drawObj) {
-	this.drawObj = drawObj;
+function setDrawObj(obj: any) {
+	drawObj.value = obj;
 }
 
 // 重新解析 GeoJson 几何，将点线面载入到地图
 function analyticGeometry() {
-	plotTool.analyticGeometry();
+	earth.plotTool.analyticGeometry();
 }
 
 // 修改标绘的贴地模式
-function setClampToGround(clampToGround) {
-	plotTool.clampToGround = clampToGround;
-	plotTool.analyticGeometry();
+function setClampToGround(param: any) {
+	earth.plotTool.clampToGround = param;
+	earth.plotTool.analyticGeometry();
 }
 
 
 function pick() {
-	let that = this;
-	let handler = new Cesium.ScreenSpaceEventHandler(earth.viewer3D.canvas);
+	let handler = new ScreenSpaceEventHandler(earth.viewer3D.canvas);
 
 	// 鼠标移动 图标变化
-	handler.setInputAction(function (event) {
+	handler.setInputAction((event: any) => {
 		let pickedFeature = earth.viewer3D.scene.pick(event.endPosition);
 		if (pickedFeature && pickedFeature.id) {
 			parent.document.body.style.cursor = 'crosshair';
 		} else {
 			parent.document.body.style.cursor = 'pointer';
 		}
-	}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+	}, ScreenSpaceEventType.MOUSE_MOVE);
 
 	// 左键按下拾取坐标事件
-	handler.setInputAction(function (event) {
+	handler.setInputAction((event: any) => {
 		let earthPosition = earth.viewer3D.scene.pickPosition(event.position);
 
-		if (Cesium.defined(earthPosition)) {
+		if (defined(earthPosition)) {
 			let pickedFeature = earth.viewer3D.scene.pick(event.position);
 			// 如果拾取的物体有ID，说明它是一个 entity
-			if (Cesium.defined(pickedFeature) && pickedFeature.id) {
+			if (defined(pickedFeature) && pickedFeature.id) {
 				// watching 监听
 
 				if (pickedFeature.id.id.substring(0, 5) === 'Point') {
-					that.SelEntityType = 'Point';
+					SelEntityType.value = 'Point';
 				} else if (pickedFeature.id.id.substring(0, 4) === 'Line') {
-					that.SelEntityType = 'Line';
+					SelEntityType.value = 'Line';
 				} else if (pickedFeature.id.id.substring(0, 7) === 'Polygon') {
-					that.SelEntityType = 'Polygon';
+					SelEntityType.value = 'Polygon';
 				} else {
-					that.$nextTick(() => {
-						notify(
+					nextTick(() => {
+						ElMessage(
 							{
 								message: '未识别的 几何 类型：' + pickedFeature.id.id,
-								width: 320
+								type: 'error'
 							},
-							'error',
-							2000
 						);
 					});
 					return;
 				}
-				that.$nextTick(() => {
-					notify({ message: '选中实体成功', width: 320 }, 'success', 2000);
+				nextTick(() => {
+					ElMessage({ message: '选中实体成功', type: 'success' });
 				});
-				that.SelEntityID = pickedFeature.id.id;
-				that.SelEntityChange();
+				SelEntityID.value = pickedFeature.id.id;
+				SelEntityChange();
 			}
 		}
 		parent.document.body.style.cursor = 'pointer';
 		handler.destroy();
-	}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+	}, ScreenSpaceEventType.LEFT_CLICK);
 
 	// 左键弹起
-	handler.setInputAction(function (event) {
+	handler.setInputAction((event: any) => {
 		parent.document.body.style.cursor = 'pointer';
 		handler.destroy();
-	}, Cesium.ScreenSpaceEventType.LEFT_UP);
+	}, ScreenSpaceEventType.LEFT_UP);
 }
 // 取消选中entity
 function unPick() {
-	let that = this;
-	this.SelEntityID = '';
-	this.SelEntityGeoJson = {};
-	this.SelEntityChange();
-	that.$nextTick(() => {
-		notify({ message: '取消选中实体', width: 320 }, 'warning', 2000);
+	SelEntityID.value = '';
+	SelEntityGeoJson = {} as Feature;
+	SelEntityChange();
+	nextTick(() => {
+		ElMessage({ message: '取消选中实体', type: 'warning' });
 	});
 }
 function SelEntityChange() {
-	let that = this;
 	// 清空全部的虚拟点
-	plotTool.analyticGeometry();
+	earth.plotTool.analyticGeometry();
 
-	if (that.SelEntityID !== '') {
-		$('#a_tab3').tab('show');
+	if (SelEntityID.value !== '') {
+		// $('#a_tab3').tab('show');
+		const el = document.getElementById('a_tab3')
+		el?.classList.add('active')
 
-		turf.featureEach(that.GeoJson, function (currentFeature, featureIndex) {
-			if (currentFeature.properties.id === that.SelEntityID) {
-				that.SelEntityGeoJson = currentFeature;
+		turf.featureEach(GeoJson, function (currentFeature, featureIndex) {
+			if (currentFeature.properties?.id === SelEntityID) {
+				SelEntityGeoJson = currentFeature;
 			}
 		});
 
-		turf.coordEach(that.SelEntityGeoJson, function (
+		turf.coordEach(SelEntityGeoJson, function (
 			currentCoord,
 			coordIndex
 		) {
 			// 因为面是首尾相连，最后一个点和第一个点相同，所以跳过第一个点
 			if (
-				turf.getType(that.SelEntityGeoJson) === 'Polygon' &&
+				turf.getType(SelEntityGeoJson) === 'Polygon' &&
 				coordIndex === 0
 			) {
 				return;
@@ -316,75 +310,73 @@ function SelEntityChange() {
 			// 如果选中的实体仅有【经度、纬度】，没有高程，则给它指定为 0 高程
 			currentCoord[2] = currentCoord[2] ? currentCoord[2] : 0;
 
-			let Cartesian3 = Cesium.Cartesian3.fromDegrees(
-				currentCoord[0],
-				currentCoord[1],
-				currentCoord[2]
+			const pos = Cartesian3.fromDegrees(
+				currentCoord[0]!,
+				currentCoord[1]!,
+				currentCoord[2]!
 			);
-			dataSourceToo.entities.add(
-				buildVirtualPoint(Cartesian3, { id: '端点-' + coordIndex })
+			earth.plotTool.dataSourceTool.entities.add(
+				buildVirtualPoint(pos, { id: '端点-' + coordIndex })
 			);
 		});
 	} else {
-		$('#a_tab1').tab('show');
+		// $('#a_tab1').tab('show');
+		const el = document.getElementById('a_tab1')
+		el?.classList.add('active')
 	}
 }
 
 // 刷新
 function refresh() {
-	this.featureNum = plotTool.GeoJson.features.length;
+	featureNum.value = earth.plotTool.GeoJson.features.length;
 }
 
 // 标绘新要素
 async function draw() {
-	let drawObj = JSON.parse(JSON.stringify(this.drawObj));
-
-	switch (drawObj.type) {
+	const draw = JSON.parse(JSON.stringify(drawObj.value));
+	switch (draw.type) {
 		case 'pointEntity': {
-			drawObj['marker-symbol'] = await imgUrl2Base64(drawObj.symbolUrl);
-			await plotTool.addPoint(drawObj);
+			draw['marker-symbol'] = await imgUrl2Base64(draw.symbolUrl);
+			await earth.plotTool.addPoint(draw)
 			break;
 		}
 		case 'polylineEntity': {
-			await plotTool.addMultiLine(drawObj.params.material, drawObj.params.lineMaterialWidth, null);
+			await earth.plotTool.addMultiLine(draw.params.material, draw.params.lineMaterialWidth, null);
 			break;
 		}
 		case 'polygonEntity': {
-			await plotTool.addPolygon(this.featureHasHeight);
+			await earth.plotTool.addPolygon(featureHasHeight.value);
 			break;
 		}
 		case 'modelEntity': {
-			await plotTool.addModel(drawObj.modelUrl, 1, 20);
+			await earth.plotTool.addModel(draw.modelUrl, 20);
 			break;
 		}
 		case 'winInfo': {
-			await drawObj.symbolUrl && (drawObj['marker-symbol'] = await imgUrl2Base64(drawObj.symbolUrl));
-			await plotTool.addPoint(drawObj);
+			await draw.symbolUrl && (draw['marker-symbol'] = await imgUrl2Base64(draw.symbolUrl));
+			await earth.plotTool.addPoint(draw);
 			break;
 		}
 		case 'particleSystem': {
-			await plotTool.addPoint(drawObj);
+			await earth.plotTool.addPoint(draw);
 			break;
 		}
 		default: {
-			notify({ message: '当前版本为免费试用版 V0.14，暂时无法使用支持该类型的标绘~', status: 'warning' });
+			ElMessage({ message: '当前版本为免费试用版 V0.14，暂时无法使用支持该类型的标绘~', type: 'warning' });
 		}
 	}
 
-	if (this.continuous) {
-		await this.draw();
+	if (continuous.value) {
+		await draw();
 	}
 }
 
-
 function moveEntityNode() {
-	let that = this;
-
-	let handler = new Cesium.ScreenSpaceEventHandler(earth.viewer3D.canvas);
+	let handler = new ScreenSpaceEventHandler(earth.viewer3D.canvas);
 	let pickedFeature;
 	//鼠标移动事件，遇到端点鼠标样式就变化
-	handler.setInputAction(function (event) {
-		if (that.SelEntityID === '') return;
+	handler.setInputAction((event: any) => {
+		if (SelEntityID.value === '') return;
 		if (!event.endPosition) return;
 		pickedFeature = earth.viewer3D.scene.pick(event.endPosition);
 		if (
@@ -399,84 +391,78 @@ function moveEntityNode() {
 			pickedFeature = null;
 			parent.document.body.style.cursor = 'pointer';
 		}
-	}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+	}, ScreenSpaceEventType.MOUSE_MOVE);
 
 	//鼠标左点击，拾取结束
-	handler.setInputAction(function (event) {
+	handler.setInputAction((event: any) => {
 		parent.document.body.style.cursor = 'pointer';
 		handler.destroy();
-	}, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+	}, ScreenSpaceEventType.LEFT_DOWN);
 
-	dragEntity(viewer, function (data) {
-		if (data.entityId.substring(0, 3) === '端点-') {
-			let positions = cartesianToCartographic([data.endPosition])[0];
-			let index = data.entityId.substring(3) * 1;
-			let type = turf.getType(that.SelEntityGeoJson);
+	// dragEntity(earth.viewer3D, (data: any) => {
+	// 	if (data.entityId.substring(0, 3) === '端点-') {
+	// 		let positions = cartesianToCartographic([data.endPosition])[0];
+	// 		let index = data.entityId.substring(3) * 1;
+	// 		let type = turf.getType(SelEntityGeoJson);
 
-			console.log(type);
-			if (type === 'Point') {
-				that.addGeoJsonBackupBefore();
-				positions = cartesianToCartographic([data.endPosition]);
-				that.SelEntityGeoJson.geometry.coordinates = JSON.parse(
-					JSON.stringify(positions)
-				)[0];
-				that.addGeoJsonBackupAfter();
-			} else if (type === 'LineString') {
-				that.addGeoJsonBackupBefore();
-				that.SelEntityGeoJson.geometry.coordinates[index] = JSON.parse(
-					JSON.stringify(positions)
-				);
-				that.addGeoJsonBackupAfter();
-			} else if (type === 'Polygon') {
-				that.addGeoJsonBackupBefore();
-				that.SelEntityGeoJson.geometry.coordinates[0][index] = JSON.parse(
-					JSON.stringify(positions)
-				);
+	// 		console.log(type);
+	// 		if (type === 'Point') {
+	// 			addGeoJsonBackupBefore();
+	// 			positions = cartesianToCartographic([data.endPosition]);
+	// 			SelEntityGeoJson.geometry.coordinates = JSON.parse(
+	// 				JSON.stringify(positions)
+	// 			)[0];
+	// 			addGeoJsonBackupAfter();
+	// 		} else if (type === 'LineString') {
+	// 			addGeoJsonBackupBefore();
+	// 			SelEntityGeoJson.geometry.coordinates[index] = JSON.parse(
+	// 				JSON.stringify(positions)
+	// 			);
+	// 			addGeoJsonBackupAfter();
+	// 		} else if (type === 'Polygon') {
+	// 			addGeoJsonBackupBefore();
+	// 			SelEntityGeoJson.geometry.coordinates[0][index] = JSON.parse(
+	// 				JSON.stringify(positions)
+	// 			);
 
-				// 这是面的最后一个点，则它和第一个点相同
-				let length = that.SelEntityGeoJson.geometry.coordinates[0].length;
-				if (length === index + 1) {
-					console.log('这是最后一个点');
-					that.SelEntityGeoJson.geometry.coordinates[0][0] = JSON.parse(
-						JSON.stringify(positions)
-					);
-				}
-				that.addGeoJsonBackupAfter();
-			} else if (type === 'MultiPoint') {
-				console.log('暂不支持的类型', type);
-			} else if (type === 'MultiLineString') {
-				console.log('暂不支持的类型', type);
-			} else if (type === 'MultiPolygon') {
-				console.log('暂不支持的类型', type);
-			} else if (type === 'GeometryCollection') {
-				console.log('暂不支持的类型', type);
-			} else {
-				console.log('无法识别的类型', type);
-			}
+	// 			// 这是面的最后一个点，则它和第一个点相同
+	// 			let length = SelEntityGeoJson.geometry.coordinates[0].length;
+	// 			if (length === index + 1) {
+	// 				console.log('这是最后一个点');
+	// 				SelEntityGeoJson.geometry.coordinates[0][0] = JSON.parse(
+	// 					JSON.stringify(positions)
+	// 				);
+	// 			}
+	// 			addGeoJsonBackupAfter();
+	// 		} else if (type === 'MultiPoint') {
+	// 			console.log('暂不支持的类型', type);
+	// 		} else if (type === 'MultiLineString') {
+	// 			console.log('暂不支持的类型', type);
+	// 		} else if (type === 'MultiPolygon') {
+	// 			console.log('暂不支持的类型', type);
+	// 		} else if (type === 'GeometryCollection') {
+	// 			console.log('暂不支持的类型', type);
+	// 		} else {
+	// 			console.log('无法识别的类型', type);
+	// 		}
 
-			that.$nextTick(() => {
-				notify({ message: '移动实体成功', width: 320 }, 'success', 2000);
-			});
-		} else {
-			that.$nextTick(() => {
-				notify(
-					{ message: '您移动的不是端点', width: 320 },
-					'warning',
-					2000
-				);
-			});
-		}
-		that.unPick();
-	});
+	// 		nextTick(() => {
+	// 			ElMessage({ message: '移动实体成功', type: 'success' });
+	// 		});
+	// 	} else {
+	// 		nextTick(() => {
+	// 			ElMessage({ message: '您移动的不是端点', type: 'warning' });
+	// 		});
+	// 	}
+	// 	unPick();
+	// });
 }
 function moveEntityAll() {
-	let that = this;
-
-	let handler = new Cesium.ScreenSpaceEventHandler(earth.viewer3D.canvas);
+	let handler = new ScreenSpaceEventHandler(earth.viewer3D.canvas);
 	let pickedFeature;
 	//鼠标移动事件，遇到端点鼠标样式就变化
-	handler.setInputAction(function (event) {
-		if (that.SelEntityID === '') return;
+	handler.setInputAction((event: any) => {
+		if (SelEntityID.value === '') return;
 		if (!event.endPosition) return;
 		pickedFeature = earth.viewer3D.scene.pick(event.endPosition);
 		if (
@@ -491,90 +477,82 @@ function moveEntityAll() {
 			pickedFeature = null;
 			parent.document.body.style.cursor = 'pointer';
 		}
-	}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+	}, ScreenSpaceEventType.MOUSE_MOVE);
 
 	//鼠标左点击，拾取结束
-	handler.setInputAction(function (event) {
+	handler.setInputAction((event: any) => {
 		parent.document.body.style.cursor = 'pointer';
 		handler.destroy();
-	}, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+	}, ScreenSpaceEventType.LEFT_DOWN);
 
-	dragEntity(viewer, function (data) {
-		if (data.entityId.substring(0, 3) !== '端点-') {
-			let changeX = data.endPosition.x - data.startPosition.x;
-			let changeY = data.endPosition.y - data.startPosition.y;
-			let changeZ = data.endPosition.z - data.startPosition.z;
+	// dragEntity(earth.viewer3D, (data: any) => {
+	// 	if (data.entityId.substring(0, 3) !== '端点-') {
+	// 		const changeX = data.endPosition.x - data.startPosition.x;
+	// 		const changeY = data.endPosition.y - data.startPosition.y;
+	// 		const changeZ = data.endPosition.z - data.startPosition.z;
 
-			turf.coordEach(that.SelEntityGeoJson, function (
-				currentCoord,
-				coordIndex,
-				featureIndex,
-				multiFeatureIndex,
-				geometryIndex
-			) {
-				let Cartesian3 = Cesium.Cartesian3.fromDegrees(
-					currentCoord[0],
-					currentCoord[1],
-					currentCoord[2]
-				);
-				Cartesian3.x += changeX;
-				Cartesian3.y += changeY;
-				Cartesian3.z += changeZ;
+	// 		turf.coordEach(SelEntityGeoJson, function (
+	// 			currentCoord,
+	// 			coordIndex,
+	// 			featureIndex,
+	// 			multiFeatureIndex,
+	// 			geometryIndex
+	// 		) {
+	// 			const pos = Cartesian3.fromDegrees(
+	// 				currentCoord[0]!,
+	// 				currentCoord[1]!,
+	// 				currentCoord[2]!
+	// 			);
+	// 			pos.x += changeX;
+	// 			pos.y += changeY;
+	// 			pos.z += changeZ;
 
-				let ellipsoid = earth.viewer3D.scene.globe.ellipsoid;
-				let cartographic = ellipsoid.cartesianToCartographic(Cartesian3);
+	// 			let ellipsoid = earth.viewer3D.scene.globe.ellipsoid;
+	// 			let cartographic = ellipsoid.cartesianToCartographic(pos);
 
-				currentCoord[0] = Cesium.Math.toDegrees(cartographic.longitude);
-				currentCoord[1] = Cesium.Math.toDegrees(cartographic.latitude);
-			});
+	// 			currentCoord[0] = Math.toDegrees(cartographic.longitude);
+	// 			currentCoord[1] = Math.toDegrees(cartographic.latitude);
+	// 		});
 
-			that.analyticGeometry();
-			that.$nextTick(() => {
-				notify({ message: '移动实体成功', width: 320 }, 'success', 2000);
-			});
-		} else {
-			that.$nextTick(() => {
-				notify(
-					{ message: '您移动的是端点，而不是几何体', width: 320 },
-					'warning',
-					2000
-				);
-			});
-		}
-		that.unPick();
-	});
+	// 		analyticGeometry();
+	// 		nextTick(() => {
+	// 			ElMessage({ message: '移动实体成功', type: 'success' });
+	// 		});
+	// 	} else {
+	// 		nextTick(() => {
+	// 			ElMessage({ message: '您移动的是端点，而不是几何体', type: 'warning' });
+	// 		});
+	// 	}
+	// 	unPick();
+	// });
 }
 
 function delEntity() {
-	let that = this;
-	that.addGeoJsonBackupBefore();
-
-	dataSourceToo.entities.removeById(that.SelEntityID);
+	// addGeoJsonBackupBefore();
+	earth.plotTool.dataSourceTool.entities.removeById(SelEntityID.value);
 	let geo = turf.featureCollection([]);
-	turf.featureEach(that.GeoJson, function (currentFeature, featureIndex) {
-		if (currentFeature.properties.id !== that.SelEntityID) {
+	turf.featureEach(GeoJson, function (currentFeature, featureIndex) {
+		if (currentFeature.properties?.id !== SelEntityID.value) {
 			geo.features.push(currentFeature);
 		}
 	});
-
-	that.GeoJson = geo;
-
-	that.addGeoJsonBackupAfter();
-	that.$nextTick(() => {
-		notify({ message: '删除实体', width: 320 }, 'success', 2000);
+	GeoJson = geo;
+	// addGeoJsonBackupAfter();
+	nextTick(() => {
+		ElMessage({ message: '删除实体成功', type: 'success' });
 	});
 }
 
 // 撤销操作
 function cancel() {
-	plotTool.revoke();
-	// this.unPick();
-	notify({ message: '撤销操作', status: 'warning' });
+	earth.plotTool.revoke();
+	// unPick();
+	ElMessage({ message: '撤销操作', type: 'warning' });
 }
 
 // 重置数据
 function removeAll() {
-	plotTool.removeAll();
+	earth.plotTool.removeAll();
 }
 
 
@@ -592,6 +570,8 @@ function removeAll() {
 	a {
 		color: #009b94;
 	}
+
+
 
 	.extend-close-btn {
 		color: #009b94;
@@ -618,6 +598,7 @@ function removeAll() {
 	}
 }
 
+
 #tab1 {
 	height: 100%;
 	padding: 10px;
@@ -636,5 +617,13 @@ function removeAll() {
 	height: 300px;
 	overflow: auto;
 	border: black 1px dashed
+}
+
+.tab-content .tab-pane {
+	display: none;
+}
+
+.tab-content .active {
+	display: block;
 }
 </style>

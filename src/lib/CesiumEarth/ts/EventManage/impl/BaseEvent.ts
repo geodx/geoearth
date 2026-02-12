@@ -17,20 +17,10 @@ class BaseEvent implements EventImpl {
     this.listenCallbacks = []
   }
 
-  addEventListener(
-    listenType:
-      | ConfigEventType
-      | ViewerEventType
-      | ScreenSpaceEventType
-      | CameraEventType
-      | DataEventType,
-    scope: ScopeType,
-    callback: Function,
-  ): boolean {
-    const item = this.listenCallbacks.find((item) => {
-      return item.listenType === listenType && item.scope === scope && item.callback === callback
-    })
+  addEventListener(listenType: | ConfigEventType | ViewerEventType | ScreenSpaceEventType | CameraEventType | DataEventType,
+    scope: ScopeType, callback: Function,): boolean {
 
+    const item = this.listenCallbacks.find((item) => { return item.listenType === listenType && item.scope === scope && item.callback === callback })
     if (!item) {
       this.listenCallbacks.push({ listenType, callback, scope })
       return true
@@ -41,12 +31,8 @@ class BaseEvent implements EventImpl {
 
   raiseEvent(listenType: number, scope: ScopeType, funcParam: any): void {
     this.listenCallbacks.forEach((item) => {
-      console.log(item)
-      if (
-        item.listenType === listenType &&
-        item.scope === scope &&
-        typeof item.callback === 'function'
-      ) {
+      // console.log(item)
+      if (item.listenType === listenType && item.scope === scope && typeof item.callback === 'function') {
         item.callback(funcParam)
       }
     })

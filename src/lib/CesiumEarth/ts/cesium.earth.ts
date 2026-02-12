@@ -55,6 +55,8 @@ export { bouncePoint } from './ExpandEntity/NormalEntity';
 export { BouncePointDecorator } from './ExpandEntity/NormalEntity';
 export { buildBillboard } from './ExpandEntity/NormalEntity';
 
+// SceneEffect
+export * from './SceneEffect';
 
 // HandlerManage
 export { HandlerManage } from './HandlerManage';
@@ -71,10 +73,12 @@ export { KeyboardModel } from './KeyboardDominate';
 export { KeyboardModelExt } from './KeyboardDominate';
 
 export { MeasureTool } from './MeasureTool';
+export { PlotTool } from './PlotTool';
+export { PlotDataSource } from './PlotTool/PlotDataSource';
 export { RunEntityController } from './RunEntityController';
 export { WorkSpace } from './WorkSpace';
 
-// TreeMana
+// TreeManage
 export { TreeManage } from './TreeManage';
 export { ZTreeManage } from './TreeManage/lib/ZTreeManage';
 

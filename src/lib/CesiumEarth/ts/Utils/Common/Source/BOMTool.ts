@@ -3,7 +3,7 @@
  名称：常用工具函数集合 - 浏览器类
 
  ****************************************************************************/
-let BOMTool = {
+const BOMTool = {
     GetUA: function () {
         let u = navigator.userAgent;
         // let u2 = navigator.userAgent.toLowerCase();
