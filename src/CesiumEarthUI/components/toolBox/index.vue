@@ -4,7 +4,7 @@
     <skyBoxTool></skyBoxTool>
     <MeasureTool></MeasureTool>
     <!-- <pathPlanning></pathPlanning> -->
-    <!-- <plotTool></plotTool> -->
+    <plotTool></plotTool>
     <!-- <pathRoaming></pathRoaming> -->
     <Weather></Weather>
     <!-- <ImageLayerSplitManage></ImageLayerSplitManage> -->

@@ -76,7 +76,6 @@ let Utils = {
         };
         inputObj.click();
     }
-
 };
 
 export { Utils };

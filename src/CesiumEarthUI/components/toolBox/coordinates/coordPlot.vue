@@ -57,19 +57,15 @@ function saveShareContent(content: any, fileName: string) {
 async function addMarkLabel() {
 	earth.drawShape.drawPoint({
 		endCallback: async (positions: Cartesian3[]) => {
-
 			const position = CesiumEarth.CartographicTool.formCartesian3(positions[0]!);
 			const [cartesianHasHeight] = await CesiumEarth.getMostDetailedHeight(earth.viewer3D, [{
 				longitude: position.longitude,
 				latitude: position.latitude,
 				height: 0
 			}]);
-
 			const height = cartesianHasHeight!.height;
-
 			const lon = position.longitude;
 			const lat = position.latitude;
-
 			const dom = document.createElement('div');
 			dom.innerHTML = `<div style="text-align: left">
 			          <div>经度：${lon.toFixed(5)}°</div>

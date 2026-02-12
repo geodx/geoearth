@@ -1,6 +1,6 @@
 import { Viewer } from "cesium";
-import DomPointBase from "./DomPointBase";
-import type { WorldDegree } from "../../cesium.earth";
+import DomPointBase from "./base/DomPointBase";
+import type { WorldDegree } from "../../../cesium.earth";
 
 export class GradientLabelPoint extends DomPointBase {
     #contextDom: HTMLElement;
@@ -24,10 +24,7 @@ export class GradientLabelPoint extends DomPointBase {
     public async init() {
         if (!this.isDestroy && !this.start) {
             this.start = true;
-            this.position = await this.computePosition(
-                this.viewer,
-                this.worldDegrees
-            );
+            this.position = await this.computePosition(this.viewer, this.worldDegrees);
             this.$container.style.display = "none";
             this.#addDom();
             this.#addPostRender();

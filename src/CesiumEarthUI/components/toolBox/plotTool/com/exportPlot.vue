@@ -29,31 +29,31 @@
 
 
 import { onMounted, onUnmounted, ref } from 'vue';
-import notify from '../lib/notify';
 import { useEarthStore } from '@/stores/EarthStore';
+import { ElMessage } from 'element-plus';
 const earthStore = useEarthStore()
 const featureCount = ref(0)
 let plotTool: any;
 let t: number = 0;
 
-onMounted(() => {
+onMounted(async () => {
     const earth = await earthStore.getEarth()
     plotTool = earth.plotTool;
     t = setInterval(() => {
-        this.featureCount = earth.plotTool.GeoJson.features.length;
+        featureCount.value = earth.plotTool.GeoJson.features.length;
     }, 200);
 })
 onUnmounted(() => {
     clearInterval(t);
 })
 function SaveAsGeoJson() {
-    plotTool.SaveAsGeoJson(function (msg) {
-        notify({ message: msg, status: 'success' });
+    plotTool.SaveAsGeoJson(function (msg: string) {
+        ElMessage(msg)
     });
-},
+}
 function SaveAsKML() {
-    plotTool.SaveAsKML(function (msg) {
-        notify({ message: msg, status: 'success' });
+    plotTool.SaveAsKML(function (msg: string) {
+        ElMessage(msg)
     });
 }
 

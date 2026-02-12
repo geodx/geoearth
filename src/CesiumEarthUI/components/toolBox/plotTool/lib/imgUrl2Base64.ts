@@ -1,4 +1,4 @@
-function imgUrl2Base64(imgUrl) {
+function imgUrl2Base64(imgUrl: string): Promise<string> {
     return new Promise((resolve) => {
         let img = document.createElement('img');
         img.src = imgUrl;
@@ -10,12 +10,12 @@ function imgUrl2Base64(imgUrl) {
     });
 }
 
-function getBase64Image(img) {
+function getBase64Image(img: HTMLImageElement): string {
     let canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
     let ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, img.width, img.height);
+    ctx?.drawImage(img, 0, 0, img.width, img.height);
     return canvas.toDataURL('image/png');
 }
 

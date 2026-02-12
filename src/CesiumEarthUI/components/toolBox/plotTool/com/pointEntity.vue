@@ -18,40 +18,41 @@
 	</div>
 </template>
 
-<script>
-export default {
-	name: 'pointEntity',
-	data: function () {
-		return {
-			pointMaterialIndex: 0,
-			pointMaterials: []
-		};
-	},
-	methods: {
-		getSymbolImg() {
-			let pointItem = this.pointMaterials[this.pointMaterialIndex];
-			return pointItem?.symbolUrl;
-		},
-		async changeSymbol() {
-			let pointItem = this.pointMaterials[this.pointMaterialIndex];
-			if (pointItem) {
-				this.$emit('setDrawObj',
-					{
-						type: 'pointEntity',
-						name: pointItem.label,
-						label: pointItem.label,
-						symbolUrl: pointItem.symbolUrl
-					}
-				);
+<script lang="ts" setup>
+import axios from 'axios';
+import { onMounted, ref } from 'vue';
+const emit = defineEmits(['setDrawObj'])
+const pointMaterialIndex = ref(0)
+const pointMaterials = ref()
+onMounted(async () => {
+	const { data: plotList } = await axios.get('CesiumEarth/plotTool/pointEntity/plotList.json');
+	pointMaterials.value = plotList;
+	changeSymbol();
+})
+function getSymbolImg() {
+	if (!pointMaterials.value) return ''
+	const pointItem = pointMaterials.value[pointMaterialIndex.value];
+	return pointItem?.symbolUrl;
+}
+function changeSymbol() {
+	const pointItem = pointMaterials.value[pointMaterialIndex.value];
+	if (pointItem) {
+		emit('setDrawObj',
+			{
+				type: 'pointEntity',
+				name: pointItem.label,
+				label: pointItem.label,
+				symbolUrl: pointItem.symbolUrl
 			}
-		}
-	},
-	async mounted() {
-		let { data: plotList } = await axios.get('./CesiumEarth/Config/plotTool/pointEntity/plotList.json');
-		this.pointMaterials = plotList;
-		await this.changeSymbol();
+		);
 	}
-};
+}
+
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+img {
+	vertical-align: middle;
+	border: 0;
+}
+</style>

@@ -26,7 +26,7 @@ const DefaultConfig: ConfigImpl = {
       dataType: DataTypeEnum.layer,
       showInTree: false,
       defaultLoad: true,
-      show: true,
+      show: false,
       offlineCache: false,
       properties: {
         url: new URL("../../img/earth/worldimage2.png", import.meta.url).href,
