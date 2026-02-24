@@ -50,10 +50,7 @@ export const AMapService = {
             `&origin=${originStr}` +
             `&destination=${destStr}` +
             `&waypoints=${waypointsStr};&avoidpolygons=${avoidStr}`;
-        console.log(url);
         const json = await fetch(url).then((r) => r.json());
-        console.log(json);
-
         const route = json.route as any;
 
         // 高德返回的坐标都是GCJ-02的，需要解析并纠偏成WGS-84
