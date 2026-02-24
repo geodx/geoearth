@@ -26,5 +26,5 @@ const ceStore = useCesiumEarthStore()
 function close() {
 	ceStore.setCesiumEarthComAction('plotTool', 2)
 }
-const show = computed(() => ceStore.comStatus('measureTool')) 
+const show = computed(() => ceStore.comStatus('plotTool')) 
 </script>

@@ -13,12 +13,11 @@
                             <label class="label-container">起点</label>
                         </el-col>
                         <el-col :span="14">
-                            <input v-model="startingPoint" disabled min="0" style="float: none;width: 100%" />
+                            <el-input v-model="startingPoint" readonly />
                         </el-col>
-                        <el-col :span="5">
-                            <button class="btn btn-default btn-xs" style="float: right" type="button"
-                                @click="takeStartingPoint">选点
-                            </button>
+                        <el-col :span="5" style="display:flex;align-items:center;">
+                            <el-button @click="takeStartingPoint" type="default" size="small"
+                                style="margin-left:auto;height: 22px;padding: 1px 5px; ">选点</el-button>
                         </el-col>
                     </el-row>
                 </div>
@@ -29,12 +28,12 @@
                             <label class="label-container">终点</label>
                         </el-col>
                         <el-col :span="14">
-                            <input v-model="endPoint" disabled min="0" style="float: none;width: 100%" />
+                            <el-input v-model="endPoint" readonly />
                         </el-col>
-                        <el-col :span="5">
-                            <button class="btn btn-default btn-xs" style="float: right" type="button"
-                                @click="takeEndPoint">选点
-                            </button>
+                        <el-col :span="5" style="display:flex;align-items:center;">
+                            <el-button @click="takeEndPoint" type="default" size="small"
+                                style="margin-left:auto;height: 22px;padding: 1px 5px; ">选点</el-button>
+
                         </el-col>
                     </el-row>
                 </div>
@@ -45,12 +44,14 @@
                             <label class="label-container">途经点</label>
                         </el-col>
                         <el-col :span="6">
-                            <input v-model="passPointArr.length" disabled min="0" style="float: none;width: 100%" />
+                            <el-input v-model="passPointArr.length" readonly />
                         </el-col>
                         <el-col :span="13">
                             <div class="btn-group" style="float: right">
-                                <button class="btn btn-default btn-xs" type="button" @click="takePassPoint">添加</button>
-                                <button class="btn btn-default btn-xs" type="button" @click="clearPassPoint">重置</button>
+                                <el-button @click="takePassPoint" type="default" size="small"
+                                    style="margin-left:auto;height: 22px;padding: 1px 5px; ">添加</el-button>
+                                <el-button @click="clearPassPoint" type="default" size="small"
+                                    style="margin-left:auto;height: 22px;padding: 1px 5px; ">重置</el-button>
                             </div>
                         </el-col>
                     </el-row>
@@ -62,21 +63,24 @@
                             <label class="label-container">避让区</label>
                         </el-col>
                         <el-col :span="6">
-                            <input v-model="avoidRanges.length" disabled min="0" style="float: none;width: 100%" />
+                            <el-input v-model="avoidRanges.length" readonly />
                         </el-col>
                         <el-col :span="13">
                             <div class="btn-group" style="float: right">
-                                <button class="btn btn-default btn-xs" type="button" @click="takeAvoidRange">添加</button>
-                                <button class="btn btn-default btn-xs" type="button"
-                                    @click="clearAvoidRanges">重置</button>
+                                <el-button @click="takeAvoidRange" type="default" size="small"
+                                    style="margin-left:auto;height: 22px;padding: 1px 5px; ">添加</el-button>
+                                <el-button @click="clearAvoidRanges" type="default" size="small"
+                                    style="margin-left:auto;height: 22px;padding: 1px 5px; ">重置</el-button>
                             </div>
                         </el-col>
                     </el-row>
                 </div>
-                <div class="crlBtnGroup">
-                    <button v-if="naviData" class="btn btn-primary btn-sm" @click="saveNaviData">导出</button>
-                    <button class="btn btn-success btn-sm" @click="navigation">规划</button>
-                    <button class="btn btn-warning btn-sm" @click="resetNavigation">清除</button>
+                <div style="text-align: center;padding-top: 10px">
+                    <el-button-group size="small">
+                        <el-button v-if="naviData" @click="saveNaviData" type="primary">点</el-button>
+                        <el-button @click="navigation" type="success">规划</el-button>
+                        <el-button @click="resetNavigation" type="warning">清除</el-button>
+                    </el-button-group>
                 </div>
             </div>
             <div style="max-height: 500px;overflow: auto">
@@ -102,17 +106,19 @@ import { TabPane, WinTabs } from '../../winTabs'
 import CesiumEarth from '@/lib/CesiumEarth';
 import { useEarthStore } from '@/stores/EarthStore';
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
+import { ElMessage } from 'element-plus';
+import type { WorldDegree } from '@/lib/CesiumEarth/ts/cesium.earth';
 const ceStore = useCesiumEarthStore()
 const earthStore = useEarthStore()
 
-const startingPoint = ref()
+const startingPoint = ref();
 const endPoint = ref()
-const passPointArr = ref([])
-const avoidRanges = ref([])
-const paths = ref([])
+const passPointArr = ref<WorldDegree[]>([])
+const avoidRanges = ref<WorldDegree[][]>([])
+const paths = ref<any[]>([])
 const naviData = ref()
 
-let pathPlanning: any;
+let pathPlanning: CesiumEarth.PathPlanning;
 let routingServiceType: string;
 onMounted(() => {
     initPathPlanning()
@@ -126,7 +132,6 @@ async function initPathPlanning() {
     const response = await fetch(new URL('/CesiumEarth/pathPlanning/init.json', import.meta.url))
     const config = await response.json()
     routingServiceType = config.routingServiceType;
-
     pathPlanning = new CesiumEarth.PathPlanning(earth.viewer3D, config.routingServiceType);
 }
 async function takeStartingPoint() {
@@ -140,11 +145,9 @@ async function takeEndPoint() {
 async function takePassPoint() {
     await pathPlanning.takePassPoint();
     passPointArr.value = pathPlanning.passPointArr;
-    console.log(passPointArr);
 }
 async function takeAvoidRange() {
     await pathPlanning.takeAvoidRange();
-    console.log(pathPlanning.avoidRanges);
     avoidRanges.value = pathPlanning.avoidRanges;
 }
 async function clearPassPoint() {
@@ -158,35 +161,35 @@ async function clearAvoidRanges() {
 // 获取坐标采集工具
 async function navigation() {
     if (startingPoint.value === '' || endPoint.value === '') {
-        this.$message({ type: 'warning', message: '请选择起点和终点' });
+        ElMessage({ type: 'warning', message: '请选择起点和终点' });
         return;
     }
-    let naviData = await pathPlanning.runNavigation();
-    if (naviData) {
-        this.naviData.value = naviData;
-        await this.buildTable(naviData);
-        await this.buildPathEntity(0);
+    const navi = await pathPlanning.runNavigation();
+    if (navi) {
+        naviData.value = navi;
+        await buildTable(navi);
+        await buildPathEntity(0);
     }
 }
-async function buildPathEntity(index) {
+async function buildPathEntity(index: number) {
     await pathPlanning.buildPathEntity(index);
 }
 // 渲染表格
-async function buildTable(naviData) {
+async function buildTable(naviData: any) {
     paths.value = [];
     if (routingServiceType === 'AMap') {
-        naviData.paths.forEach((p, index) => {
+        naviData.paths.forEach((p: any, index: number) => {
             let pathStr = `${p.strategy}，全长：${(p.distance / 1000).toFixed(1)}公里。途径：`;
-            p.steps.forEach(step => {
+            p.steps.forEach((step: any) => {
                 pathStr += step.road ? (step.road + '、') : '';
             });
             paths.value.push({ id: index + 1, msg: pathStr });
         });
     } else {
         let index = 0;
-        naviData.value.forEach(p => {
+        naviData.value.forEach((p: any) => {
             let pathStr = `全长：${(p.distance / 1000).toFixed(1)}公里。`;
-            p.instructions.forEach(instruction => {
+            p.instructions.forEach((instruction: any) => {
                 pathStr += instruction.text + `行驶${(instruction.distance / 1000).toFixed(1)}公里(预计${(instruction.time / 60000).toFixed(1)}分钟)。  `;
             });
             paths.value.push({ id: index + 1, msg: pathStr });
@@ -194,9 +197,8 @@ async function buildTable(naviData) {
     }
 }
 async function saveNaviData() {
-
     if (naviData.value) {
-        saveAs(new Blob([JSON.stringify(this.naviData)], { type: 'text/plain;charset=utf-8' }), '导航数据.json');
+        saveAs(new Blob([JSON.stringify(naviData.value)], { type: 'text/plain;charset=utf-8' }), '导航数据.json');
     }
 }
 async function resetNavigation() {
@@ -213,17 +215,34 @@ async function resetNavigation() {
 function close() {
     ceStore.setCesiumEarthComAction('pathPlanning', 2)
 }
+
+function saveAs(blob: Blob, fileName: string) {
+    const downLink = document.createElement('a');
+    downLink.download = fileName;
+    downLink.href = URL.createObjectURL(blob);
+    // 链接插入到页面
+    document.body.appendChild(downLink);
+    downLink.click();
+    // 移除下载链接
+    document.body.removeChild(downLink);
+}
 </script>
 
 <style lang="scss" scoped>
-@import "@/assets/global/css/crlBtnGroup.scss";
-
-label {
+.label-container {
     color: #009b94;
+    display: inline-block;
+    max-width: 100%;
+    margin-bottom: 5px;
+    font-weight: 700;
+    font-size: 14px;
 }
 
-input {
-    color: #333;
+.el-input {
+    height: 25px;
+    --el-input-border-color: #333;
+    --el-input-text-color: #333;
+    --el-input-bg-color: rgb(170, 170, 170);
 }
 
 .center {

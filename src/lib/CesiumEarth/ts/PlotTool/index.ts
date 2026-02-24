@@ -122,7 +122,6 @@ class PlotTool {
   private mouseMoveEvent = (e: any) => { }
   private leftClickEvent = (e: any) => {
     const feature = this.viewer.scene.pick(e.position);
-    console.log(e.position, feature);
     if (feature?.id) {
       this.id = feature.id.id
     }

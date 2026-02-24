@@ -50,15 +50,16 @@ import { SplitDirection } from 'cesium';
 const ceStore = useCesiumEarthStore()
 const earthStore = useEarthStore()
 const selGroup = ref()
-const layers = ref([])
+const layers = ref()
 const leftLayer = ref()
 const rightLayer = ref()
+const groupList = ref()
 
 let layersData: any = []
 const layerMap = new Map()
 
-let splitControlL: any = null;
-let splitControlR: any = null;
+let splitControlL: CesiumEarth.LayerSplit | undefined;
+let splitControlR: CesiumEarth.LayerSplit | undefined;
 let earth: CesiumEarth.Earth
 onMounted(async () => {
     earth = await earthStore.getEarth()
@@ -72,15 +73,12 @@ watch(() => selGroup.value, (newValue, oldValue) => {
     loadAllLayer()
 })
 
-const groupList = computed(() => {
-    return layersData.map((item: any) => item.group)
-})
 // 获取图层数据
 async function getSHBLayers() {
     const response = await fetch(new URL('/CesiumEarth/ImageLayerTimeLine/init.json', import.meta.url))
     const data = await response.json()
-    console.log(data);
     layersData = data;
+    groupList.value = layersData.map((item: any) => item.group)
     if (layersData.length > 0) {
         selGroup.value = layersData[0].group;
     }
@@ -88,7 +86,7 @@ async function getSHBLayers() {
 function loadAllLayer() {
     let group = layersData.find((item: any) => item.group === selGroup.value);
     let position = group.position;
-    CesiumEarth.SceneUtils.viewerFlyToLonLat(position.lon, position.lat, position.height);
+    CesiumEarth.SceneUtils.viewerFlyToLonLat(earth.viewer3D, position.lon, position.lat, position.height);
     layers.value = group.layers || [];
 
     for (let i = 0; i < layers.value.length; i++) {
@@ -123,7 +121,9 @@ function setLeftLayer(layerName: string | undefined) {
             ceStore.setLegendCurrent({ title: group.group, list: [], img: group.legend })
         }
 
-        splitControlL = new CesiumEarth.ImageLayerSplit(earth.viewer3D, layerL, SplitDirection.LEFT);
+        splitControlL = new CesiumEarth.LayerSplit(earth.viewer3D, SplitDirection.LEFT);
+        splitControlL.create();
+        splitControlL.changeLayer(layerL);
     } else {
         leftLayer.value = undefined;
     }
@@ -141,7 +141,9 @@ function setRightLayer(layerName: string | undefined) {
             ceStore.setLegendCurrent({ title: group.group, list: [], img: group.legend })
         }
 
-        splitControlR = new CesiumEarth.ImageLayerSplit(earth.viewer3D, layerR, SplitDirection.RIGHT);
+        splitControlR = new CesiumEarth.LayerSplit(earth.viewer3D, SplitDirection.RIGHT);
+        splitControlR.create();
+        splitControlR.changeLayer(layerR);
     } else {
         rightLayer.value = undefined;
     }
