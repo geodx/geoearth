@@ -57,7 +57,8 @@ export { buildBillboard } from './ExpandEntity/NormalEntity';
 
 // SceneEffect
 export * from './SceneEffect';
-
+// SpatialAnalysis
+export * from './SpatialAnalysis';
 // HandlerManage
 export { HandlerManage } from './HandlerManage';
 
@@ -97,6 +98,7 @@ export { BookmarkManager } from './Utils';
 export { Cartesian3Tool } from './Utils';
 export { CartographicArrTool } from './Utils';
 export { CartographicTool } from './Utils';
+export { CoordinateOffsetTool } from './Utils';
 // Utils MarkTool
 export { MarkTool } from './Utils';
 // Utils GISMathUtils

@@ -28,7 +28,7 @@ type CameraViewType = {
 interface WorldDegree {
   longitude: number;
   latitude: number;
-  height: number;
+  height?: number;
 }
 
 interface WorldDegreeWithTime extends WorldDegree {

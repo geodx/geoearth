@@ -16,6 +16,7 @@ function initEarth() {
   earth.openDeBug();
   // earth.createNavigation();
   // earth.openOverviewMap()
+  // earth.openMapLink23d()
   earth.viewer3D.scene.globe.depthTestAgainstTerrain = true;
 
   earth.thenLoadComplete().then(() => {

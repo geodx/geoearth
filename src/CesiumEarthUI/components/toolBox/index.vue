@@ -3,11 +3,11 @@
     <GeologicalSection></GeologicalSection>
     <skyBoxTool></skyBoxTool>
     <MeasureTool></MeasureTool>
-    <!-- <pathPlanning></pathPlanning> -->
+    <pathPlanning></pathPlanning>
     <plotTool></plotTool>
     <!-- <pathRoaming></pathRoaming> -->
     <Weather></Weather>
-    <!-- <ImageLayerSplitManage></ImageLayerSplitManage> -->
+    <ImageLayerSplitManage></ImageLayerSplitManage>
     <ImageLayerTimeLine></ImageLayerTimeLine>
     <visualMarker></visualMarker>
     <areaNavigation></areaNavigation>

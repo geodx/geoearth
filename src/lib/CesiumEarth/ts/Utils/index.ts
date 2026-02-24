@@ -17,6 +17,7 @@ export { BookmarkManager } from './CameraView';
 export { Cartesian3Tool } from './CoordinateTool';
 export { CartographicArrTool } from './CoordinateTool';
 export { CartographicTool } from './CoordinateTool';
+export { CoordinateOffsetTool } from './CoordinateTool';
 
 export { MarkTool } from './MarkTool';
 export { GISMathUtils } from './GISMathUtils';

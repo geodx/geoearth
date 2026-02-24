@@ -191,7 +191,7 @@
 <script setup lang="ts">
 import { TabPane, WinTabs } from '../../winTabs'
 import toClipboard from './lib/toClipboard';
-import coordinateOffset from './img/CoordinateOffset';
+import coordinateOffset from './lib/CoordinateOffset';
 import CoordPlot from './coordPlot.vue';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore.js';
