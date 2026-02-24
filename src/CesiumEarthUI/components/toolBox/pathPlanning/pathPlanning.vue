@@ -1,5 +1,5 @@
 <template>
-    <ppContent v-if="true"></ppContent>
+    <ppContent v-if="show"></ppContent>
 </template>
 <script lang="ts" setup>
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
