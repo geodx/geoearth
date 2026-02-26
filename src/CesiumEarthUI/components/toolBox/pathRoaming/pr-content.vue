@@ -9,7 +9,7 @@
                     </el-col>
                     <el-col :span="14">
                         <el-select v-model="roamingType" placeholder="请选择漫游方式" size="small" @change="setRoamingType">
-                            <el-option v-for="item in pathRoamList" :key="item" :label="item" :value="item">
+                            <el-option v-for="item in pathRoamList" :key="item" :label="item.labe" :value="item.value">
                             </el-option>
                         </el-select>
                     </el-col>
@@ -17,7 +17,7 @@
             </div>
 
 
-            <div v-if="roamingType === '飞行漫游'" style="margin-bottom: 5px">
+            <div v-if="roamingType === CesiumEarth.RoamingEnum.UAV_ROAM" style="margin-bottom: 5px">
                 <el-row>
                     <el-col :span="6">
                         <label class="label-container">离地高度</label>
@@ -81,17 +81,19 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { TabPane, WinTabs } from '../../winTabs'
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 import CesiumEarth from '@/lib/CesiumEarth';
+import { useEarthStore } from '@/stores/EarthStore';
 const ceStore = useCesiumEarthStore()
+const earthStore = useEarthStore()
 
 
-const pathRoamList: [
-    // '贴地漫游',
-    '行人漫游',
-    '车辆漫游',
-    '飞行漫游'
+const pathRoamList = [
+    { labe: '行人漫游', value: CesiumEarth.RoamingEnum.PEOPLE_ROAM },
+    { labe: '车辆漫游', value: CesiumEarth.RoamingEnum.CAR_ROAM },
+    { labe: '飞行漫游', value: CesiumEarth.RoamingEnum.UAV_ROAM },
 ]
-const roamingType = ref('车辆漫游')
-const pathRoamHeight = ref(0)
+
+const roamingType = ref<CesiumEarth.RoamingEnum>(CesiumEarth.RoamingEnum.CAR_ROAM)
+const pathRoamHeight = ref(10)
 const showPath = ref(true)
 const drawLineDone = ref(false)
 
@@ -100,45 +102,45 @@ onUnmounted(() => {
     stop();
 })
 
-onMounted(() => {
-    pathRoaming = new CesiumEarth.PathRoaming(CesiumEarth.getMainViewer(), {
+onMounted(async () => {
+    const earth = await earthStore.getEarth()
+    pathRoaming = new CesiumEarth.PathRoaming(earth.viewer3D, {
         speed: 10,
         roamingType: roamingType.value
     });
 })
 watch(() => showPath, (newValue) => {
-    pathRoaming.showPath = newV;
+    pathRoaming.showPath = newValue;
 })
 
 async function drawLine() {
-    await pathRoaming.drawLine(this.pathRoamHeight);
-    this.drawLineDone = true;
+    await pathRoaming.drawLine(pathRoamHeight.value);
+    drawLineDone.value = true;
 }
 function setRoamingType() {
-    pathRoaming.setRoamingType(this.roamingType);
-    console.log(this.roamingType);
+    pathRoaming.setRoamingType(roamingType.value);
 }
 function start() {
-    if (!pathRoaming || !this.drawLineDone) {
+    if (!pathRoaming || !drawLineDone.value) {
         return;
     }
     pathRoaming.startRoaming();
 }
 function pause() {
-    if (!pathRoaming || !this.drawLineDone) {
+    if (!pathRoaming || !drawLineDone.value) {
         return;
     }
     pathRoaming.pauseRoaming();
 }
 function stop() {
-    if (!pathRoaming || !this.drawLineDone) {
+    if (!pathRoaming || !drawLineDone.value) {
         return;
     }
     pathRoaming.stopRoaming();
-    this.drawLineDone = false;
+    drawLineDone.value = false;
 }
 function accelerateUp() {
-    let speed = pathRoaming.getRoamingSpeed();
+    const speed = pathRoaming.getRoamingSpeed();
     console.log('speed:' + speed);
     pathRoaming.setRoamingSpeed(speed + 10);
 }

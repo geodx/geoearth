@@ -23,11 +23,26 @@ const router = createRouter({
       component: () => import('../views/TechnologyScreen/index.vue')
     },
     {
+      name: 'VRScreen',
+      path: '/VRScreen',
+      component: () => import('../views/VRScreen/index.vue')
+    },
+    {
       name: 'example',
       path: '/example/:demoPid?',
       component: () => import('../views/Example/index.vue')
     },
   ],
 })
-
+router.beforeEach((to, from, next) => {
+  let userInfo = localStorage.getItem('userInfo');
+  if (userInfo) {
+    userInfo = JSON.parse(userInfo) || {};
+    next();
+  } else if (to.path === '/login' || to.path === '/' || to.path === '/blank' || to.path === '/404') {
+    next();
+  } else {
+    next({ path: '/login' });
+  }
+});
 export default router
