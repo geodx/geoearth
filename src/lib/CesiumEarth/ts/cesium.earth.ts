@@ -93,6 +93,7 @@ export { getCameraRectangleGeoJson } from './Utils';
 export { getScreenCenterPoint } from './Utils';
 // Utils  CameraView
 export { BookmarkManager } from './Utils';
+export { PathRoaming, RoamingEnum } from './Utils';
 
 // Utils  CoordinateTool
 export { Cartesian3Tool } from './Utils';

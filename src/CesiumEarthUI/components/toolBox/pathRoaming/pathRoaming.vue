@@ -1,5 +1,5 @@
 <template>
-    <prContent v-if="true"></prContent>
+    <prContent v-if="show"></prContent>
 </template>
 <script lang="ts" setup>
 import prContent from './pr-content.vue';

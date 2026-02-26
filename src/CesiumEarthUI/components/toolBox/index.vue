@@ -5,7 +5,7 @@
     <MeasureTool></MeasureTool>
     <pathPlanning></pathPlanning>
     <plotTool></plotTool>
-    <!-- <pathRoaming></pathRoaming> -->
+    <pathRoaming></pathRoaming>
     <Weather></Weather>
     <ImageLayerSplitManage></ImageLayerSplitManage>
     <ImageLayerTimeLine></ImageLayerTimeLine>
