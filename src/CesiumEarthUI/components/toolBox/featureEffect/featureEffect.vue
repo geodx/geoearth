@@ -4,9 +4,7 @@
 ****************************************************************************/
 
 <template>
-
     <FEContent v-if="true"></FEContent>
-
 </template>
 <script lang="ts" show>
 import { computed } from 'vue';
