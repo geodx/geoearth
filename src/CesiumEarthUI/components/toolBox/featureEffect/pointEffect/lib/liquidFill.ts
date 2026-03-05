@@ -19,7 +19,7 @@ function liquidFill(viewer: Viewer, position: any, dom: any, data: any) {
             longitude: position[0]!,
             latitude: position[1]
         },
-        dom
+        0.51
     );
     data.point8.init();
 }

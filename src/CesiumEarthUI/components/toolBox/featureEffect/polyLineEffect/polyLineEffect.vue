@@ -17,31 +17,32 @@ import { addVolumeTrialLines, removeVolumeTrial } from './lib/PolyLineVolumeTria
 import { addEarthTopo, removeEarthTope } from './lib/EarthTopo';
 import CesiumEarth from '@/lib/CesiumEarth/index';
 import { useEarthStore } from '@/stores/EarthStore';
-import { onUnmounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 const earthStore = useEarthStore()
-let plotDataSource: any;
+let plotDataSource: CesiumEarth.PlotDataSource;
 let isPlaying = false
+let earth: CesiumEarth.Earth
+onMounted(async () => {
+    earth = await earthStore.getEarth()
+})
 onUnmounted(() => {
     reset()
 })
-async function start() {
-    const earth = await earthStore.getEarth()
-    addSuperLines();
-    addMigrateLines();
-    addVolumeTrialLines();
+
+function start() {
+    addSuperLines(earth.viewer3D);
+    addMigrateLines(earth.viewer3D);
+    addVolumeTrialLines(earth.viewer3D);
     isPlaying = true;
-    plotDataSource = new CesiumEarth.PlotDataSource();
-    plotDataSource.load(geoJson, {
-        clampToGround: true
-    });
+    plotDataSource = new CesiumEarth.PlotDataSource(earth.viewer3D);
+    plotDataSource.load(geoJson, { clampToGround: true });
     earth.viewer3D.dataSources.add(plotDataSource).then();
     earth.viewer3D.flyTo(plotDataSource);
 }
-async function reset() {
-    const earth = await earthStore.getEarth()
-    removeSuperLines();
-    removeMigrateLines();
-    removeVolumeTrial();
+function reset() {
+    removeSuperLines(earth.viewer3D);
+    removeMigrateLines(earth.viewer3D);
+    removeVolumeTrial(earth.viewer3D);
     if (isPlaying) {
         plotDataSource.entities.removeAll();
         earth.viewer3D.dataSources.remove(plotDataSource);
@@ -49,10 +50,10 @@ async function reset() {
     isPlaying = false;
 }
 function addEarthTopoLines() {
-    addEarthTopo();
+    addEarthTopo(earth.viewer3D);
 }
 function removeEarthTopoLines() {
-    removeEarthTope();
+    removeEarthTope(earth.viewer3D);
 }
 
 </script>

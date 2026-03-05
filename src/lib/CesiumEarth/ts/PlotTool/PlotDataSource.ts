@@ -8,6 +8,7 @@ import {
     PolylineGraphics, ArcType, PolygonGraphics, PolygonHierarchy, Viewer
 } from "cesium";
 import CesiumEarth from "../..";
+import type { MaterialProperty } from "cesium";
 export interface PlotLoadOptions {
     credit?: string | Credit;
     sourceUri?: string;
@@ -105,8 +106,8 @@ class PlotDataSource implements DataSource {
     static clampToGround = DEFAULT_CLAMP_TO_GROUND;
 
     // ---- DataSource字段 ----
-    private _name: string;
-    private _changed: Event;
+    public _name?: string;
+    public _changed: Event;
     private _error: Event;
     public _loading: Event;
     public _isLoading: boolean;
@@ -120,7 +121,7 @@ class PlotDataSource implements DataSource {
     private _resourceCredits: Credit[];
 
     public readonly viewer: Viewer;
-    constructor(viewer: Viewer, name: string) {
+    constructor(viewer: Viewer, name?: string) {
         this._name = name;
         this._changed = new Event();
         this._error = new Event();
@@ -398,20 +399,19 @@ function addPointEntity(ds: PlotDataSource, feature: any, coords: number[], opts
 // }
 // polyline(对应ZB/KB/XB)
 function addPolylineEntity(ds: PlotDataSource, feature: any, coords: number[][], opts: any) {
-    let material = opts.strokeMaterialProperty;
+    let material: MaterialProperty = opts.strokeMaterialProperty;
     let widthProp = opts.strokeWidthProperty;
 
     const props = feature.properties || {};
     const materialType = props["stroke-material"] || "normal";
     const width = props["stroke-width"] || 12;
-
     //  自定义材质
     switch (materialType) {
         case "PolylineArrowMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineArrowMaterial({ color: Color.AQUA, duration: 800, count: 3 });
+            material = new CesiumEarth.Material.Polyline.PolylineArrowMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
             break;
         case "PolylineEnergyTransMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineEnergyTransMaterial({ color: Color.AQUA, duration: 800, count: 3 });
+            material = new CesiumEarth.Material.Polyline.PolylineEnergyTransMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
             break;
         case "PolylineLightingMaterial":
             material = new CesiumEarth.Material.Polyline.PolylineLightingMaterial(Color.AQUA);
@@ -420,10 +420,10 @@ function addPolylineEntity(ds: PlotDataSource, feature: any, coords: number[][],
             material = new CesiumEarth.Material.Polyline.PolylineLinkPulseMaterial({ color: Color.AQUA, duration: 5000 });
             break;
         case "PolylineSpriteMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineSpriteMaterial({ color: Color.AQUA, duration: 2000, count: 3 });
+            material = new CesiumEarth.Material.Polyline.PolylineSpriteMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
             break;
         case "PolylineSuperMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineSuperMaterial({ color: Color.AQUA, duration: 2000, count: 3 });
+            material = new CesiumEarth.Material.Polyline.PolylineSuperMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
             break;
         case "PolylineTrailMaterial":
             material = new CesiumEarth.Material.Polyline.PolylineTrailMaterial({ speed: 5 * Math.random(), color: Color.CYAN, percent: 0.5, gradient: 0.01 });
@@ -437,7 +437,7 @@ function addPolylineEntity(ds: PlotDataSource, feature: any, coords: number[][],
 
             const op = props["stroke-opacity"];
             if (defined(op) && op !== 1) {
-                if (!defined(c)) c = (material.color.getValue() as Color).clone();
+                if (!defined(c)) c = (material.getValue().color as Color).clone();
                 c.alpha = op;
             }
             if (defined(c)) material = new ColorMaterialProperty(c);

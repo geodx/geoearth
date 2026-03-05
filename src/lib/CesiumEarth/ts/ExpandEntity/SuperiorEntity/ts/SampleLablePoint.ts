@@ -85,18 +85,19 @@ export class SampleLablePoint extends DomPointBase {
         `;
 
         const $pointDiv = this.$container.querySelector(".sample-label-point") as HTMLElement;
-        $pointDiv.style.backgroundImage = new URL('../img/sampleLabelPoint/point.png', import.meta.url).href;
+        $pointDiv.style.backgroundImage = `url(${new URL('../img/sampleLabelPoint/point.png', import.meta.url).href})`;
         $pointDiv.onclick = () => {
             this.#setBoardVisible(!this.#boardVisible);
         }
         const $lineDiv = this.$container.querySelector(".sample-label-board-line") as HTMLElement;
-        $lineDiv.style.backgroundImage = new URL('../img/sampleLabelPoint/pedestal.png', import.meta.url).href
+        $lineDiv.style.backgroundImage = `url(${new URL('../img/sampleLabelPoint/pedestal.png', import.meta.url).href})`;
         const $closeBtn = this.$container.querySelector(".sample-label-board-closeBtn") as HTMLElement;
         $closeBtn.onclick = () => {
             this.#setBoardVisible(false);
         }
         const $text = this.$container.querySelector(".sample-label-board-text");
         $text!.appendChild(this.#contextDom);
+
         this.viewer.cesiumWidget.container.appendChild(this.$container);
     }
 

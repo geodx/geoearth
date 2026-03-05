@@ -1,6 +1,6 @@
 import { Cartesian3 } from "cesium"
 
-let domData = {
+const domData = {
   dom1: document.createElement('div'),
   dom2: document.createElement('div'),
   dom3: document.createElement('div'),
@@ -40,7 +40,7 @@ let domData = {
 }
 
 //弹跳点
-let bMarkers: any[] = []
+const bMarkers: any[] = []
 let point1: any,
   point2: any,
   point3: any,
@@ -50,8 +50,8 @@ let point1: any,
   point8: any,
   point9: any,
   point10: any,
-  hls = {}
-let pointData = {
+  hls: any
+const pointData = {
   hls,
   bMarkers,
   point1,

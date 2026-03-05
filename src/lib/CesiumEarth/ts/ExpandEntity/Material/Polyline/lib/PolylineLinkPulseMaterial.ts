@@ -1,50 +1,41 @@
 // 动态线材质 脉冲线 
-import { Color, JulianDate, Material, Event, } from "cesium";
+import { Color, JulianDate, Material, Event, ConstantProperty, Property, defined } from "cesium";
 import { PolylineBaseMaterial } from './PolylineBaseMaterial';
 
 
 // 动态线材质 脉冲
 class PolylineLinkPulseMaterial extends PolylineBaseMaterial {
-    private _time: number = (new Date()).getTime();
-    private url: string;
-    private duration: number;
-    private _color: Color;
-    private _definitionChanged: Event
+    private _time: number = Date.now();
+    private _definitionChanged: Event = new Event()
+    private _color: Property;
+    private _url: string;
+    private _duration: number;
 
     constructor(options: any) {
         super();
-        this._definitionChanged = new Event();
-        this._color = options.color;
-        this.duration = options.duration;
-        this.url = options.url || new URL('../img/脉冲线材质.png', import.meta.url).href;
-        this._time = (new Date()).getTime();
+        this._color = new ConstantProperty(options.color ?? Color.WHITE);
+        this._duration = options.duration ?? 2000;
+        this._url = options.url || new URL('../img/脉冲线材质.png', import.meta.url).href;
+        this._definitionChanged = new Event()
         this.init();
     }
 
-    get isConstant() {
-        return this.getConstant(this._color);
-    }
+    get isConstant() { return false }
 
-    get definitionChanged() {
-        return this._definitionChanged;
-    }
+    get definitionChanged() { return this._definitionChanged; }
 
-    getType() {
-        return 'PolylineLinkPulse';
-    };
+    getType() { return 'PolylineLinkPulse'; };
 
     getValue(time: JulianDate, result: any) {
-        if (!result) result = {}
-        result.color = Color.clone(this._color ?? Color.WHITE, result.color)
-        result.image = this.url;
-        result.time = (((new Date()).getTime() - this._time) % this.duration) / this.duration;
+        if (!defined(result)) result = {}
+        result.color = Color.clone(this._color.getValue(time) ?? Color.WHITE, result.color);
+        result.image = this._url;
+        result.time = ((Date.now() - this._time) % this._duration) / this._duration;
         return result;
     }
 
     equals(other: PolylineLinkPulseMaterial) {
-        if (this === other) return true
-        if (!(other instanceof PolylineLinkPulseMaterial)) return false
-        return Color.equals(this._color, other._color)
+        return this === other;
     }
 
     init() {

@@ -12,7 +12,7 @@ import geoJson from './arealabel.json';
 import HeatMap from './com/heatMap.vue';
 import { onMounted, onUnmounted } from 'vue';
 import { useEarthStore } from '@/stores/EarthStore';
-import type CesiumEarth from '@/lib/CesiumEarth';
+import CesiumEarth from '@/lib/CesiumEarth';
 const earthStore = useEarthStore()
 const colors = [
     Color.AQUA,
@@ -51,7 +51,7 @@ onUnmounted(() => {
 function start() {
     reset();
     earth.viewer3D.scene.globe.depthTestAgainstTerrain = false;
-    let features = geoJson.features;
+    const features = geoJson.features;
     areaLabel = new CesiumEarth.SuperiorEntity.AreaLabel(
         earth.viewer3D, colors, labels, features
     );

@@ -48,7 +48,7 @@ onMounted(() => {
             name: 'div文本点',
             start: divPoint,
             params: [domData.pos1, domData.dom1],
-            destroy: ['point1', 'remove'],
+            destroy: ['point1', 'destroy'],
             open: false
         },
         {
@@ -56,7 +56,7 @@ onMounted(() => {
             name: '简单标注点',
             start: simpleLabel,
             params: [domData.pos2, domData.dom2],
-            destroy: ['point2', 'destroyWindow'],
+            destroy: ['point2', 'destroy'],
             open: false
         },
         {
@@ -64,7 +64,7 @@ onMounted(() => {
             name: '竖立文本标注点',
             start: erectLabelPoint,
             params: [domData.pos3, domData.dom3],
-            destroy: ['point3', 'remove'],
+            destroy: ['point3', 'destroy'],
             open: false
         },
         {
@@ -72,7 +72,7 @@ onMounted(() => {
             name: '热点面板文本点',
             start: hotSpot,
             params: [domData.pos4, domData.dom4],
-            destroy: ['point4', 'remove'],
+            destroy: ['point4', 'destroy'],
             open: false
         },
         {
@@ -80,7 +80,7 @@ onMounted(() => {
             name: '简单渐变标注',
             start: gradientLabelPoint,
             params: [domData.pos5, domData.dom5],
-            destroy: ['point5', 'remove'],
+            destroy: ['point5', 'destroy'],
             open: false
         },
         {
@@ -96,7 +96,7 @@ onMounted(() => {
             name: '图标+文字',
             start: primitiveLabelCol,
             params: [domData.pos7],
-            destroy: ['point7', 'remove'],
+            destroy: ['point7', 'destroy'],
             open: false
         },
         {
@@ -173,7 +173,7 @@ function start(item: any) {
     if (item.name == '弹跳点') {
         item.start(pointData, earth.viewer3D);
     } else {
-        item.start(...item.params, pointData);
+        item.start(earth.viewer3D, ...item.params, pointData);
     }
 }
 function destroy(item: any) {
@@ -182,7 +182,9 @@ function destroy(item: any) {
             item.remove();
         });
     } else {
-        // pointData[item.destroy[0]][item.destroy[1]]();
+        const name = item.destroy[0] as keyof typeof pointData
+        const point = pointData[name];
+        point[item.destroy[1]]();
     }
 }
 async function setView() {

@@ -1,30 +1,25 @@
-import * as echarts from "echarts";
-import 'echarts-liquidfill'
 import { Viewer } from "cesium";
-import type { EChartsType } from "echarts";
-import domPointBase from "./domPointBase";
-import type { worldDegreesType } from "../../type";
+import DomPointBase from "./base/DomPointBase";
+import type { WorldDegree } from "../../../cesium.earth";
 
-export default class waterPoloPoint extends domPointBase {
-    #contextNumber: number;
-    #chart: EChartsType|null;
+export class LEDLabel extends DomPointBase {
+    #contextLabel: string;
     /**
-     * @description: 水球点，显示为可表达比例的水球图表
+     * @description: led文本点，显示为LED样式的文本
      * @param {Viewer} viewer viewer实例
-     * @param {worldDegreesType} worldDegrees 位置，经纬度和高
-     * @param {number} contextNumber 插入的数字,会被转化为百分数
+     * @param {WorldDegree} worldDegrees 位置，经纬度和高
+     * @param {string} contextLabel 插入的文本
      * @param {boolean} showEntityPoint (可选)是否显示点实体，默认为false
      * @return {*}
      */
     constructor(
         viewer: Viewer,
-        worldDegrees: worldDegreesType,
-        contextNumber: number,
+        worldDegrees: WorldDegree,
+        contextLabel: string,
         showEntityPoint: boolean = false
     ) {
         super(viewer, worldDegrees, showEntityPoint);
-        this.#contextNumber = contextNumber;
-        this.#chart = null;
+        this.#contextLabel = contextLabel;
     }
 
     /**
@@ -41,9 +36,6 @@ export default class waterPoloPoint extends domPointBase {
             this.$container.style.display = "none";
             this.#addDom();
             this.#addPostRender();
-            const chartDom = this.$container.querySelector(".waterpolo-container") as HTMLElement;
-            this.#chart = echarts.init(chartDom);
-            this.#chart.setOption(this.defaultOption);
             this.$container.style.display = "block";
         }
     }
@@ -59,7 +51,6 @@ export default class waterPoloPoint extends domPointBase {
                 this.postRenderFunc,
                 this
             ); //移除事件监听
-            this.#chart && this.#chart.dispose();
             this.$container.remove();
             this.viewer.entities.remove(this.pointEntity);
         }
@@ -74,42 +65,15 @@ export default class waterPoloPoint extends domPointBase {
     }
 
     /**
-     * @description: 默认配置项
-     * @return {any} 默认配置项,没有类型
-     */
-    get defaultOption():any{
-        return{
-            series: [{
-                type: 'liquidFill',
-                data: [this.#contextNumber],
-                radius: '90%',
-                outline: {
-                    show: false
-                },
-                label: {
-                    position: ['50%', '65%'],
-                    textStyle: {
-                        fontSize: 15,
-                        fontFamily: 'Lobster Two'
-                    }
-                },
-                itemStyle: {
-                    color: '#ff9501'
-                }
-            }]
-        }
-    }
-
-    /**
      * @description: 添加DOM
      * @return {*}
      */
     #addDom() {
         this.$container.innerHTML = `
-            <div class="waterpolo-point-container">
-                <div class="waterpolo-container"></div>
+            <div class="led-label-point-container">
+                <h3 class="label-led-container">${this.#contextLabel}</h3>
             </div>
-        `;
+        `
         this.viewer.cesiumWidget.container.appendChild(this.$container);
     }
 
@@ -118,7 +82,7 @@ export default class waterPoloPoint extends domPointBase {
      * @return {*}
      */
     #addPostRender() {
-        this.postRender({ directionX: "center", directionY: "bottom" });
+        this.postRender({ directionX: "center", directionY: "bottom", maxHeight: 400000 });
         this.viewer.scene.postRender.addEventListener(this.postRenderFunc, this);
     }
 }

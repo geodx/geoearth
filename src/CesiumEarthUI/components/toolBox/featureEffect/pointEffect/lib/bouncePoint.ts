@@ -1,8 +1,6 @@
 import CesiumEarth from "@/lib/CesiumEarth"
-import { useEarthStore } from "@/stores/EarthStore"
 import { Viewer, Cartesian3 } from "cesium"
 
-const earthStore = useEarthStore()
 export default function (data: any, viewer: Viewer) {
   addBounceMarkers(data, viewer)
 }

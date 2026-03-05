@@ -1,6 +1,7 @@
 
 
 import type { JulianDate } from "cesium";
+
 declare module 'cesium' {
   interface ImageryLayer {
     pid?: string | number;
@@ -30,7 +31,13 @@ interface WorldDegree {
   latitude: number;
   height?: number;
 }
-
+// 包围盒范围
+export type BboxType = {
+  north: number;
+  east: number;
+  south: number;
+  west: number;
+}
 interface WorldDegreeWithTime extends WorldDegree {
   isoTime: string;
 }

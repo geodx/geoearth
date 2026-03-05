@@ -6,17 +6,33 @@
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted } from 'vue';
-import heatData from './heatData.js';
-import CesiumEarth from '@/lib/CesiumEarth/index.js';
+import { onMounted, onUnmounted } from 'vue';
+import json from './busstop2016.json';
+import CesiumEarth from '@/lib/CesiumEarth/index';
 import { Cartesian3 } from 'cesium';
 
-let bbox = [106.4519988952, 29.5021084567, 106.4590407287, 29.5092024712];
-let heatmap: any;
+import { useEarthStore } from '@/stores/EarthStore';
+import type { HeatMapJS } from '@/lib/CesiumEarth/ts/TileSetPlugin/HeatMap/HeatMapJS';
+import type { HeatmapPoint } from '@/lib/CesiumEarth/ts/TileSetPlugin/HeatMap/lib/heatmapjs';
 
+const earthStore = useEarthStore()
+let heatmap: CesiumEarth.TileSetPlugin.HeatMap;
+let heatMapObj: HeatMapJS | undefined;
+let earth: CesiumEarth.Earth
+let values: HeatmapPoint[] = [];
+onMounted(async () => {
+    json.features.forEach(f => {
+        values.push({
+            x: f.geometry.coordinates[0]!,
+            y: f.geometry.coordinates[1]!,
+            value: 100 * Math.random(),
+        })
+    })
+    earth = await earthStore.getEarth()
+})
 onUnmounted(() => {
-    if (heatmap) {
-        heatmap.destroy();
+    if (heatMapObj) {
+        heatMapObj.remove();
     }
 })
 function createHeatMap() {
@@ -30,17 +46,15 @@ function createHeatMap() {
             pitch: -0.9203738754493909,
             roll: 6.282874205266332
         },
-        duration: 1
     });
-    heatmap = new CesiumEarth.TileSetPlugin.Heatmap(
-        earth.viewer3D,
-        { data: heatData },
-        bbox
-    );
+    heatmap = new CesiumEarth.TileSetPlugin.HeatMap(earth.viewer3D);
+    heatMapObj = heatmap.createHeatmapjs(values, 500, 10, {
+        zoomToLayer: true
+    });
 }
 function removeHeatMap() {
-    if (heatmap) {
-        heatmap.destroy();
+    if (heatMapObj) {
+        heatMapObj.remove();
         earth.viewer3DWorkSpace.removeDataByPid('b0c24b7d-5970-f574-a7f2-5ef0851dfcc0');
     }
 } 

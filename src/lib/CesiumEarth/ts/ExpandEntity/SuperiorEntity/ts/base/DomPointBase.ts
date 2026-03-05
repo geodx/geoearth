@@ -1,7 +1,4 @@
-import { Cartesian2, Cartesian3, Viewer, Entity } from "cesium";
-import { } from "cesium";
-import { PointGraphics, Color, SceneTransforms } from "cesium";
-import { Ellipsoid } from "cesium";
+import { Cartesian2, Cartesian3, Viewer, Entity, PointGraphics, Color, SceneTransforms, Ellipsoid } from "cesium";
 import { getTerrainMostDetailedHeight, isOnBack } from "../../../../Utils/SceneUtils";
 import type { WorldDegree } from "../../../../cesium.earth";
 

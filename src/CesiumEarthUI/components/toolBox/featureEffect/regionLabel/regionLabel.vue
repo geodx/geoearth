@@ -33,8 +33,8 @@ const proviceValue = ref([
 
 
 const options = {
-    backGround: './app/vge/regionLabel/beij.083ca80f.png', //周围行政区背景图
-    wallgradients: './app/vge/regionLabel/wallgradients.png', //行政区边界墙体效果
+    backGround: '/CesiumEarth/regionLabel/beij.083ca80f.png', //周围行政区背景图
+    wallgradients: '/CesiumEarth/regionLabel/wallgradients.png', //行政区边界墙体效果
     size: 0.5, //标签大小
     colorLine: [0.1, 0.1, 0.1], //周围行政区别界线颜色
     colorPolygon: [0.1, 0.15, 0.15] //周围行政区边境面颜色
@@ -50,8 +50,8 @@ type RegionConfig = {
 }
 const regionJsonUrl: Record<string, RegionConfig> = {
     beijing: {
-        regionArea: './app/vge/regionLabel/beijing_2.json',
-        proviceArea: './app/vge/regionLabel/beijing_3.json',
+        regionArea: '/CesiumEarth/regionLabel/beijing_2.json',
+        proviceArea: '/CesiumEarth/regionLabel/beijing_3.json',
         view: {
             destination: new Cartesian3(-2285318.922205349, 4561449.436806091, 4046846.8682504706),
             orientation: {
@@ -60,26 +60,25 @@ const regionJsonUrl: Record<string, RegionConfig> = {
                 roll: 0.0000010271026651409443
             },
             duration: 2
-        }
-        // proviceContent: "./app/vge/regionLabel/beijing_2.json"
-    }
-}
-const hubei: RegionConfig = {
-    regionArea: './app/vge/regionLabel/region.json',
-    proviceArea: './app/vge/regionLabel/CHN_adm2.json',
-    // proviceContent: "./app/vge/regionLabel/region.json"
-    view: {
-        destination: new Cartesian3(-3036049.2049679733, 6765587.416918585, 3452995.864224429),
-        orientation: {
-            heading: 5.889445354861434,
-            pitch: -1.2687745954690257,
-            roll: 0.00023910045793762436
         },
-        duration: 2
+        // proviceContent: "/CesiumEarth/regionLabel/beijing_2.json"
+    },
+    hubei: {
+        regionArea: '/CesiumEarth/regionLabel/region.json',
+        proviceArea: '/CesiumEarth/regionLabel/CHN_adm2.json',
+        // proviceContent: "/CesiumEarth/regionLabel/region.json"
+        view: {
+            destination: new Cartesian3(-3036049.2049679733, 6765587.416918585, 3452995.864224429),
+            orientation: {
+                heading: 5.889445354861434,
+                pitch: -1.2687745954690257,
+                roll: 0.00023910045793762436
+            },
+            duration: 2
+        }
     }
 }
 
-// regionLabel: {},
 let regionJson = []
 let isStart = false
 

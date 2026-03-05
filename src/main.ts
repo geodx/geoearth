@@ -6,6 +6,7 @@ import router from './router'
 import './assets/global/css/scrollbar.scss';
 // import './assets/global/ts/index';
 import './config/baseConfig';
+
 const app = createApp(App)
 
 app.use(createPinia())

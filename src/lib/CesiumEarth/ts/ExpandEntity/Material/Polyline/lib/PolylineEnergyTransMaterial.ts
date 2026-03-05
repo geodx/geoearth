@@ -1,57 +1,45 @@
 // 动态线材质 传输
-import { Color, defined, Property, Material, JulianDate } from 'cesium';
+import { Color, defined, Property, Material, JulianDate, Event, ConstantProperty } from 'cesium';
 import { PolylineBaseMaterial } from './PolylineBaseMaterial';
 
 class PolylineEnergyTransMaterial extends PolylineBaseMaterial {
-    private _time: number = (new Date()).getTime();
-    private repeatCount: number;
-    private url: string;
-    private duration: number;
-    private color: Color;
-    private _color: undefined;
+    private _time: number = Date.now();
+    private _definitionChanged: Event = new Event()
+    private _color: Property;
+    private _repeatCount: number;
+    private _url: string;
+    private _duration: number;
 
-    constructor(options: { color: Color; duration: number; url: string; repeatCount: number; }) {
+
+    constructor(options: { color: Color; duration: number; url?: string; repeatCount: number; }) {
         super();
-        this.color = options.color;
-        this.duration = options.duration;
-        this.url = options.url || '../img/传输线材质.png';
-        this.repeatCount = options.repeatCount;
+        this._color = new ConstantProperty(options.color ?? Color.WHITE);
+        this._duration = options.duration ?? 2000;
+        this._repeatCount = options.repeatCount ?? 4;
+        this._url = options.url || new URL('../img/传输线材质.png', import.meta.url).href;
+
         this.init();
     }
 
 
-    get isConstant() {
-        return false;
-    }
+    get isConstant() { return false }
 
-    get definitionChanged() {
-        return this._definitionChanged;
-    }
+    get definitionChanged() { return this._definitionChanged; }
 
-    getType() {
-        return 'PolylineEnergyTransOpacity';
-    };
+
+    getType() { return 'PolylineEnergyTransOpacity'; };
 
     getValue(time: JulianDate, result: any) {
-        if (!defined(result)) {
-            result = {};
-        }
-        result.color = Color.clone(this.color ?? Color.WHITE, result.color)
-        result.image = this.url;
-        result.time = (((new Date()).getTime() - this._time) % this.duration) / this.duration;
-        result.repeatCount = this.repeatCount || 4;
+        if (!defined(result)) result = {}
+        result.color = Color.clone(this._color.getValue(time) ?? Color.WHITE, result.color);
+        result.image = this._url;
+        result.time = ((Date.now() - this._time) % this._duration) / this._duration;
+        result.repeatCount = this._repeatCount;
         return result;
     };
 
     equals(other: PolylineEnergyTransMaterial) {
-        if (this === other) return true
-        if (!(other instanceof PolylineEnergyTransMaterial)) return false
-
-        return (
-            this.duration === other.duration &&
-            this.repeatCount === other.repeatCount &&
-            Color.equals(this._color, other._color)
-        )
+        return this === other;
     };
 
     init() {
@@ -71,7 +59,7 @@ class PolylineEnergyTransMaterial extends PolylineBaseMaterial {
                     color: new Color(1.0, 0.0, 0.0, 0.5),
                     image: '',
                     time: 20,
-                    count: this.repeatCount || 4
+                    count: this._repeatCount || 4
                 },
                 source: PolylineEnergyTransOpacitySource
             },

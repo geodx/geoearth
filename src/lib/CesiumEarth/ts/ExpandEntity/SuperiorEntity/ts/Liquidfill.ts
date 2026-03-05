@@ -1,25 +1,30 @@
+import * as echarts from "echarts";
+import 'echarts-liquidfill'
 import { Viewer } from "cesium";
-import domPointBase from "./domPointBase";
-import type { worldDegreesType } from "../../type";
+import type { EChartsType } from "echarts";
+import DomPointBase from "./base/DomPointBase";
+import type { WorldDegree } from "../../../cesium.earth";
 
-export default class ledLabelPoint extends domPointBase {
-    #contextLabel: string;
+export class Liquidfill extends DomPointBase {
+    #contextNumber: number;
+    #chart: EChartsType | null;
     /**
-     * @description: led文本点，显示为LED样式的文本
+     * @description: 水球点，显示为可表达比例的水球图表
      * @param {Viewer} viewer viewer实例
-     * @param {worldDegreesType} worldDegrees 位置，经纬度和高
-     * @param {string} contextLabel 插入的文本
+     * @param {WorldDegree} worldDegrees 位置，经纬度和高
+     * @param {number} contextNumber 插入的数字,会被转化为百分数
      * @param {boolean} showEntityPoint (可选)是否显示点实体，默认为false
      * @return {*}
      */
     constructor(
         viewer: Viewer,
-        worldDegrees: worldDegreesType,
-        contextLabel: string,
+        worldDegrees: WorldDegree,
+        contextNumber: number,
         showEntityPoint: boolean = false
     ) {
         super(viewer, worldDegrees, showEntityPoint);
-        this.#contextLabel = contextLabel;
+        this.#contextNumber = contextNumber;
+        this.#chart = null;
     }
 
     /**
@@ -33,10 +38,13 @@ export default class ledLabelPoint extends domPointBase {
                 this.viewer,
                 this.worldDegrees
             );
-            this.$container.style.display = "none";
+            this.$container.style.visibility = "hidden";
             this.#addDom();
             this.#addPostRender();
-            this.$container.style.display = "block";
+            const chartDom = this.$container.querySelector(".waterpolo-container") as HTMLElement;
+            this.#chart = echarts.init(chartDom);
+            this.#chart.setOption(this.defaultOption);
+            this.$container.style.visibility = "visible";
         }
     }
 
@@ -51,6 +59,7 @@ export default class ledLabelPoint extends domPointBase {
                 this.postRenderFunc,
                 this
             ); //移除事件监听
+            this.#chart && this.#chart.dispose();
             this.$container.remove();
             this.viewer.entities.remove(this.pointEntity);
         }
@@ -65,15 +74,40 @@ export default class ledLabelPoint extends domPointBase {
     }
 
     /**
+     * @description: 默认配置项
+     * @return {any} 默认配置项,没有类型
+     */
+    get defaultOption(): any {
+        return {
+            series: [{
+                type: 'liquidFill',
+                data: [this.#contextNumber],
+                radius: '90%',
+                outline: {
+                    show: false
+                },
+                label: {
+                    position: ['50%', '65%'],
+                    fontSize: 15,
+                    fontFamily: 'Lobster Two'
+                },
+                itemStyle: {
+                    color: '#ff9501'
+                }
+            }]
+        }
+    }
+
+    /**
      * @description: 添加DOM
      * @return {*}
      */
     #addDom() {
         this.$container.innerHTML = `
-            <div class="led-label-point-container">
-                <h3 class="label-led-container">${this.#contextLabel}</h3>
+            <div class="waterpolo-point-container">
+                <div class="waterpolo-container"></div>
             </div>
-        `
+        `;
         this.viewer.cesiumWidget.container.appendChild(this.$container);
     }
 

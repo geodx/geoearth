@@ -1,20 +1,20 @@
 import { Viewer } from "cesium";
-import domPointBase from "./domPointBase";
-import type { worldDegreesType } from "../../type";
+import DomPointBase from "./base/DomPointBase";
+import type { WorldDegree } from "../../../cesium.earth";
 
-export default class divPoint extends domPointBase {
+export class DivPoint extends DomPointBase {
     #contextDom: HTMLElement;
     /**
      * @description: divDom点，显示为可插入DOM的DIV框
      * @param {Viewer} viewer viewer实例
-     * @param {worldDegreesType} worldDegrees 位置，经纬度和高
+     * @param {WorldDegree} worldDegrees 位置，经纬度和高
      * @param {HTMLElement} contextDom 插入的DOM元素
      * @param {boolean} showEntityPoint (可选)是否显示点实体，默认为false
      * @return {*}
      */
     constructor(
         viewer: Viewer,
-        worldDegrees: worldDegreesType,
+        worldDegrees: WorldDegree,
         contextDom: HTMLElement,
         showEntityPoint: boolean = false
     ) {
