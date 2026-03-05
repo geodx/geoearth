@@ -12,8 +12,8 @@ function hotSpot(viewer: Viewer, position: any, dom: any, data: any) {
     });
 
     dom.innerHTML = '<div style="color:#FFFFFF; text-align: center">热点面板</div>';
-    dom.style.width = '200px';
-    dom.style.height = '100px';
+    // dom.style.width = '200px';
+    // dom.style.height = '100px';
 
     data.point4 = new CesiumEarth.SuperiorEntity.HotSpotBoardPoint(
         viewer,

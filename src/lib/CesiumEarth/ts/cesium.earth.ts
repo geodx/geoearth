@@ -51,7 +51,7 @@ export { PolylineTrailMaterial } from './ExpandEntity/Material/Polyline';
 export { PolylineTrialFlowMaterial } from './ExpandEntity/Material/Polyline';
 export { PolylineVolumeTrialMaterial } from './ExpandEntity/Material/Polyline';
 
-export { bouncePoint } from './ExpandEntity/NormalEntity';
+export { BouncePoint } from './ExpandEntity/NormalEntity';
 export { BouncePointDecorator } from './ExpandEntity/NormalEntity';
 export { buildBillboard } from './ExpandEntity/NormalEntity';
 
@@ -59,6 +59,8 @@ export { buildBillboard } from './ExpandEntity/NormalEntity';
 export * from './SceneEffect';
 // SpatialAnalysis
 export * from './SpatialAnalysis';
+//TileSetPlugin
+export * as TileSetPlugin from './TileSetPlugin';
 // HandlerManage
 export { HandlerManage } from './HandlerManage';
 

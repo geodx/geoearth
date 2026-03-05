@@ -10,15 +10,14 @@ import CesiumEarth from '@/lib/CesiumEarth';
 import { useEarthStore } from '@/stores/EarthStore';
 import { onMounted, onUnmounted } from 'vue';
 const earthStore = useEarthStore()
-let pointcluster: any;
+let pointcluster: CesiumEarth.SuperiorEntity.PointClusterGeoJson;
 let isPlaying = false
 let earth: CesiumEarth.Earth
 onMounted(async () => {
     earth = await earthStore.getEarth()
     pointcluster = new CesiumEarth.SuperiorEntity.PointClusterGeoJson(
         earth.viewer3D,
-        './app/vge/cluserPoint.json',
-        { isExample: true }
+        '/CesiumEarth/cluserPoint.json',
     );
 })
 onUnmounted(() => {
@@ -31,6 +30,8 @@ function start() {
     isPlaying = true;
     pointcluster.init();
     pointcluster.DataLoadedEvent.addEventListener((dataSource: any) => {
+        console.log(dataSource);
+
         earth.viewer3D.flyTo(dataSource.entities.values);
     });
 }

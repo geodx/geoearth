@@ -22,7 +22,7 @@ interface BouncePointStyle {
 }
 
 
-class bouncePoint {
+class BouncePoint {
     height: number;
     style: any;
     bounceMarker: any;
@@ -103,4 +103,4 @@ class bouncePoint {
 }
 
 
-export { bouncePoint };
+export { BouncePoint };

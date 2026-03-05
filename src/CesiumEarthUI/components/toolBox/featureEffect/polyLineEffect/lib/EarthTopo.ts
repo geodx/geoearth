@@ -1,10 +1,10 @@
 import CesiumEarth from "@/lib/CesiumEarth"
-import { Cartesian3, Color, DistanceDisplayCondition, NearFarScalar, VerticalOrigin, LabelStyle, Cartesian2 } from "cesium"
+import { Cartesian3, Color, DistanceDisplayCondition, NearFarScalar, VerticalOrigin, LabelStyle, Cartesian2, Entity, Viewer } from "cesium"
 
-let lines = [],
-  line
-let myLabels = [],
-  myLabel
+let lines: Entity[] = []
+let line: Entity
+let myLabel: Entity
+let myLabels: Entity[] = []
 let taiYuanP = Cartesian3.fromDegrees(112.549717, 37.87046, 100)
 let wuHanP = Cartesian3.fromDegrees(114.305215, 30.592935, 100)
 let nanJingP = Cartesian3.fromDegrees(118.772601, 31.963382, 100)
@@ -12,17 +12,17 @@ let huaiHuaP = Cartesian3.fromDegrees(110.001705, 27.569679, 100)
 let xiangGangP = Cartesian3.fromDegrees(114.171202, 22.277469, 100)
 let fuZhouP = Cartesian3.fromDegrees(119.296389, 26.074268, 100)
 
-function addEarthTopo() {
+function addEarthTopo(viewer: Viewer) {
   if (lines.length != 0) {
-    removeEarthTope()
+    removeEarthTope(viewer)
   }
 
-  addPolylines()
-  addNetwork()
-  setView()
+  addPolylines(viewer)
+  addNetwork(viewer)
+  setView(viewer)
 }
 
-function addPolylines() {
+function addPolylines(viewer: Viewer) {
   //空间站 129.577679,45.070432
   //福州 119.296389,26.074268
   //武汉 114.305215,30.592935
@@ -35,7 +35,7 @@ function addPolylines() {
   ]
 
   dmzPs.forEach((item) => {
-    line = earth.viewer3D.entities.add({
+    line = viewer.entities.add({
       polyline: {
         positions: [kjzP, item],
         width: 2,
@@ -49,7 +49,7 @@ function addPolylines() {
     lines.push(line)
   })
 
-  line = earth.viewer3D.entities.add({
+  line = viewer.entities.add({
     position: kjzP,
     label: {
       text: 'internet',
@@ -68,14 +68,14 @@ function addPolylines() {
   lines.push(line)
 }
 
-function addNetwork() {
-  addTaiYuan()
-  addWuHan()
-  addHuaiHua()
-  addNanJing()
-  addFuZhou()
+function addNetwork(viewer: Viewer) {
+  addTaiYuan(viewer)
+  addWuHan(viewer)
+  addHuaiHua(viewer)
+  addNanJing(viewer)
+  addFuZhou(viewer)
 
-  myLabel = earth.viewer3D.entities.add({
+  myLabel = viewer.entities.add({
     position: xiangGangP,
     label: {
       text: '香港',
@@ -95,11 +95,11 @@ function addNetwork() {
 }
 
 //太原
-function addTaiYuan() {
+function addTaiYuan(viewer: Viewer) {
   let endPs = [wuHanP, nanJingP, fuZhouP, xiangGangP]
 
   endPs.forEach((item) => {
-    line = earth.viewer3D.entities.add({
+    line = viewer.entities.add({
       polyline: {
         positions: [taiYuanP, item],
         width: 2,
@@ -113,7 +113,7 @@ function addTaiYuan() {
     lines.push(line)
   })
 
-  myLabel = earth.viewer3D.entities.add({
+  myLabel = viewer.entities.add({
     position: taiYuanP,
     label: {
       text: '太原',
@@ -133,11 +133,11 @@ function addTaiYuan() {
 }
 
 //武汉
-function addWuHan() {
+function addWuHan(viewer: Viewer) {
   let endPs = [huaiHuaP, nanJingP, fuZhouP, xiangGangP]
 
   endPs.forEach((item) => {
-    line = earth.viewer3D.entities.add({
+    line = viewer.entities.add({
       polyline: {
         positions: [wuHanP, item],
         width: 2,
@@ -151,7 +151,7 @@ function addWuHan() {
     lines.push(line)
   })
 
-  myLabel = earth.viewer3D.entities.add({
+  myLabel = viewer.entities.add({
     position: wuHanP,
     label: {
       text: '武汉',
@@ -171,11 +171,11 @@ function addWuHan() {
 }
 
 //怀化
-function addHuaiHua() {
+function addHuaiHua(viewer: Viewer) {
   let endPs = [wuHanP, nanJingP, fuZhouP]
 
   endPs.forEach((item) => {
-    line = earth.viewer3D.entities.add({
+    line = viewer.entities.add({
       polyline: {
         positions: [huaiHuaP, item],
         width: 2,
@@ -189,7 +189,7 @@ function addHuaiHua() {
     lines.push(line)
   })
 
-  myLabel = earth.viewer3D.entities.add({
+  myLabel = viewer.entities.add({
     position: huaiHuaP,
     label: {
       text: '怀化',
@@ -209,11 +209,11 @@ function addHuaiHua() {
 }
 
 //南京
-function addNanJing() {
+function addNanJing(viewer: Viewer) {
   let endPs = [wuHanP, huaiHuaP, fuZhouP]
 
   endPs.forEach((item) => {
-    line = earth.viewer3D.entities.add({
+    line = viewer.entities.add({
       polyline: {
         positions: [nanJingP, item],
         width: 2,
@@ -227,7 +227,7 @@ function addNanJing() {
     lines.push(line)
   })
 
-  myLabel = earth.viewer3D.entities.add({
+  myLabel = viewer.entities.add({
     position: nanJingP,
     label: {
       text: '南京',
@@ -247,11 +247,11 @@ function addNanJing() {
 }
 
 //福州
-function addFuZhou() {
+function addFuZhou(viewer: Viewer) {
   let endPs = [wuHanP, huaiHuaP, nanJingP]
 
   endPs.forEach((item) => {
-    line = earth.viewer3D.entities.add({
+    line = viewer.entities.add({
       polyline: {
         positions: [fuZhouP, item],
         width: 2,
@@ -265,7 +265,7 @@ function addFuZhou() {
     lines.push(line)
   })
 
-  myLabel = earth.viewer3D.entities.add({
+  myLabel = viewer.entities.add({
     position: fuZhouP,
     label: {
       text: '福州',
@@ -284,13 +284,13 @@ function addFuZhou() {
   myLabels.push(myLabel)
 }
 
-function setView() {
-  let flyToOpts = {
+function setView(viewer: Viewer) {
+  const flyToOpts = {
     destination: {
       x: -5138527.387065904,
       y: 12707573.111384086,
       z: 5127296.438906498,
-    },
+    } as Cartesian3,
     orientation: {
       heading: 6.237472281578625,
       pitch: -1.3908744159112634,
@@ -298,15 +298,15 @@ function setView() {
     },
     duration: 2,
   }
-  earth.viewer3D.scene.camera.flyTo(flyToOpts)
+  viewer.scene.camera.flyTo(flyToOpts)
 }
 
-function removeEarthTope() {
+function removeEarthTope(viewer: Viewer) {
   for (let i = 0; i < myLabels.length; i++) {
-    earth.viewer3D.entities.remove(myLabels[i])
+    viewer.entities.remove(myLabels[i]!)
   }
   for (let i = 0; i < lines.length; i++) {
-    earth.viewer3D.entities.remove(lines[i])
+    viewer.entities.remove(lines[i]!)
   }
 }
 

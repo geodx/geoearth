@@ -6,17 +6,15 @@ export default function (viewer: Viewer, position: any, dom: any, data: any) {
 }
 
 //div文本
-function divText(viewer: Viewer, position: any, dom: any, data: any) {
+function divText(viewer: Viewer, position: any, dom: HTMLElement, data: any) {
+
   dom.innerHTML = '<div style="color:#FFFFFF; text-align: center">DIV文本</div>'
   dom.style.width = '200px'
   dom.style.height = '100px'
 
   data.point1 = new CesiumEarth.SuperiorEntity.DivPoint(
     viewer,
-    {
-      longitude: position[0],
-      latitude: position[1],
-    },
+    { longitude: position[0], latitude: position[1] },
     dom,
   )
   viewer.camera.flyTo({

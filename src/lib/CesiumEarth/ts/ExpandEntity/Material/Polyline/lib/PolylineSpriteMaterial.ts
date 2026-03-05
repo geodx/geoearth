@@ -1,40 +1,45 @@
 // 精灵线
-import { defined, Color } from 'cesium';
+import { defined, Color, Event, Material, JulianDate, ConstantProperty, Property } from 'cesium';
 import { PolylineBaseMaterial } from './PolylineBaseMaterial';
-import { Material } from '../../..';
 
 class PolylineSpriteMaterial extends PolylineBaseMaterial {
-    private duration: number;
-    private url: string;
-    private _time: number;
-
-    constructor(options: { duration: number, url: string }) {
+    private _time: number = Date.now();
+    private _definitionChanged: Event = new Event()
+    private _color: Property;
+    private _repeatCount: number;
+    private _url: string;
+    private _duration: number;
+    constructor(options: { color: Color; duration: number; url?: string; repeatCount: number; }) {
         super();
-        this.duration = options.duration || 2000;
-        this.url = options.url || '../img/精灵线材质01.png';
-        this._time = performance.now();
+        this._color = new ConstantProperty(options.color ?? Color.WHITE);
+        this._duration = options.duration ?? 2000;
+        this._repeatCount = options.repeatCount ?? 4;
+        this._url = options.url || new URL('../img/传输线材质.png', import.meta.url).href;
+
         this.init();
     }
 
-    equals(other: PolylineSpriteMaterial): boolean {
-        return this === other || (other instanceof PolylineSpriteMaterial && this.duration === other.duration);
-    }
+    get isConstant() { return false }
 
-    getType(): string {
-        return 'PolylineSprite';
-    }
+    get definitionChanged() { return this._definitionChanged; }
 
-    getValue(time: number, result: any): any {
-        if (!defined(result)) {
-            result = {};
-        }
-        result.image = this.url;
-        result.time = ((performance.now() - this._time) % this.duration) / this.duration;
+    getType(): string { return 'PolylineSprite'; }
+
+    getValue(time: JulianDate, result: any): any {
+        if (!defined(result)) result = {}
+        result.color = Color.clone(this._color.getValue(time) ?? Color.WHITE, result.color);
+        result.image = this._url;
+        result.time = ((Date.now() - this._time) % this._duration) / this._duration;
+        result.repeatCount = this._repeatCount;
         return result;
     }
+    equals(other: PolylineSpriteMaterial): boolean { return this === other; }
+
+
+
+
 
     init(): void {
-
         const PolylineSpriteType = 'PolylineSprite';
         const PolylineSpriteSource =
             'czm_material czm_getMaterial(czm_materialInput materialInput)\n\

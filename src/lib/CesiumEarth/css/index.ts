@@ -3,4 +3,6 @@ import 'cesium/Build/Cesium/Widgets/widgets.css'
 import './main.css'
 import './icon-esgcc/iconfont.css'
 import './icon-earth/iconfont.css'
-import '../ts/ExpandEntity/SuperiorEntity/style' 
+import '../ts/ExpandEntity/SuperiorEntity/style'
+
+import "video.js/dist/video-js.css";

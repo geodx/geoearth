@@ -1,20 +1,20 @@
 import { Viewer } from "cesium";
-import domPointBase from "./domPointBase";
-import type { worldDegreesType } from "../../type";
+import DomPointBase from "./base/DomPointBase";
+import type { WorldDegree } from "../../../cesium.earth";
 
-export default class hotSpotBoardPoint extends domPointBase {
+export class HotSpotBoardPoint extends DomPointBase {
     #contextDom: HTMLElement;
     /**
      * @description: 热点面板点，显示为可插入DOM的热点面板点
      * @param {Viewer} viewer viewer实例
-     * @param {worldDegreesType} worldDegrees 位置，经纬度和高
+     * @param {WorldDegree} worldDegrees 位置，经纬度和高
      * @param {HTMLElement} contextDom 插入的DOM元素
      * @param {boolean} showEntityPoint (可选)是否显示点实体，默认为false
      * @return {*}
      */
     constructor(
         viewer: Viewer,
-        worldDegrees: worldDegreesType,
+        worldDegrees: WorldDegree,
         contextDom: HTMLElement,
         showEntityPoint: boolean = false
     ) {
@@ -84,16 +84,16 @@ export default class hotSpotBoardPoint extends domPointBase {
         labelBoard!.appendChild(this.#contextDom);
         this.viewer.cesiumWidget.container.appendChild(this.$container);
 
-        hotSpot.style.backgroundImage = `url(${require("@/secdev/assets/img/hotSpotBoardPoint/hotSpotBottom.png")})`;
-        labelBoard.style.backgroundImage = `url(${require("@/secdev/assets/img/hotSpotBoardPoint/hotSpotHead.png")})`;
+        hotSpot.style.backgroundImage = `url(${new URL('../img/hotSpotBoardPoint/hotSpotBottom.png', import.meta.url).href})`;
+        labelBoard.style.backgroundImage = `url(${new URL('../img/hotSpotBoardPoint/hotSpotHead.png', import.meta.url).href})`;
         this.$container.onmouseover = (e) => {
-            hotSpot.style.backgroundImage = `url(${require("@/secdev/assets/img/hotSpotBoardPoint/hotSpotBottom-active.png")})`;
-            labelBoard.style.backgroundImage = `url(${require("@/secdev/assets/img/hotSpotBoardPoint/hotSpotHead-active.png")})`;
+            hotSpot.style.backgroundImage = `url(${new URL('../img/hotSpotBoardPoint/hotSpotBottom-active.png', import.meta.url).href})`;
+            labelBoard.style.backgroundImage = `url(${new URL('../img/hotSpotBoardPoint/hotSpotHead-active.png', import.meta.url).href})`;
         };
 
         this.$container.onmouseout = (e) => {
-            hotSpot.style.backgroundImage = `url(${require("@/secdev/assets/img/hotSpotBoardPoint/hotSpotBottom.png")})`;
-            labelBoard.style.backgroundImage = `url(${require("@/secdev/assets/img/hotSpotBoardPoint/hotSpotHead.png")})`;
+            hotSpot.style.backgroundImage = `url(${new URL('../img/hotSpotBoardPoint/hotSpotBottom.png', import.meta.url).href})`;
+            labelBoard.style.backgroundImage = `url(${new URL('../img/hotSpotBoardPoint/hotSpotHead.png', import.meta.url).href})`;
         };
     }
 

@@ -11,7 +11,7 @@
     <ImageLayerTimeLine></ImageLayerTimeLine>
     <visualMarker></visualMarker>
     <areaNavigation></areaNavigation>
-    <!-- <featureEffect></featureEffect> -->
+    <featureEffect></featureEffect>
     <!-- <VideoShed></VideoShed> -->
     <coordinates></coordinates>
     <pluginManagement></pluginManagement>

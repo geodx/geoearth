@@ -11,7 +11,7 @@ import viteCompression from 'vite-plugin-compression'
 
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 const cesiumSource = "node_modules/cesium/Build/Cesium";
-const cesiumBaseUrl = "cesiumStatic";
+const cesiumBaseUrl = "cesium";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [

@@ -1,11 +1,11 @@
-// domPoint
-// import "./domPoint/divPoint.css";
-// import "./domPoint/dynamicLabelPoint.css";
-// import "./domPoint/erectLabelPoint.css";
+import "./divPoint.scss";
+import "./dynamicLabelPoint.scss";
+import "./erectLabelPoint.scss";
 import "./gradientBoardPoint.scss";
-// import "./domPoint/hotSpotBoardPoint.css";
-// import "./domPoint/ledLabelPoint.css";
+import "./hotSpotBoardPoint.scss";
+import "./ledLabelPoint.scss";
 import "./sampleLablePoint.scss";
-// import "./domPoint/waterPoloPoint.css";
+import "./hlsVideoWindow.scss";
+import "./waterPoloPoint.scss";
 // spatialAnalysis
 // import "./spatialAnalysis/eagleEyeView.css";

@@ -1,53 +1,44 @@
 //尾迹线材质类
-import { Color, defined, Property, Material } from 'cesium';
+import { Color, defined, Event, Material, JulianDate, ConstantProperty, Property } from 'cesium';
 import { PolylineBaseMaterial } from './PolylineBaseMaterial';
 
 //尾迹线材质类
 class PolylineTrailMaterial extends PolylineBaseMaterial {
-    private percent: number;
-    private gradient: string;
-    private speed: number;
-    private color: Color;
-    private colorSubscription: undefined;
+    private _percent: number;
+    private _gradient: string;
+    private _speed: number;
+    private _color: Property;
+    private _definitionChanged: Event = new Event()
 
     constructor(options: any) {
         super();
-        this.colorSubscription = undefined;
-        this.speed = options.speed || 6 * Math.random(); //速度
-        this.color = options.color || Color.RED; //颜色
-        this.percent = options.percent || 0.1; //百分比
-        this.gradient = options.gradient || 0.01; //渐变
+        this._speed = options.speed || 6 * Math.random(); //速度
+        this._color = new ConstantProperty(options.color ?? Color.RED); //颜色
+        this._percent = options.percent || 0.1; //百分比
+        this._gradient = options.gradient || 0.01; //渐变  
+
         this.init();
     }
 
-    get isConstant() {
-        return false;
-    }
+    get isConstant() { return false; }
 
-    get definitionChanged() {
-        return this._definitionChanged;
-    }
+    get definitionChanged() { return this._definitionChanged; }
 
-    getType() {
-        return 'PolylineTrail';
-    };
+    getType() { return 'PolylineTrail'; };
 
-    getValue(time: number, result: any) {
+    getValue(time: JulianDate, result: any) {
         if (!defined(result)) {
             result = {};
         }
-        result.color = Color.clone(this.color ?? Color.WHITE, result.color)
-        result.speed = this.speed;
-        result.gradient = this.gradient;
-        result.percent = this.percent;
+        result.color = Color.clone(this._color.getValue(time) ?? Color.WHITE, result.color);
+        result.speed = this._speed;
+        result.gradient = this._gradient;
+        result.percent = this._percent;
         return result;
     };
 
     equals(other: PolylineTrailMaterial) {
-        return this === other ||
-            (other instanceof PolylineTrailMaterial &&
-                this.speed == other.speed &&
-                Color.equals(this.color, other.color))
+        return this === other;
     };
 
     init() {

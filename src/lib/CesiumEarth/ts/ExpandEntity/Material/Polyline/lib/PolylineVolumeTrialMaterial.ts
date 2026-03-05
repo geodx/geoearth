@@ -1,5 +1,5 @@
 // 流动管线材质 
-import { Color, defined, Property, Material } from 'cesium';
+import { Color, defined, Event, Material, JulianDate } from 'cesium';
 import { PolylineBaseMaterial } from './PolylineBaseMaterial';
 
 // 流动管线材质
@@ -9,21 +9,20 @@ class PolylineVolumeTrialMaterial extends PolylineBaseMaterial {
     private url: string;
     private duration: number;
     private color: Color;
-    private _color: undefined;
-
+    private _definitionChanged: Event
     constructor(options: any) {
         super();
-        this._color = undefined;
         this.color = options.color;
         this.duration = options.duration;
         this.count = options.count;
-        this.url = options.url || '../img/箭头线材质.png';
+        this.url = options.url || new URL('../img/箭头线材质.png', import.meta.url).href;
         this._time = (new Date()).getTime();
+        this._definitionChanged = new Event()
         this.init();
     }
 
     get isConstant() {
-        return false;
+        return this.getConstant(this.color);
     }
 
     get definitionChanged() {
@@ -34,7 +33,7 @@ class PolylineVolumeTrialMaterial extends PolylineBaseMaterial {
         return 'PolylineVolumeTrial';
     };
 
-    getValue(time: number, result: any) {
+    getValue(time: JulianDate, result: any) {
         if (!defined(result)) {
             result = {};
         }
@@ -48,7 +47,7 @@ class PolylineVolumeTrialMaterial extends PolylineBaseMaterial {
     equals(other: PolylineVolumeTrialMaterial) {
         return this === other ||
             (other instanceof PolylineVolumeTrialMaterial &&
-                Color.equals(this._color, other._color) &&
+                Color.equals(this.color, other.color) &&
                 this.duration == other.duration &&
                 this.count == other.count
             );

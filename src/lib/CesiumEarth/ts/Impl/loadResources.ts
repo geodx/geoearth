@@ -1,6 +1,5 @@
 import { DefaultConfig } from "../Config";
 import * as Cesium from "cesium"
-
 let CesiumEarth_SDK_isLoaded: boolean = false
 if (!CesiumEarth_SDK_isLoaded) {
     CesiumEarth_SDK_isLoaded = true;

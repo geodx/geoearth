@@ -1,20 +1,20 @@
 import { Viewer } from "cesium";
-import domPointBase from "./domPointBase";
-import type { worldDegreesType } from "../../type";
+import DomPointBase from "./base/DomPointBase";
+import type { WorldDegree } from "../../../cesium.earth";
 
-export default class erectLabelPoint extends domPointBase {
+export class ErectLabelPoint extends DomPointBase {
     #contextLabel: string;
     /**
      * @description: 竖立文本点，显示为可展示文本的文本点
      * @param {Viewer} viewer viewer实例
-     * @param {worldDegreesType} worldDegrees 位置，经纬度和高
+     * @param {WorldDegree} worldDegrees 位置，经纬度和高
      * @param {string} contextLabel 插入的文本
      * @param {boolean} showEntityPoint (可选)是否显示点实体，默认为false
      * @return {*}
      */
     constructor(
         viewer: Viewer,
-        worldDegrees: worldDegreesType,
+        worldDegrees: WorldDegree,
         contextLabel: string,
         showEntityPoint: boolean = false
     ) {

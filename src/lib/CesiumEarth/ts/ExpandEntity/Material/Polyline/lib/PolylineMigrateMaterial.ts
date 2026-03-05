@@ -1,4 +1,4 @@
-import { Color, defined, Property, Material } from 'cesium';
+import { Color, defined, Event, Material, JulianDate } from 'cesium';
 import { PolylineBaseMaterial } from './PolylineBaseMaterial';
 
 //迁徙线
@@ -7,20 +7,19 @@ class PolylineMigrateMaterial extends PolylineBaseMaterial {
     private url: string;
     private duration: number;
     private color: Color;
-    private _color: undefined;
-
+    private _definitionChanged: Event
     constructor(options: any) {
         super();
-        this._color = undefined;
         this.color = options.color;
         this.duration = options.duration;
-        this.url = options.url || '../img/迁徙线材质.png';
+        this.url = options.url || new URL('../img/迁徙线材质.png', import.meta.url).href;
         this._time = performance.now();
+        this._definitionChanged = new Event()
         this.init();
     }
 
     get isConstant() {
-        return false;
+        return this.getConstant(this.color);
     }
 
     get definitionChanged() {
@@ -31,7 +30,7 @@ class PolylineMigrateMaterial extends PolylineBaseMaterial {
         return 'PolylineMigrate';
     };
 
-    getValue(time: number, result: any) {
+    getValue(time: JulianDate, result: any) {
         if (!defined(result)) {
             result = {};
         }
@@ -47,7 +46,7 @@ class PolylineMigrateMaterial extends PolylineBaseMaterial {
 
         return (
             this.duration === other.duration &&
-            Color.equals(this._color, other._color)
+            Color.equals(this.color, other.color)
         )
     }
 

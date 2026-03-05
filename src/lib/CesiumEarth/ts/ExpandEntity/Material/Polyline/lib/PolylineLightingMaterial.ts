@@ -15,7 +15,7 @@ class PolylineLightingMaterial extends PolylineBaseMaterial {
     }
 
     get isConstant(): boolean {
-        return this.getConstant(this._color);
+        return true
     }
 
     get definitionChanged(): any {
