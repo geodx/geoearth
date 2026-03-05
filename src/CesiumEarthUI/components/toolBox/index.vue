@@ -18,7 +18,7 @@
     <!-- <dataSetting></dataSetting> -->
     <linkView></linkView>
     <!-- <waterSpecial></waterSpecial> -->
-    <!-- <particleSystem></particleSystem> -->
+    <particleSystem></particleSystem>
     <!-- <firePlot></firePlot> -->
     <!-- <fountainPlot></fountainPlot> -->
     <!-- <smokePlot></smokePlot> -->

@@ -4,9 +4,9 @@
 ****************************************************************************/
 
 <template>
-    <FEContent v-if="true"></FEContent>
+    <FEContent v-if="show"></FEContent>
 </template>
-<script lang="ts" show>
+<script lang="ts" setup>
 import { computed } from 'vue';
 
 import FEContent from './fe-content.vue';
