@@ -19,9 +19,9 @@
     <linkView></linkView>
     <!-- <waterSpecial></waterSpecial> -->
     <particleSystem></particleSystem>
-    <!-- <firePlot></firePlot> -->
-    <!-- <fountainPlot></fountainPlot> -->
-    <!-- <smokePlot></smokePlot> -->
+    <firePlot></firePlot>
+    <fountainPlot></fountainPlot>
+    <smokePlot></smokePlot>
     <resourceTree></resourceTree>
     <legends></legends>
     <vr3-d></vr3-d>

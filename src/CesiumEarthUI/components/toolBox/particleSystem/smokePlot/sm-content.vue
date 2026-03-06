@@ -16,129 +16,125 @@
     </win-tabs>
 </template>
 
-<script>
-import { tabPane, winTabs } from '@/VGEUtils/components/winTabs/index.js';
+<script setup lang="ts">
 
+import { TabPane, WinTabs } from '../../../winTabs'
 import smokeEditPanel from './EditPanel/smokeEditPanel.vue';
 import particleStore from './EditPanel/particleStore.js';
+import { onMounted, ref } from 'vue';
+import CesiumEarth from '@/lib/CesiumEarth/index.js';
+import { Viewer } from 'cesium';
+import { useEarthStore } from '@/stores/EarthStore.js';
+import { CoordinateType } from '@/lib/CesiumEarth/ts/DrawShape/CoordinateType.ts';
+import { Cartographic, Cartesian3, Entity } from 'cesium';
+import { useCesiumEarthStore } from '@/stores/CesiumEarthStore.js';
+const earthStore = useEarthStore()
+const ceStore = useCesiumEarthStore()
+const maximumSpeed = ref() //控制粒子参数显隐
+const plotSelecteable = ref(false)//默认元素不可选
+const symbolList = ref(
+    {
+        name: '烟雾',
+        type: 'fire',
+        symbolImage: new URL('../img/smoke.jpg', import.meta.url).href
+    })
+
 
 let particlePlot;
+let viewer: Viewer
 
-export default {
-    name: 'smoke-content',
-    components: { winTabs, tabPane, smokeEditPanel },
-    data: function () {
-        return {
-            maximumSpeed: null,//控制粒子参数显隐
-            plotSelecteable: false,//默认元素不可选
-            symbolList:
-            {
-                name: '烟雾',
-                type: 'fire',
-                symbolImage: new URL('../img/smoke.jpg', import.meta.url).href
-            }
-        };
-    },
+onMounted(async () => {
+    const earth = await earthStore.getEarth()
+    viewer = earth.viewer3D
+})
+function pickPoint() {
+    let drawShape = new CesiumEarth.DrawShape(viewer);
+    drawShape.drawPoint({
+        coordinateType: CoordinateType.cartographicObj,
+        endCallback: (ps: Cartographic[]) => {
 
-    methods: {
-        pickPoint() {
-            let that = this;
-            let drawShape = new CesiumEarth.DrawShape(CesiumEarth.getMainViewer());
-            drawShape.drawPoint({
-                coordinateType: 'cartographicObj',
-                endCallback: function (ps) {
-                    // particlePlot = new CesiumEarth.SmokePlot(earth.viewer3D, ps[0].longitude, ps[0].latitude, ps[0].height, undefined)
-                    // particleStore.plots.push(particlePlot);
-                    // that.particleListener();//开启监听
-                    let entity = earth.viewer3D.entities.add({
-                        position: Cesium.Cartesian3.fromDegrees(ps[0].longitude, ps[0].latitude, ps[0].height)
-                    });
-                    particlePlot = new CesiumEarth.SmokePlot(entity);
-                    particleStore.plots.push(particlePlot);
-                    that.particleListener();//开启监听
-                },
-                errCallback: function () {
-                    that.clear();
-                }
-            });
+            const position = Cartesian3.fromDegrees(ps[0].longitude, ps[0].latitude, ps[0].height)
+            particlePlot = new CesiumEarth.SmokeParticle(viewer, position);
+            particleListener();//开启监听
         },
+        errCallback: function () {
+            clear();
+        }
+    });
+}
 
-        //监听点击粒子
-        particleListener() {
-            let that = this;
-            CesiumEarth.EventManage.screenEvent.addEventListener(
-                CesiumEarth.EventMana.ListenType.ScreenSpaceEventType.LEFT_CLICK,
-                CesiumEarth.EventMana.ScopeType.Viewer3D,
-                function (e) {
-                    let pick = earth.viewer3D.scene.pick(e.position);
-                    if (!pick) {
-                        that.selectedEntityChanged(undefined);
-                        return;
-                    }
-                    //拾取到粒子系统对象
-                    if (pick.primitive && pick.collection) {
-                        that.selectedEntityChanged(pick);
-                    } else {
-                        that.selectedEntityChanged(undefined);
-                    }
-                }
-            );
-        },
-
-        //选中粒子，把该粒子存入particleStore
-        selectedEntityChanged(selectedEntity) {
-            let that = this;
-            if (!selectedEntity) {
-                that.clearSelectedPlot();
+//监听点击粒子
+function particleListener() {
+    CesiumEarth.EventManage.screenEvent.addEventListener(
+        CesiumEarth.ScreenSpaceEventType.LEFT_CLICK,
+        CesiumEarth.ScopeType.Viewer3D,
+        (e: any) => {
+            const pick = viewer.scene.pick(e.position);
+            if (!pick) {
+                selectedEntityChanged(undefined);
                 return;
             }
-            const plot = this.getPlotBy_textureAtlasGUID(selectedEntity.collection._textureAtlasGUID);
-            if (!plot) {
-                that.clearSelectedPlot();
-                return;
+            //拾取到粒子系统对象
+            if (pick.primitive && pick.collection) {
+                selectedEntityChanged(pick);
+            } else {
+                selectedEntityChanged(undefined);
             }
-            particleStore.selectedPlot = plot;
-            this.maximumSpeed = plot.style.maximumSpeed;
-        },
+        }
+    );
+}
+//选中粒子，把该粒子存入particleStore
+function selectedEntityChanged(selectedEntity: any) {
+    if (!selectedEntity) {
+        clearSelectedPlot();
+        return;
+    }
+    const plot = getPlotBy_textureAtlasGUID(selectedEntity.collection._textureAtlasGUID);
+    if (!plot) {
+        clearSelectedPlot();
+        return;
+    }
+    particleStore.selectedPlot = plot;
+    maximumSpeed.value = plot.style.maximumSpeed;
+}
 
-        setPlotSelectable(selecteable) {
-            this.plotSelecteable = selecteable;
-        },
+function setPlotSelectable(selecteable: boolean) {
+    plotSelecteable.value = selecteable;
+}
 
-        //获取粒子对象
-        getPlotBy_textureAtlasGUID(_textureAtlasGUID) {
-            for (let i = 0; i < particleStore.plots.length; i++) {
-                let plot = particleStore.plots[i];
-                if (plot.particleSystem._billboardCollection._textureAtlasGUID == _textureAtlasGUID) {
-                    return plot;
-                }
-            }
-        },
-
-        //隐藏粒子信息
-        clearSelectedPlot() {
-            if (particleStore.selectedPlot) {
-                this.maximumSpeed = undefined;
-            }
-        },
-
-        //清空
-        clear() {
-            particleStore.plots.forEach(item => {
-                item.remove();
-            });
-            particleStore.plots = [];
-            this.maximumSpeed = null;
-        },
-        close() {
-            this.clear();
-            this.$store.commit('setCesiumEarthComAction', { name: 'smokePlot', on_off: 2 });
+//获取粒子对象
+function getPlotBy_textureAtlasGUID(_textureAtlasGUID: string) {
+    for (let i = 0; i < particleStore.plots.length; i++) {
+        let plot = particleStore.plots[i];
+        if (plot.particleSystem._billboardCollection._textureAtlasGUID == _textureAtlasGUID) {
+            return plot;
         }
     }
-};
+}
+
+//隐藏粒子信息
+function clearSelectedPlot() {
+    if (particleStore.selectedPlot) {
+        maximumSpeed.value = undefined;
+    }
+}
+
+//清空
+function clear() {
+    particleStore.plots.forEach(item => {
+        item.remove();
+    });
+    particleStore.plots = [];
+    maximumSpeed.value = null;
+}
+function close() {
+    clear();
+    ceStore.setCesiumEarthComAction('smokePlot', 2)
+}
+
 </script>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 label {
     color: #009b94;
 }

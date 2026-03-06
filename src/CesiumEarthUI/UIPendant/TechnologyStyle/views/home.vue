@@ -83,7 +83,7 @@ export default {
 };
 
 </script>
-<style lang='less' scoped>
+<style lang='scss' scoped>
 .home {
     height: 100vh;
     background: url('../assets/img/img.png') no-repeat center center;

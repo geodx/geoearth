@@ -23,7 +23,7 @@ export default class ParticleSystemBase {
     readonly viewer: Viewer;
     protected entity: Entity;
     protected particleSystemCollection: CustomDataSource;
-    protected particleSystem: ParticleSystem;
+    public particleSystem: ParticleSystem;
     protected emitterModelMatrix: Matrix4;
     protected translation: Cartesian3;
     protected rotation: Quaternion;
@@ -44,23 +44,16 @@ export default class ParticleSystemBase {
     constructor(viewer: Viewer, position: Cartesian3) {
         this.viewer = viewer;
         // 通过entity控制位置
-        this.entity = new Entity({
-            position,
-            show: false,
-        });
-        let particleSystemSource = this.viewer.dataSources.getByName(
-            "particleSystemSource"
-        );
+        this.entity = new Entity({ position, show: false, });
+        const particleSystemSource = this.viewer.dataSources.getByName("particleSystemSource");
         if (particleSystemSource.length) {
-            this.particleSystemCollection = particleSystemSource[0]!;
+            this.particleSystemCollection = particleSystemSource[0];
         } else {
-            this.particleSystemCollection = new CustomDataSource(
-                "particleSystemSource"
-            );
+            this.particleSystemCollection = new CustomDataSource("particleSystemSource");
             this.viewer.dataSources.add(this.particleSystemCollection);
         }
         this.particleSystemCollection.entities.add(this.entity);
-        console.log(this.particleSystemCollection.entities);
+        // console.log(this.particleSystemCollection.entities);
         // 粒子
         this.particleSystem = new ParticleSystem();
         // 方位属性

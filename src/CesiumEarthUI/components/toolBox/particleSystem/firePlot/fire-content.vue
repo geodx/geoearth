@@ -50,20 +50,14 @@ function handleMouse(newkey: boolean) {
 }
 //添加粒子
 function pickPoint() {
-    let drawShape = new CesiumEarth.DrawShape(earth.viewer3D);
+    const drawShape = new CesiumEarth.DrawShape(earth.viewer3D);
     drawShape.drawPoint({
         coordinateType: CoordinateType.cartographicObj,
         endCallback: (ps: any[]) => {
             const position = Cartesian3.fromDegrees(ps[0].longitude, ps[0].latitude, ps[0].height)
-            let entity = earth.viewer3D.entities.add({
-                position
-            });
-            // particlePlot = new CesiumEarth.FirePlot(entity);
             particlePlot = new CesiumEarth.FireParticle(earth.viewer3D, position)
             particleStore.plots.push(particlePlot);
             particleListener();//开启监听
-            // console.log(particlePlot.style) 
-
         },
         errCallback: () => {
             clear();
@@ -77,7 +71,7 @@ function particleListener() {
         CesiumEarth.ScreenSpaceEventType.LEFT_CLICK,
         CesiumEarth.ScopeType.Viewer3D,
         (e: any) => {
-            let pick = earth.viewer3D.scene.pick(e.position);
+            const pick = earth.viewer3D.scene.pick(e.position);
             if (!pick) {
                 selectedEntityChanged(undefined);
                 return;
@@ -115,7 +109,7 @@ function setPlotSelectable(selecteable: boolean) {
 function getPlotBy_textureAtlasGUID(_textureAtlasGUID: string) {
     for (let i = 0; i < particleStore.plots.length; i++) {
         let plot = particleStore.plots[i];
-        if (plot.particleSystem._billboardCollection._textureAtlasGUID == _textureAtlasGUID) {
+        if ((plot.particleSystem as any)._billboardCollection._textureAtlasGUID == _textureAtlasGUID) {
             return plot;
         }
     }
@@ -131,7 +125,7 @@ function clearSelectedPlot() {
 //清空
 function clear() {
     particleStore.plots.forEach(item => {
-        item.remove();
+        item.destroy();
     });
     particleStore.plots = [];
     maximumSpeed.value = null;
@@ -143,7 +137,7 @@ function close() {
 }
 </script>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 label {
     color: #009b94;
 }

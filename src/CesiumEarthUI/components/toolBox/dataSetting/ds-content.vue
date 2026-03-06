@@ -134,7 +134,7 @@ function close() {
 
 }
 
-<style lang="less" scoped >
+<style lang="scss" scoped >
     label {
     color: #009b94;
 }

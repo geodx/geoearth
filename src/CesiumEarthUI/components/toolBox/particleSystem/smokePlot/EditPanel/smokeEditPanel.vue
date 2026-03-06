@@ -64,67 +64,56 @@
         </div>
     </div>
 </template>
-<script>
-import { tabPane, winTabs } from '@/VGEUtils/components/winTabs/index.js';
+<script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import particleStore from './particleStore';
+const endScale = ref(0)
+const emissionRate = ref(0)
+const particleSize = ref(0)
+const minimumParticleLife = ref(0)
+const maximumParticleLife = ref(0)
+const minimumSpeed = ref(0)
+const maximumSpeed = ref(0)
+const startScale = ref(0)
+const gravity = ref(0)
 
-import particleStore from './particleStore.js';
+//初始化粒子参数   
+onMounted(() => {
+    emissionRate.value = particleStore.selectedPlot.style.emissionRate;
+    particleSize.value = particleStore.selectedPlot.style.particleSize;
+    minimumParticleLife.value = particleStore.selectedPlot.style.minimumParticleLife;
+    maximumParticleLife.value = particleStore.selectedPlot.style.maximumParticleLife;
+    minimumSpeed.value = particleStore.selectedPlot.style.minimumSpeed;
+    maximumSpeed.value = particleStore.selectedPlot.style.maximumSpeed;
+    startScale.value = particleStore.selectedPlot.style.startScale;
+    endScale.value = particleStore.selectedPlot.style.endScale;
+    gravity.value = particleStore.selectedPlot.style.gravity;
+})
 
-export default {
-    name: 'smokeEditPanel',
-    components: { winTabs, tabPane },
-    data() {
-        return {
-            endScale: 0,
-            emissionRate: 0,
-            particleSize: 0,
-            minimumParticleLife: 0,
-            maximumParticleLife: 0,
-            minimumSpeed: 0,
-            maximumSpeed: 0,
-            startScale: 0,
-            gravity: 0
-        };
-    },
-    //初始化粒子参数
-    mounted() {
-        this.emissionRate = particleStore.selectedPlot.style.emissionRate;
-        this.particleSize = particleStore.selectedPlot.style.particleSize;
-        this.minimumParticleLife = particleStore.selectedPlot.style.minimumParticleLife;
-        this.maximumParticleLife = particleStore.selectedPlot.style.maximumParticleLife;
-        this.minimumSpeed = particleStore.selectedPlot.style.minimumSpeed;
-        this.maximumSpeed = particleStore.selectedPlot.style.maximumSpeed;
-        this.startScale = particleStore.selectedPlot.style.startScale;
-        this.endScale = particleStore.selectedPlot.style.endScale;
-        this.gravity = particleStore.selectedPlot.style.gravity;
-    },
-    methods: {
-        //更新粒子参数
-        updateStyle() {
-            this.updateValue();
-            particleStore.selectedPlot.updateStyle(particleStore.selectedPlot.style);//更新粒子参数
-        },
+//更新粒子参数
+function updateStyle() {
+    updateValue();
+    particleStore.selectedPlot.updateStyle(particleStore.selectedPlot.style);//更新粒子参数
+}
+//改变粒子参数
+function updateValue() {
+    particleStore.selectedPlot.style.emissionRate = emissionRate.value;
+    particleStore.selectedPlot.style.particleSize = particleSize.value;
+    particleStore.selectedPlot.style.minimumParticleLife = minimumParticleLife.value;
+    particleStore.selectedPlot.style.maximumParticleLife = maximumParticleLife.value;
+    particleStore.selectedPlot.style.minimumSpeed = minimumSpeed.value;
+    particleStore.selectedPlot.style.maximumSpeed = maximumSpeed.value;
+    particleStore.selectedPlot.style.startScale = startScale.value;
+    particleStore.selectedPlot.style.endScale = endScale.value;
+}
 
-        //改变粒子参数
-        updateValue() {
-            particleStore.selectedPlot.style.emissionRate = this.emissionRate;
-            particleStore.selectedPlot.style.particleSize = this.particleSize;
-            particleStore.selectedPlot.style.minimumParticleLife = this.minimumParticleLife;
-            particleStore.selectedPlot.style.maximumParticleLife = this.maximumParticleLife;
-            particleStore.selectedPlot.style.minimumSpeed = this.minimumSpeed;
-            particleStore.selectedPlot.style.maximumSpeed = this.maximumSpeed;
-            particleStore.selectedPlot.style.startScale = this.startScale;
-            particleStore.selectedPlot.style.endScale = this.endScale;
-        },
-
-        //改变风向
-        changeO(oString) {
-            particleStore.selectedPlot.updateOrientation(oString);
-        }
-    }
-};
+//改变风向
+function changeO(oString: string) {
+    particleStore.selectedPlot.updateOrientation(oString);
+} 
 </script>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 .attr-panel-body :deep(.el-form-item--mini.el-form-item),
 .attr-panel-body :deep(.el-form-item--small.el-form-item) {
     margin-bottom: 0;

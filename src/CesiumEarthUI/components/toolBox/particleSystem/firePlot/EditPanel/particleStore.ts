@@ -1,6 +1,8 @@
+import type CesiumEarth from "@/lib/CesiumEarth";
+
 export interface ParticleStore {
     selectedPlot: any
-    plots: any[]
+    plots: CesiumEarth.FireParticle[]
 }
 //粒子保存
 const particleStore: ParticleStore = {

@@ -34,6 +34,7 @@ export class FireParticle extends ParticleSystemBase {
     ) {
         super(viewer, position);
         this.#style = Object.assign(this.defaultStyle, style);
+        this.init();
     }
 
     /**
@@ -112,7 +113,7 @@ export class FireParticle extends ParticleSystemBase {
      */
     get defaultStyle(): fireInitialType {
         return {
-            image: new URL('./img/fireParticle/fire.png', import.meta.url).href,
+            image: new URL('../img/fire.png', import.meta.url).href,
             startScale: 3,
             endScale: 1.5,
             minimumParticleLife: 1.5,

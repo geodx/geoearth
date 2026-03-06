@@ -123,7 +123,7 @@ class DistanceLegendViewModel {
     const rightCartographic = globe.ellipsoid.cartesianToCartographic(rightPosition)
     geodesic.setEndPoints(leftCartographic, rightCartographic)
     const pixelDistance = geodesic.surfaceDistance
-    // Find the first distance that makes the scale bar less than 100 pixels.
+    // Find the first distance that makes the scale bar scss than 100 pixels.
     const maxBarWidth = 100
     let distance
     for (var i = distances.length - 1; !distance && i >= 0; --i) {
