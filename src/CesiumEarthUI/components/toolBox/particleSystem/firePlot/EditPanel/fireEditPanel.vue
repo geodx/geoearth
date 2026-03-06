@@ -113,7 +113,7 @@ function handleMouseUp() {
 
 </script>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 .attr-panel-body :deep(.el-form-item--mini.el-form-item),
 .attr-panel-body :deep(.el-form-item--small.el-form-item) {
     margin-bottom: 0;

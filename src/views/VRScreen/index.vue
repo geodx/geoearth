@@ -51,7 +51,7 @@ export default {
 </script>
 
 
-<style scoped lang="less">
+<style scoped lang="scss">
 .main {
     height: 100%;
     width: 100%;

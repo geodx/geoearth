@@ -32,6 +32,7 @@ export class FountainParticle extends ParticleSystemBase {
     constructor(viewer: Viewer, position: Cartesian3, style: FountainInitialType = {}) {
         super(viewer, position);
         this.#style = Object.assign(this.defaultStyle, style);
+        this.init();
     }
 
     /**
@@ -120,7 +121,7 @@ export class FountainParticle extends ParticleSystemBase {
      */
     get defaultStyle(): FountainInitialType {
         return {
-            image: new URL('./img/fire.png', import.meta.url).href,
+            image: new URL('../img/fountain.png', import.meta.url).href,
             emissionRate: 40.0,
             gravity: -3.5,
             minimumParticleLife: 3,

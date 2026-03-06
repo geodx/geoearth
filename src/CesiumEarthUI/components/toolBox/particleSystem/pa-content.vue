@@ -3,12 +3,11 @@
         <tab-pane label="粒子系统">
             <div style="text-align: center">
                 <div class="toolRow">
-                    <button class="btn btn-sm btn-success" style="margin-right: 10px;" type="button"
-                        @click="toggleActive('firePlot')">火焰粒子</button>
-                    <button class="btn btn-sm btn-success" style="margin-right: 10px;" type="button"
-                        @click="toggleActive('fountainPlot')">喷泉粒子</button>
-                    <button class="btn btn-sm btn-success" type="button"
-                        @click="toggleActive('smokePlot')">烟雾粒子</button>
+                    <el-button size="small" type="success" style="margin-right: 10px;"
+                        @click="toggleActive('firePlot')">火焰粒子</el-button>
+                    <el-button size="small" type="success" style="margin-right: 10px;"
+                        @click="toggleActive('fountainPlot')">喷泉粒子</el-button>
+                    <el-button size="small" type="success" @click="toggleActive('smokePlot')">烟雾粒子</el-button>
                 </div>
             </div>
         </tab-pane>

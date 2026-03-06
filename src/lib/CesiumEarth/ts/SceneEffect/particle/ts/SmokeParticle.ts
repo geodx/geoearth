@@ -32,6 +32,7 @@ export class SmokeParticle extends ParticleSystemBase {
     constructor(viewer: Viewer, position: Cartesian3, style: SmokeInitialType = {}) {
         super(viewer, position);
         this.#style = Object.assign(this.defaultStyle, style);
+        this.init();
     }
 
     /**
@@ -120,7 +121,7 @@ export class SmokeParticle extends ParticleSystemBase {
      */
     get defaultStyle(): SmokeInitialType {
         return {
-            image: new URL('./img/smoke.png', import.meta.url).href,
+            image: new URL('../img/smoke.png', import.meta.url).href,
             emissionRate: 40.0,
             gravity: -0.54,
             minimumParticleLife: 5,

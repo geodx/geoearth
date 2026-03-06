@@ -91,7 +91,7 @@ d="M371 651l-63 -63h-153l-64 63l49 49h182zM435 357l-113 56v161l63 63l50 -49v-231
 d="M140 315h-112v175h112v-175zM140 0h-112v175h112v-175z" />
     <glyph glyph-name="semicolon" unicode=";" horiz-adv-x="168" 
 d="M140 315h-112v175h112v-175zM140 -112h-112v287h112v-287z" />
-    <glyph glyph-name="less" unicode="&#x3c;" horiz-adv-x="307" 
+    <glyph glyph-name="scss" unicode="&#x3c;" horiz-adv-x="307" 
 d="M283 583l-132 -222h-127l196 339h63v-117zM283 0h-68l-194 339h130l132 -229v-110z" />
     <glyph glyph-name="equal" unicode="=" 
 d="M406 425l-98 -49h-153l-99 49l99 63h153zM406 260l-98 -49h-153l-99 49l99 63h153z" />
@@ -467,7 +467,7 @@ d="M435 357l-113 70v161l113 112v-343zM140 427l-112 -70v343l112 -112v-161zM435 11
  />
     <glyph glyph-name="ydieresis" unicode="&#xff;" 
 d="M401 800l-82 -49l-77 49l77 63zM215 800l-82 -49l-77 49l77 63zM435 357l-113 70v161l113 112v-343zM140 427l-112 -70v343l112 -112v-161zM406 350l-98 -49h-153l-99 49l99 63h153zM289 63l-58 -63l-57 63v217h115v-217z" />
-    <glyph glyph-name="dotlessi" unicode="&#x131;" horiz-adv-x="168" 
+    <glyph glyph-name="dotscssi" unicode="&#x131;" horiz-adv-x="168" 
 d="M140 357l-112 70v161l112 112v-343zM140 0l-112 112v175l112 56v-343z" />
     <glyph glyph-name="Lslash" unicode="&#x141;" horiz-adv-x="0" 
  />
@@ -565,7 +565,7 @@ d="M570 700l-226 -367l-62 112l155 255h133zM332 313l-187 -313h-131l189 313h129z" 
  />
     <glyph glyph-name="notequal" unicode="&#x2260;" horiz-adv-x="571" 
  />
-    <glyph glyph-name="lessequal" unicode="&#x2264;" horiz-adv-x="571" 
+    <glyph glyph-name="scssequal" unicode="&#x2264;" horiz-adv-x="571" 
  />
     <glyph glyph-name="greaterequal" unicode="&#x2265;" horiz-adv-x="571" 
  />
