@@ -1,5 +1,5 @@
 <template>
-    <PmContent v-if="true"></PmContent>
+    <PmContent v-if="show"></PmContent>
 </template>
 
 <script lang="ts" setup>
