@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 import { TabPane, WinTabs } from '../../winTabs'
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 const ceStore = useCesiumEarthStore()
 interface Tool {
     id: string
@@ -29,6 +29,9 @@ const comActions = computed(() => {
     return ceStore.comActions.filter(item =>
         item.type === 'ToolBoxItem'
     );
+})
+onMounted(() => {
+    tool.value = comActions.value;
 })
 watch(() => comActions.value, (val: any) => {
     tool.value = val;
