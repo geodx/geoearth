@@ -12,10 +12,10 @@
     <visualMarker></visualMarker>
     <areaNavigation></areaNavigation>
     <featureEffect></featureEffect>
-    <!-- <VideoShed></VideoShed> -->
+    <VideoShed></VideoShed>
     <coordinates></coordinates>
     <pluginManagement></pluginManagement>
-    <!-- <dataSetting></dataSetting> -->
+    <dataSetting></dataSetting>
     <linkView></linkView>
     <!-- <waterSpecial></waterSpecial> -->
     <particleSystem></particleSystem>

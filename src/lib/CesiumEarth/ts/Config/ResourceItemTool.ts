@@ -9,7 +9,6 @@ const ResourceItemTool = {
     let right = true;
     right = right && !!sourceItem;
     right = right && !!sourceItem.properties;
-
     if (sourceItem.decryptionKey) {
       if (!sourceItem.netRootPaths) {
         console.warn('参数异常，资源项的 netRootPaths 参数为必填！：', sourceItem);

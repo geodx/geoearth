@@ -7,6 +7,13 @@ declare module 'cesium' {
     pid?: string | number;
     param?: any;
   }
+  interface Entity {
+    type?: string;
+    subType?: string;
+  }
+  interface Viewer {
+    enableCursorStyle?: boolean;
+  }
 }
 
 type CameraViewType = {

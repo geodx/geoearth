@@ -1,3 +1,42 @@
+// ## 13.标绘工具
+
+// - API：`new VGEEarth.PlotTool()`
+
+// - 类型：构造函数
+
+// - 描述：核心模块，在坐标采集工具的基础上封装的标绘工具
+
+// - 标签：2022-05-05
+
+// - 结构体
+
+//   ```tsx
+//   class PlotTool {
+//       constructor(viewer: Viewer) {}
+//       // 导入外部文件资源
+//       inputFileData({errFunc, endFunc}: any = {}) {}
+//       // 保存为 GeoJson 文件
+//       SaveAsGeoJson(func: any) {}
+//       // 保存为 Kml 文件
+//       SaveAsKML(func: any) {}
+//       // 添加标注点
+//       addPoint(name: string, markerSymbol: string) {}
+//       // 添加标注线
+//       addMultiLine(strokeMaterial: string, func: any) {}
+//       // 添加标注面
+//       addPolygon(func: any){}
+//       // 撤销操作
+//       revoke() {}
+//       // 清空标注结果
+//       removeAll() {}
+//       // 销毁标绘工具
+//       destroy() {}
+//   }
+//   ```
+
+
+
+
 import { Viewer, CustomDataSource } from "cesium";
 import * as turf from "@turf/turf";
 import type { FeatureCollection } from "geojson";

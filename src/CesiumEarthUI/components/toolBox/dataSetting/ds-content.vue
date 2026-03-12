@@ -79,8 +79,8 @@
                 </div>
 
                 <div style="text-align: center;padding-top: 10px">
-                    <button class="btn btn-info btn-sm">定位</button>
-                    <button class="btn btn-info btn-sm" @click="saveOpts()">保存参数</button>
+                    <el-button size="small">定位</el-button>
+                    <el-button size="small" @click="saveOpts()">保存参数</el-button>
                 </div>
             </div>
         </tab-pane>
@@ -93,11 +93,13 @@ import { TabPane, WinTabs } from '../../winTabs'
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore'
 import CesiumEarth from '@/lib/CesiumEarth'
 import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import type { ResourceItem } from '@/lib/CesiumEarth/ts/Config'
 const earthStore = useEarthStore()
 const ceStore = useCesiumEarthStore()
 
 const selTileSetPid = ref()
-const tileSetList = ref([])
+const tileSetList = ref<ResourceItem[]>([])
 const opts = ref({
     scale: 1.0,
     longitude: 0,
@@ -107,25 +109,25 @@ const opts = ref({
     ry: 0,
     rz: 0 //修改旋转
 })
-let earth: CesiumEarth.Earth
 
-onMounted(() => {
+let earth: CesiumEarth.Earth
+onMounted(async () => {
     earth = await earthStore.getEarth()
-    tileSetList.value = earth.viewer3DWorkSpace.nodes.filter(item => item.dataType === '3DTiles');
+    tileSetList.value = earth.viewer3DWorkSpace.getNodes().filter((item: ResourceItem) => item.dataType === 'Cesium3DTile');
 
 })
 function update3DTilesMatrix() {
-    let tileSet = earth.viewer3DWorkSpace._3DTileManage.getByPid(selTileSetPid);
+    const tileSet = earth.viewer3DWorkSpace._3DTileManage.getInstancesByPid(selTileSetPid.value);
     if (tileSet) {
         let tileSetEditor = new CesiumEarth.TileSetPlugin.PositionEditor(earth.viewer3D, tileSet);
-        this.opts = tileSetEditor.getParams();
+        opts.value = tileSetEditor.getParams();
     }
 }
 
 function saveOpts() {
-    console.log(cesiumInit.tilesetEditor.getOpts());
-    this.$message({
-        message: cesiumInit.tilesetEditor.getOpts(),
+    console.log(opts.value);
+    ElMessage({
+        message: JSON.stringify(opts.value),
         type: 'success'
     });
 }
@@ -133,9 +135,9 @@ function close() {
     ceStore.setCesiumEarthComAction('dataSetting', 2)
 
 }
-
-<style lang="scss" scoped >
-    label {
+</script>
+<style lang="scss" scoped>
+label {
     color: #009b94;
 }
 </style>

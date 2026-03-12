@@ -47,6 +47,9 @@ class WorkSpace {
     this.gltfManage = new CesiumGLTF(viewer);
     this.poiManage = new CesiumPoi(viewer);
 
+    // this.geoJsonManage = new CesiumGeoJson(viewer);
+    // this.waterManage = new CesiumWater(viewer);
+
     this.sourceEvent = EventManage.sourceEvent;
     this.listenSource();
   }
