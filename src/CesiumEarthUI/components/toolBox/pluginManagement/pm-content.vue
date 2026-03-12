@@ -5,7 +5,7 @@
                 <li v-for="item in tool" :key="item.id" :style=hideSelf(item) class="liBox">
                     <label class="label-container" style="color:white;">{{
                         item.name
-                    }}</label>
+                        }}</label>
                     <el-switch v-model="item.config.inToolBox" active-color="#13ce66" inactive-color="#929090"
                         @change="change(item.comName, item.config.inToolBox)"></el-switch>
                 </li>

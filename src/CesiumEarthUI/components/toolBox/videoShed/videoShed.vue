@@ -1,6 +1,6 @@
 <template>
 
-    <VideoShedContent v-if="true"></VideoShedContent>
+    <VideoShedContent v-if="show"></VideoShedContent>
 
 </template>
 <script lang="ts" setup>
