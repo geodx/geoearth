@@ -61,6 +61,8 @@ export * from './SceneEffect';
 export * from './SpatialAnalysis';
 //TileSetPlugin
 export * as TileSetPlugin from './TileSetPlugin';
+//VideoPlugin
+export * as VideoPlugin from './VideoPlugin';
 // HandlerManage
 export { HandlerManage } from './HandlerManage';
 

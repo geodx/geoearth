@@ -9,3 +9,4 @@
 // }
 // export { TileSetPlugin };
 export { HeatMap } from './HeatMap';
+export { PositionEditor } from './PositionEditor/PositionEditor';

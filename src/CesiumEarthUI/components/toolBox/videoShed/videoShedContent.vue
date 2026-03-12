@@ -4,11 +4,11 @@
 ****************************************************************************/
 
 <template>
-    <win-tabs :initCSS="{ width: 295, height: 190, left: 450, top: 120 }" @close="close">
+    <win-tabs :initCSS="{ width: 300, height: 400, left: 450, top: 120 }" @close="close">
         <tab-pane label="视频融合">
             <div>
                 <div>
-                    <el-form ref="form" :model="form" label-position="left" label-width="60px" size="default">
+                    <el-form :model="form" label-position="left" label-width="60px" size="default">
                         <el-form-item label="投影">
                             <el-switch v-model="visible" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
                         </el-form-item>
@@ -33,8 +33,7 @@
                                 @change="setFrustumVisible"></el-switch>
                         </el-form-item>
                     </el-form>
-                    <video id="testVideo" autoplay="autoplay" controls
-                        src="https://cesium-webgl.oss-cn-beijing.aliyuncs.com/Metacesium-3DVis-Vue3/Video/lukou.mp4"
+                    <video id="testVideo" autoplay muted controls crossOrigin="anonymous"
                         style="height:150px;width:250px;"></video>
                 </div>
             </div>
@@ -46,14 +45,18 @@
 
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { TabPane, WinTabs } from '../../winTabs'
-import VideoShed from './VideoShed.js';
-import CesiumEarth from '@/lib/CesiumEarth/index.js';
-import { useCesiumEarthStore } from '@/stores/CesiumEarthStore.js';
-import { useEarthStore } from '@/stores/EarthStore.js';
+import VideoShed from './VideoShed';
+import CesiumEarth from '@/lib/CesiumEarth/index';
+import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
+import { useEarthStore } from '@/stores/EarthStore';
+import { Cartesian3 } from 'cesium';
 const earthStore = useEarthStore()
 const ceStore = useCesiumEarthStore()
 const form = ref({
-    rotation: {}
+    rotation: { x: 0, y: 0, z: 0 },
+    debugFrustum: false,
+    fov: 60,
+    alpha: 1
 })
 const visible = ref(false)
 const title = '视频融合'
@@ -68,7 +71,8 @@ let newLoadTileSet = false;
 let earth: CesiumEarth.Earth
 onMounted(async () => {
     earth = await earthStore.getEarth()
-    videoShed = new VideoShed();
+    videoShed = new VideoShed(earth.viewer3D);
+    videoShed.init();
     await flyTo();
     visible.value = true;
 })
@@ -77,20 +81,19 @@ onUnmounted(() => {
 })
 watch(() => visible.value, (val: boolean) => {
     if (val === true) {
-        videoShed.init();
         form.value = videoShed.getStyle();
     } else {
         videoShed.destroy();
     }
 })
 async function flyTo() {
-    let s = CesiumEarth.ConfigTool.getResourcesByPid('80f3778c-c8dc-481b-2122-b90e04fd3104');
-    let tileSet = await earth.viewer3DWorkSpace.addData(s);
-    newLoadTileSet = !!tileSet;
-    let flyToOpts = {
+    // const s = CesiumEarth.ConfigTool.getResourcesByPid('80f3778c-c8dc-481b-2122-b90e04fd3104');
+    // const tileSet = await earth.viewer3DWorkSpace.addData(s!);
+    // newLoadTileSet = !!tileSet;
+    const flyToOpts = {
         destination: {
             x: -2895429.8939341973, y: 4717770.941850088, z: 3158085.71284576
-        },
+        } as Cartesian3,
         orientation: {
             heading: 4.917487317285504,
             pitch: -0.6280151824043467,
@@ -103,14 +106,14 @@ function valueChange() {
     if (visible.value === false) {
         return;
     }
-    videoShed.upData(form);
+    videoShed.upData(form.value);
 }
 function close() {
     videoShed.destroy();
-    if (newLoadTileSet) {
-        earth.viewer3DWorkSpace.removeDataByPid('80f3778c-c8dc-481b-2122-b90e04fd3104');
-        newLoadTileSet = false;
-    }
+    // if (newLoadTileSet) {
+    //     earth.viewer3DWorkSpace.removeDataByPid('80f3778c-c8dc-481b-2122-b90e04fd3104');
+    //     newLoadTileSet = false;
+    // }
     ceStore.setCesiumEarthComAction('videoShed', 2)
 }
 function setFrustumVisible() {
