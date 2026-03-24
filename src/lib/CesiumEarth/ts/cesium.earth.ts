@@ -83,9 +83,6 @@ export { PlotDataSource } from './PlotTool/PlotDataSource';
 export { RunEntityController } from './RunEntityController';
 export { WorkSpace } from './WorkSpace';
 
-// TreeManage
-export { TreeManage } from './TreeManage';
-export { ZTreeManage } from './TreeManage/lib/ZTreeManage';
 
 // Utils  CameraUtils
 export * as CameraUtils from './Utils/CameraUtils';

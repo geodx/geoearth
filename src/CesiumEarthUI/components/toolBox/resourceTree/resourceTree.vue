@@ -29,10 +29,10 @@
 
 			<div id="ctrlTree" :class="{ openLoad: isReloadTree, closeLoad: !isReloadTree }" @click="toggleReload">
 				<span style="padding-right: 10px">实时数据接入</span>
-				<el-text v-if="isReloadTree" size="large" :type="isReloadTree ? 'success' : 'warning'"
+				<el-text v-if="isReloadTree" size="small" :type="isReloadTree ? 'success' : 'warning'"
 					style="font-size: 14px">◉ 开启中
 				</el-text>
-				<el-text v-if="!isReloadTree" size="large" :type="isReloadTree ? 'success' : 'warning'"
+				<el-text v-if="!isReloadTree" size="small" :type="isReloadTree ? 'success' : 'warning'"
 					style="font-size: 14px">◉
 					已关闭
 				</el-text>
@@ -303,7 +303,7 @@ async function reloadTree() {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .layer {
 	background: rgba(33, 45, 33, 0.8);
 	position: absolute;
@@ -347,10 +347,6 @@ async function reloadTree() {
 	}
 }
 
-.node_name {
-	color: white !important;
-}
-
 #ctrlTree {
 	border-radius: 0 0 5px 5px;
 	padding: 6px 15px;
@@ -371,15 +367,34 @@ async function reloadTree() {
 	background-color: rgb(23, 30, 32);
 }
 
-.el-text:hover {
-	color: #66afe9;
+.el-tree {
+	background: transparent;
+	--el-tree-node-hover-bg-color: transparent;
+
 }
+
+.el-checkbox {
+	--el-checkbox-checked-bg-color: white;
+	--el-checkbox-checked-icon-color: #67c23a;
+	--el-checkbox-checked-input-border-color: rgb(23, 30, 32);
+}
+
+.el-checkbox__inner:after {
+	border: 2px solid transparent;
+	border-left: 0;
+	border-top: 0;
+}
+
+// .el-text:hover {
+// 	color: #66afe9;
+// 	text-decoration: underline;
+// }
 
 .tree-node {
 	display: flex;
 	align-items: center;
 	width: 100%;
-	color: gray;
+	color: whitesmoke;
 	font-size: 14px;
 
 	.node-icon {
@@ -398,24 +413,13 @@ async function reloadTree() {
 	}
 
 	.node-label:hover {
-		background: rgba(102, 175, 233, 0.2);
-		color: #66afe9;
+		// background: rgba(102, 175, 233, 0.2);
+		text-decoration: underline;
 	}
 
 	.node-label.active {
 		color: #67c23a;
 	}
 
-	.node-label {
-		user-select: none;
-	}
-}
-
-:deep(.el-tree-node__content:hover) {
-	background: transparent;
-}
-
-:deep(.el-tree-node:focus > .el-tree-node__content) {
-	background: transparent;
 }
 </style>
