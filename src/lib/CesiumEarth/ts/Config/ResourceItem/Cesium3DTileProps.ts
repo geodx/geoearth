@@ -6,6 +6,7 @@ interface Cesium3DTileProps {
     lat: number,
     height: number
   };
+  type?: string,
 }
 
 export type { Cesium3DTileProps };

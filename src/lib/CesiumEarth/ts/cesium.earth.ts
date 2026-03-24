@@ -6,7 +6,7 @@ export { TerrainList } from './Config';
 export type { ConfigImpl } from './Config';
 export { ConfigTool } from './Config';
 export { DefaultConfig } from './Config';
-
+export { DataTypeEnum } from './Config';
 // DrawShape
 export { DrawShape } from './DrawShape/index';
 

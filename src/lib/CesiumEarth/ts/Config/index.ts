@@ -19,3 +19,4 @@ export type { ConfigImpl } from './ConfigImpl';
 export { ConfigTool } from './ConfigTool';
 export { DefaultConfig } from './DefaultConfig';
 
+export { DataTypeEnum } from './Enum/DataTypeEnum';

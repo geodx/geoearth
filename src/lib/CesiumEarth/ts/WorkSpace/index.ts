@@ -118,7 +118,6 @@ class WorkSpace {
         console.log('无效资源项');
       }
     }
-
     if (loadErr) {
       console.error('加载数据失败：', sourceItem.name, loadErr);
       return null;

@@ -2,6 +2,7 @@ import { Cesium3DTileset, HeadingPitchRange, Resource, Viewer } from 'cesium';
 import { CesiumData } from './impl/CesiumData';
 import type { ResourceItem } from '../../Config/ResourceItem';
 import type { Cesium3DTileProps } from '../../Config/ResourceItem/Cesium3DTileProps';
+import { offSetTileSetByCartographic } from '../../Utils';
 
 
 // 3DTiles格式的数据，包括倾斜摄影、bim等生产的数据
@@ -13,6 +14,7 @@ class Cesium3DTiles extends CesiumData<Cesium3DTileset> {
   }
 
   async addData(sourceItem: ResourceItem): Promise<Cesium3DTileset> {
+
     const prop = sourceItem.properties as Cesium3DTileProps;
     const url = prop.url;
     const queryParameters = prop.queryParameters || {};
@@ -110,10 +112,10 @@ class Cesium3DTiles extends CesiumData<Cesium3DTileset> {
       // debugShowUrl: false//可选的 仅用于调试。 当为 true 时，绘制标签以指示每个图块的 url。
     };
     Object.assign(tileSetOptions, prop);
-    // for (const propKey in prop) {
-    //   tileSetOptions[propKey] = prop[propKey];
-    // }
-    console.log(tileSetOptions);
+    for (const propKey in prop) {
+      // @ts-ignore
+      tileSetOptions[propKey] = prop[propKey];
+    }
 
     let tileSet = await Cesium3DTileset.fromUrl(resource, tileSetOptions);
 
@@ -178,7 +180,5 @@ class Cesium3DTiles extends CesiumData<Cesium3DTileset> {
 
 export { Cesium3DTiles };
 
-function offSetTileSetByCartographic(tileSet: Cesium3DTileset, lon: number, lat: number, height: number) {
-  throw new Error('Function not implemented.');
-}
+
 

@@ -23,6 +23,7 @@ export { CoordinateOffsetTool } from './CoordinateTool';
 export { MarkTool } from './MarkTool';
 export { GISMathUtils } from './GISMathUtils';
 
+export { offSetTileSetByCartographic, changeTileSetRootPosition, setTileSetHeight, setAlpha, getAlpha } from './TileSetUtils';
 
 export { AsyncTool } from './Common';
 export { SafeTool } from './Common';

@@ -13,6 +13,7 @@ import { EventManage } from '../../EventManage';
 import { ScopeType } from '../../EventManage/impl/ScopeType';
 import { WorkSpace } from '../../WorkSpace/index';
 import { toFirst } from './toFirst';
+import type { Earth } from '../../Earth';
 
 interface TreeNode {
 	id?: string,
@@ -26,22 +27,20 @@ interface TreeNode {
 }
 
 class ZTreeManage {
-	private viewer: Viewer;
+	private earth: Earth
 	scopeType: ScopeType;
 	customOption: any;
 	treeNodes: TreeNode[] = [];
 	workSpace: WorkSpace;
 
-	constructor(viewer: Viewer, scopeType: ScopeType = ScopeType.Viewer3D, customOption = {}) {
-		this.viewer = viewer;
+	constructor(earth: Earth, scopeType: ScopeType = ScopeType.Viewer3D, customOption = {}) {
+		this.earth = earth;
 		this.scopeType = scopeType;
 		this.customOption = customOption;
-		this.workSpace = <WorkSpace>(scopeType === ScopeType.Viewer3D ? getEarth().viewer3DWorkSpace : getEarth().viewer2DWorkSpace);
+		this.workSpace = <WorkSpace>(scopeType === ScopeType.Viewer3D ? earth.viewer3DWorkSpace : earth.viewer2DWorkSpace);
 
 		this.upDateTreeNode();
 		this.initEvent();
-		// @ts-ignore
-		window.zTreeMana = this;
 	}
 
 	// 初始化资源 【载入、移除】事件
@@ -93,17 +92,17 @@ class ZTreeManage {
 			items.forEach((item: any) => {
 				let icon = null;
 				if (item.dataType === 'layer') {
-					icon = require('../../../../img/tree/图层.png');
+					icon = '../../../../img/tree/图层.png'
 				} else if (item.dataType === 'terrain') {
-					icon = require('../../../../img/tree/地形.png');
+					icon = '../../../../img/tree/地形.png'
 				} else if (item.dataType === '3DTiles') {
-					icon = require('../../../../img/tree/倾斜摄影.png');
+					icon = '../../../../img/tree/倾斜摄影.png'
 				} else if (item.dataType === 'gltf') {
-					icon = require('../../../../img/tree/模型.png');
+					icon = '../../../../img/tree/模型.png'
 				} else if (item.dataType === 'poi') {
-					icon = require('../../../../img/tree/点.png');
+					icon = '../../../../img/tree/点.png'
 				} else if (item.dataType === 'geoJson') {
-					icon = require('../../../../img/tree/geoJson.png');
+					icon = '../../../../img/tree/geoJson.png'
 				}
 				let itemNode: TreeNode = {
 					...this.customOption,

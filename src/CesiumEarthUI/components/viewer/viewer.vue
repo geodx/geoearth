@@ -8,6 +8,7 @@
 import CesiumEarth from '@/lib/CesiumEarth';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useEarthStore } from '@/stores/EarthStore';
+import { Cesium3DTileset, HeadingPitchRange } from 'cesium';
 const earthStore = useEarthStore()
 
 const loading = ref(false)
@@ -24,7 +25,7 @@ function initEarth() {
   });
 }
 
-onMounted(async () => {
+onMounted(() => {
   loading.value = true;
   earth = new CesiumEarth.Earth('MapContainer');
   earthStore.setEarth(earth)

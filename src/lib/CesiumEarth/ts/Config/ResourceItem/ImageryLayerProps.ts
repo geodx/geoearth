@@ -49,6 +49,7 @@ interface ImageryLayerProps {
     path: [number, number][],
     speed: number
   }
+  type?: string
 }
 
 export type { ImageryLayerProps };
