@@ -49,7 +49,7 @@ class Earth {
     public viewer3DWorkSpace: WorkSpace;
     private viewerOM: CesiumWidget | undefined
     private viewer2D: Viewer | undefined;
-    private viewer2DWorkSpace: WorkSpace | undefined;
+    public viewer2DWorkSpace: WorkSpace | undefined;
 
     private is2D3D: boolean = false;
     private isOpenOverviewMap: boolean = false;
