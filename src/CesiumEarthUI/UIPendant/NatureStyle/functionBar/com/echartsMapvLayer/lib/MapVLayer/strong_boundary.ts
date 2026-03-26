@@ -4,21 +4,23 @@
 
  最后修改日期：2022-04-18
  ****************************************************************************/
-
+import CesiumEarth from "@/lib/CesiumEarth"
+import { mapv } from "@/lib/CesiumEarth/ts/cesium.earth"
+import { Viewer } from "cesium"
 /**
  * 创建mapvLayer图层
  * @returns {*[]} 所创建的所有的mapvLayer图层
  */
-function createStrongboundary() {
-  var randomCount = 500
-  var node_data = {
+function createStrongboundary(viewer: Viewer) {
+  const randomCount = 500
+  const node_data: Record<number, any> = {
     0: { x: 108.154518, y: 36.643346 },
     1: { x: 121.485124, y: 31.235317 },
   }
 
-  var edge_data = [{ source: '1', target: '0' }]
+  const edge_data = [{ source: '1', target: '0' }]
 
-  var citys = [
+  const citys = [
     '北京',
     '天津',
     '上海',
@@ -51,30 +53,26 @@ function createStrongboundary() {
     '拉萨',
     '海口',
   ]
-
   // 构造数据
-  for (var i = 1; i < randomCount; i++) {
-    var cityCenter = mapv.utilCityCenter.getCenterByCityName(
-      citys[parseInt(Math.random() * citys.length)],
-    )
+  for (let i = 1; i < randomCount; i++) {
+    const cityCenter = mapv.utilCityCenter.getCenterByCityName(citys[~~(Math.random() * citys.length)])
+
     node_data[i] = {
       x: cityCenter.lng - 5 + Math.random() * 10,
       y: cityCenter.lat - 5 + Math.random() * 10,
     }
-    edge_data.push({ source: ~~(i * Math.random()), target: '0' })
+    edge_data.push({ source: (i * Math.random()).toFixed(0), target: '0' })
   }
+  const fbundling = mapv.utilForceEdgeBundling().nodes(node_data).edges(edge_data)
+  const results = fbundling()
 
-  var fbundling = mapv.utilForceEdgeBundling().nodes(node_data).edges(edge_data)
+  const data = []
+  const timeData = []
 
-  var results = fbundling()
-
-  var data = []
-  var timeData = []
-
-  for (var i = 0; i < results.length; i++) {
-    var line = results[i]
-    var coordinates = []
-    for (var j = 0; j < line.length; j++) {
+  for (let i = 0; i < results.length; i++) {
+    const line = results[i]
+    const coordinates = []
+    for (let j = 0; j < line.length; j++) {
       coordinates.push([line[j].x, line[j].y])
       timeData.push({
         geometry: {
@@ -93,25 +91,25 @@ function createStrongboundary() {
     })
   }
 
-  var dataSet = new mapv.DataSet(data)
+  const dataSet1 = new mapv.DataSet(data)
 
-  var options = {
+  const options1 = {
     strokeStyle: 'rgba(55, 50, 250, 0.3)',
     globalCompositeOperation: 'lighter',
     shadowColor: 'rgba(55, 50, 250, 0.5)',
     shadowBlur: 10,
     methods: {
-      click: function (item) { },
+      click: (item: any) => { },
     },
     lineWidth: 1.0,
     draw: 'simple',
   }
 
-  var layer1 = new CesiumEarth.MapVLayer(CesiumEarth.getMainViewer(), dataSet, options)
+  const layer1 = new CesiumEarth.MapVLayer(viewer, dataSet1, options1)
 
-  var dataSet = new mapv.DataSet(timeData)
+  const dataSet2 = new mapv.DataSet(timeData)
 
-  var options = {
+  const options2 = {
     fillStyle: 'rgba(255, 250, 250, 0.9)',
     globalCompositeOperation: 'lighter',
     size: 1.5,
@@ -127,7 +125,7 @@ function createStrongboundary() {
     draw: 'simple',
   }
 
-  var layer2 = new CesiumEarth.MapVLayer(CesiumEarth.getMainViewer(), dataSet, options)
+  const layer2 = new CesiumEarth.MapVLayer(viewer, dataSet2, options2)
   return [layer1, layer2]
 }
 

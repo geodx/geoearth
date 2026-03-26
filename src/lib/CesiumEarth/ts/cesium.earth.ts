@@ -59,6 +59,8 @@ export { buildBillboard } from './ExpandEntity/NormalEntity';
 export * from './SceneEffect';
 // SpatialAnalysis
 export * from './SpatialAnalysis';
+// DrawShape
+export * from './DataVisualization';
 //TileSetPlugin
 export * as TileSetPlugin from './TileSetPlugin';
 //VideoPlugin

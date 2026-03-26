@@ -4,15 +4,15 @@
  ****************************************************************************/
 
 import CesiumEarth from "@/lib/CesiumEarth"
-
-function createOutflow() {
-  let options = getEchartsOption()
-  let echartsLayer = new CesiumEarth.EchartsLayer(CesiumEarth.getMainViewer(), options)
+import type { Viewer } from "cesium"
+function createOutflow(viewer: Viewer) {
+  const options = getEchartsOption()
+  const echartsLayer = new CesiumEarth.EchartsLayer(viewer, options)
   return echartsLayer
 }
 
 function getEchartsOption() {
-  const chinaGeoCoordMap = {
+  const chinaGeoCoordMap: Record<string, [number, number]> = {
     黑龙江: [127.9688, 45.368],
     内蒙古: [110.3467, 41.4899],
     吉林: [125.8154, 44.2584],
@@ -216,7 +216,7 @@ function getEchartsOption() {
     ],
   ]
 
-  const convertData = function (data) {
+  const convertData = (data: any) => {
     const res = []
     for (let i = 0; i < data.length; i++) {
       const dataItem = data[i]
@@ -236,114 +236,105 @@ function getEchartsOption() {
     }
     return res
   }
-  const series = []
-    ;[['北京市', chinaDatas]].forEach(function (item, i) {
-      series.push(
-        {
-          type: 'lines',
-          coordinateSystem: 'cesium',
-          zlevel: 2,
-          effect: {
+  const series: any[] = [];
+  [['北京市', chinaDatas]].forEach((item: any, i) => {
+    series.push(
+      {
+        type: 'lines',
+        coordinateSystem: 'cesium',
+        zlevel: 2,
+        effect: {
+          show: true,
+          period: 4, //箭头指向速度，值越小速度越快
+          trailLength: 0.02, //特效尾迹长度[0,1]值越大，尾迹越长重
+          symbol: 'arrow', //箭头图标
+          symbolSize: 5, //图标大小
+        },
+        lineStyle: {
+          type: 'solid',
+          width: 1, //尾迹线条宽度
+          opacity: 1, //尾迹线条透明度
+          color: '#00EAFF', //线的颜色
+          curveness: 0.3, //尾迹线条曲直度 
+        },
+        data: convertData(item[1]),
+      },
+      {
+        type: 'effectScatter',
+        coordinateSystem: 'cesium',
+        zlevel: 2,
+        rippleEffect: {
+          //涟漪特效
+          period: 4, //动画时间，值越小速度越快
+          brushType: 'stroke', //波纹绘制方式 stroke, fill
+          scale: 4, //波纹圆环最大限制，值越大波纹越大
+        },
+        tooltip: {},
+        label: {
+          show: true,
+          position: 'right', //显示位置
+          offset: [5, 0], //偏移设置
+          formatter: (params: any) => {
+            //圆环显示文字
+            return params.data.name
+          },
+          fontSize: 13,
+        },
+        emphasis: {
+          label: {
             show: true,
-            period: 4, //箭头指向速度，值越小速度越快
-            trailLength: 0.02, //特效尾迹长度[0,1]值越大，尾迹越长重
-            symbol: 'arrow', //箭头图标
-            symbolSize: 5, //图标大小
-          },
-          lineStyle: {
-            normal: {
-              type: 'solid',
-              width: 1, //尾迹线条宽度
-              opacity: 1, //尾迹线条透明度
-              color: '#00EAFF', //线的颜色
-              curveness: 0.3, //尾迹线条曲直度
-            },
-          },
-          data: convertData(item[1]),
+          }
         },
-        {
-          type: 'effectScatter',
-          coordinateSystem: 'cesium',
-          zlevel: 2,
-          rippleEffect: {
-            //涟漪特效
-            period: 4, //动画时间，值越小速度越快
-            brushType: 'stroke', //波纹绘制方式 stroke, fill
-            scale: 4, //波纹圆环最大限制，值越大波纹越大
-          },
-          tooltip: {},
+        symbol: 'circle',
+        symbolSize: (val: any) => {
+          return 5 + val[2] * 5 //圆环大小
+        },
+        itemStyle: {
+          show: false,
+          color: '#32ff9d', //颜色 
+        },
+        data: item[1].map((dataItem: any) => {
+          return {
+            name: dataItem[0].name,
+            value: chinaGeoCoordMap[dataItem[0].name].concat([dataItem[0].value]),
+          }
+        }),
+      },
+      //流出点
+      {
+        type: 'effectScatter',
+        coordinateSystem: 'cesium',
+        zlevel: 2,
+        rippleEffect: {
+          period: 4,
+          brushType: 'stroke',
+          scale: 4,
+        },
+        itemStyle: {
+          color: 'yellow', //颜色 
+        },
+        label: {
+          show: true,
+          position: 'right',
+          color: '#0f0',
+          formatter: '{b}',
+        },
+        emphasis: {
           label: {
-            normal: {
-              show: true,
-              position: 'right', //显示位置
-              offset: [5, 0], //偏移设置
-              formatter: function (params) {
-                //圆环显示文字
-                return params.data.name
-              },
-              fontSize: 13,
-            },
-            emphasis: {
-              show: true,
-            },
-          },
-          symbol: 'circle',
-          symbolSize: function (val) {
-            return 5 + val[2] * 5 //圆环大小
-          },
-          itemStyle: {
-            normal: {
-              show: false,
-              color: '#32ff9d', //颜色
-            },
-          },
-          data: item[1].map(function (dataItem) {
-            return {
-              name: dataItem[0].name,
-              value: chinaGeoCoordMap[dataItem[0].name].concat([dataItem[0].value]),
-            }
-          }),
+            show: true,
+            color: '#f60',
+          }
         },
-        //流出点
-        {
-          type: 'effectScatter',
-          coordinateSystem: 'cesium',
-          zlevel: 2,
-          rippleEffect: {
-            period: 4,
-            brushType: 'stroke',
-            scale: 4,
+        symbolSize: 10,
+        data: [
+          {
+            name: item[0],
+            value: chinaGeoCoordMap[item[0]].concat([10]),
           },
-          itemStyle: {
-            normal: {
-              color: 'yellow', //颜色
-            },
-          },
-          label: {
-            normal: {
-              show: true,
-              position: 'right',
-              color: '#0f0',
-              formatter: '{b}',
-              textStyle: {
-                color: '#0f0',
-              },
-            },
-            emphasis: {
-              show: true,
-              color: '#f60',
-            },
-          },
-          symbolSize: 10,
-          data: [
-            {
-              name: item[0],
-              value: chinaGeoCoordMap[item[0]].concat([10]),
-            },
-          ],
-        },
-      )
-    })
+        ],
+      },
+    )
+  })
 
   let option = {
     animation: !1,

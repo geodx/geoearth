@@ -4,19 +4,16 @@
  ****************************************************************************/
 
 import CesiumEarth from "@/lib/CesiumEarth"
-import { useEarthStore } from "@/stores/EarthStore"
-const earthStore = useEarthStore()
+import { Viewer } from "cesium"
 
-async function createMigrate1() {
-  const earth = await earthStore.getEarth()
-
+function createMigrate1(viewer: Viewer) {
   const options = getEchartsOption()
-  const echartsLayer = new CesiumEarth.EchartsLayer(earth.viewer3D, options)
+  const echartsLayer = new CesiumEarth.EchartsLayer(viewer, options)
   return echartsLayer
 }
 
 function getEchartsOption() {
-  const geoCoordMap = {
+  const geoCoordMap: Record<string, [number, number]> = {
     上海: [121.4648, 31.2891],
     东莞: [113.8953, 22.901],
     东营: [118.7073, 37.5513],
@@ -157,14 +154,12 @@ function getEchartsOption() {
     [{ name: '银川' }, { name: '西宁', value: 100 }],
   ]
 
-  const planePath =
-    'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z'
-  //const planePath = 'arrow';
+  const planePath = 'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z'
   function convertData(data: any) {
     const res = []
     for (let i = 0; i < data.length; i++) {
       const dataItem = data[i]
-      const fromCoord = geoCoordMap["dataItem[0].name"]
+      const fromCoord = geoCoordMap[dataItem[0].name]
       const toCoord = geoCoordMap[dataItem[1].name]
       if (fromCoord && toCoord) {
         res.push({
@@ -183,7 +178,7 @@ function getEchartsOption() {
     ['西安', XAData],
     ['西宁', XNData],
     ['银川', YCData],
-  ].forEach(function (item, i) {
+  ].forEach((item: any, i) => {
     series.push(
       //{
       //     name: item[0] + ' Top3',
@@ -221,12 +216,10 @@ function getEchartsOption() {
           symbolSize: 15,
         },
         lineStyle: {
-          normal: {
-            color: color[i],
-            width: 1,
-            opacity: 0.6,
-            curveness: 0.2,
-          },
+          color: color[i],
+          width: 1,
+          opacity: 0.6,
+          curveness: 0.2,
         },
         data: convertData(item[1]),
       },
@@ -239,24 +232,20 @@ function getEchartsOption() {
           brushType: 'stroke',
         },
         label: {
-          normal: {
-            show: true,
-            position: 'right',
-            formatter: '{b}',
-          },
+          show: true,
+          position: 'right',
+          formatter: '{b}',
         },
         symbolSize: (val: any) => {
           return val[2] / 8
         },
         itemStyle: {
-          normal: {
-            color: color[i],
-          },
-          emphasis: {
-            areaColor: '#2B91B7',
-          },
+          color: color[i],
         },
-        data: item[1].map(function (dataItem) {
+        emphasis: {
+          areaColor: '#2B91B7',
+        },
+        data: item[1].map((dataItem: any) => {
           return {
             name: dataItem[1].name,
             value: geoCoordMap[dataItem[1].name].concat([dataItem[1].value]),
@@ -266,7 +255,7 @@ function getEchartsOption() {
     )
   })
   const option = {
-    animation: !1,
+    animation: false,
     series: series,
   }
   return option

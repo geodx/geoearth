@@ -1,5 +1,3 @@
-
-
 import type { JulianDate } from "cesium";
 
 declare module 'cesium' {
@@ -15,7 +13,6 @@ declare module 'cesium' {
     enableCursorStyle?: boolean;
   }
 }
-
 type CameraViewType = {
   destination: {
     x: number,

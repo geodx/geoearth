@@ -4,19 +4,21 @@
 
  最后修改日期：2022-04-18
  ****************************************************************************/
-
+import CesiumEarth from "@/lib/CesiumEarth"
+import { mapv } from "@/lib/CesiumEarth/ts/cesium.earth"
+import { Viewer, Cartesian3 } from "cesium"
 /**
  * 创建mapvLayer图层
  * @returns {*[]} 所创建的所有的mapvLayer图层
  */
-function createSquaregraph() {
+function createSquaregraph(viewer: Viewer) {
   // 构造数据
-  let positions = []
-  let geojson = []
+  const positions = []
+  const geojson = []
   let randomCount = 300
   while (randomCount--) {
-    let point = randomPoint()
-    positions.push(Cesium.Cartesian3.fromDegrees(point[0], point[1]))
+    const point = randomPoint()
+    positions.push(Cartesian3.fromDegrees(point[0], point[1]))
 
     geojson.push({
       geometry: {
@@ -28,7 +30,7 @@ function createSquaregraph() {
   }
 
   //mapv图层参数
-  let options = {
+  const options = {
     fillStyle: 'rgba(55, 50, 250, 0.8)',
     shadowColor: 'rgba(255, 250, 50, 1)',
     shadowBlur: 20,
@@ -47,10 +49,10 @@ function createSquaregraph() {
     },
     draw: 'grid',
   }
-  let dataSet = new mapv.DataSet(geojson)
+  const dataSet = new mapv.DataSet(geojson)
 
   //创建MapV图层
-  let mapVLayer = new CesiumEarth.MapVLayer(CesiumEarth.getMainViewer(), dataSet, options)
+  const mapVLayer = new CesiumEarth.MapVLayer(viewer, dataSet, options)
   return [mapVLayer]
 }
 
@@ -59,8 +61,8 @@ function createSquaregraph() {
  * @returns {number[]}
  */
 function randomPoint() {
-  let jd = 113.65276089 + Math.random() * 5
-  let wd = 28.310530293 + Math.random() * 5
+  const jd = 113.65276089 + Math.random() * 5
+  const wd = 28.310530293 + Math.random() * 5
   return [jd, wd]
 }
 
