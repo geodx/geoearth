@@ -4,38 +4,41 @@
 
  最后修改日期：2022-04-18
  ****************************************************************************/
+import { mapv } from "@/lib/CesiumEarth/ts/cesium.earth"
+import CesiumEarth from "@/lib/CesiumEarth"
+import { Viewer } from "cesium"
 
-let timeData = []
+let timeData: any[] = []
 
 /**
  * 创建mapvLayer图层
  * @returns {*[]} 所创建的所有的mapvLayer图层
  */
-function createBigmigrate() {
-  return initData()
+function createBigmigrate(viewer: Viewer) {
+  return initData(viewer)
 }
 
 /**
  * 初始化图层数据
  * @returns {*[]} 所创建的所有的mapvLayer图层
  */
-function initData() {
-  let rs = getData()
-  let items = rs.split('|')
-  let data = []
+function initData(viewer: Viewer) {
+  const rs = getData()
+  const items = rs.split('|')
+  const data = []
   timeData = []
   let cityBegin
   for (let i = 0; i < items.length; i++) {
-    let itemArr = items[i].split(/\n/)
+    const itemArr = items[i].split(/\n/)
     for (let k = 0; k < itemArr.length; k++) {
       if (!!itemArr[k]) {
-        let item = itemArr[k].split(/\t/)
+        const item = itemArr[k].split(/\t/)
         if (item[0] === '起点城市' || item[0] === '迁出城市') {
           cityBegin = item[1]
         }
-        if (item[0] !== '起点城市' || (item[0] !== '迁出城市' && item.length > 1)) {
-          let cityCenter1 = mapv.utilCityCenter.getCenterByCityName(item[0].replace(/市|省/, ''))
-          let cityCenter2 = mapv.utilCityCenter.getCenterByCityName(cityBegin.replace(/市|省/, ''))
+        if (!(item[0] == '起点城市' || item[0] == '迁出城市') && item.length > 1) {
+          const cityCenter1 = mapv.utilCityCenter.getCenterByCityName(item[0].replace(/市|省/, ''))
+          const cityCenter2 = mapv.utilCityCenter.getCenterByCityName(cityBegin?.replace(/市|省/, ''))
           if (cityCenter1) {
             if (Math.random() > 0.7) {
               curive(cityCenter2, cityCenter1, 50)
@@ -55,32 +58,33 @@ function initData() {
       }
     }
   }
-  return initLayer(data)
+  return initLayer(viewer, data)
 }
 
 /**
  * 初始化图层
+ * @param viewer Viewer
  * @param data 大迁徙图图层数据
  * @returns {*[]} 所创建的所有的mapvLayer图层
  */
-function initLayer(data) {
-  let dataSet = new mapv.DataSet(data)
-  let options = {
+function initLayer(viewer: Viewer, data: any) {
+  const dataSet1 = new mapv.DataSet(data)
+  const options1 = {
     strokeStyle: 'rgba(55, 50, 250, 0.3)',
     globalCompositeOperation: 'lighter',
     shadowColor: 'rgba(55, 50, 250, 0.5)',
     methods: {
-      click: function (item) {},
+      click: (item: any) => { },
     },
     gradient: { 0: 'rgba(55, 50, 250, 0)', 1: 'rgba(55, 50, 250, 1)' },
     lineWidth: 0.2,
     draw: 'intensity',
   }
 
-  let layer1 = new CesiumEarth.MapVLayer(CesiumEarth.getMainViewer(), dataSet, options)
+  const layer1 = new CesiumEarth.MapVLayer(viewer, dataSet1, options1)
 
-  dataSet = new mapv.DataSet(timeData)
-  options = {
+  const dataSet2 = new mapv.DataSet(timeData)
+  const options2 = {
     fillStyle: 'rgba(255, 250, 250, 0.9)',
     size: 0.5,
     animation: {
@@ -94,17 +98,17 @@ function initLayer(data) {
     },
     draw: 'simple',
   }
-  let layer2 = new CesiumEarth.MapVLayer(CesiumEarth.getMainViewer(), dataSet, options)
+  const layer2 = new CesiumEarth.MapVLayer(viewer, dataSet2, options2)
   return [layer1, layer2]
 }
 
-function curive(fromPoint, endPoint, n) {
-  let delLng = (endPoint.lng - fromPoint.lng) / n
-  let delLat = (endPoint.lat - fromPoint.lat) / n
+function curive(fromPoint: any, endPoint: any, n: number) {
+  const delLng = (endPoint.lng - fromPoint.lng) / n
+  const delLat = (endPoint.lat - fromPoint.lat) / n
 
   for (let i = 0; i < n; i++) {
-    let pointNLng = fromPoint.lng + delLng * i
-    let pointNLat = fromPoint.lat + delLat * i
+    const pointNLng = fromPoint.lng + delLng * i
+    const pointNLat = fromPoint.lat + delLat * i
     timeData.push({
       geometry: {
         type: 'Point',
@@ -6987,7 +6991,7 @@ function getData() {
 黄南藏族自治州	1
 林芝地区	1
 日喀则地区	0
-台湾	60000`
+台湾	60000`;
 }
 
 export default createBigmigrate

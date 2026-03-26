@@ -4,15 +4,17 @@
 
  最后修改日期：2022-04-18
  ****************************************************************************/
-
+import CesiumEarth from "@/lib/CesiumEarth"
+import { mapv } from "@/lib/CesiumEarth/ts/cesium.earth"
+import { Viewer } from "cesium"
 /**
  * 创建mapvLayer图层
  * @returns {*[]} 所创建的所有的mapvLayer图层
  */
-function createHeatmap() {
+function createHeatmap(viewer: Viewer) {
   let randomCount = 1000
-  let data = []
-  let citys = [
+  const data = []
+  const citys = [
     '北京',
     '天津',
     '上海',
@@ -45,12 +47,9 @@ function createHeatmap() {
     '拉萨',
     '海口',
   ]
-
   // 构造数据
   while (randomCount--) {
-    let cityCenter = mapv.utilCityCenter.getCenterByCityName(
-      citys[parseInt(Math.random() * citys.length)],
-    )
+    const cityCenter = mapv.utilCityCenter.getCenterByCityName(citys[~~(Math.random() * citys.length)])
     data.push({
       geometry: {
         type: 'Point',
@@ -63,9 +62,9 @@ function createHeatmap() {
     })
   }
 
-  let dataSet = new mapv.DataSet(data)
+  const dataSet = new mapv.DataSet(data)
 
-  let options = {
+  const options = {
     size: 13,
     gradient: { 0.25: 'rgb(0,0,255)', 0.55: 'rgb(0,255,0)', 0.85: 'yellow', 1.0: 'rgb(255,0,0)' },
     max: 100,
@@ -75,7 +74,7 @@ function createHeatmap() {
     draw: 'heatmap',
   }
 
-  let mapvLayer = new CesiumEarth.MapVLayer(CesiumEarth.getMainViewer(), dataSet, options)
+  const mapvLayer = new CesiumEarth.MapVLayer(viewer, dataSet, options)
   return [mapvLayer]
 }
 

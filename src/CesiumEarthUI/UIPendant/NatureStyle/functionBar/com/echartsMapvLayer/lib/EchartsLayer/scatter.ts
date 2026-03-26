@@ -4,10 +4,11 @@
  ****************************************************************************/
 
 import CesiumEarth from "@/lib/CesiumEarth"
+import type { Viewer } from "cesium"
 
-function createScatter() {
-  let options = getEchartsOption()
-  let echartsLayer = new CesiumEarth.EchartsLayer(CesiumEarth.getMainViewer(), options)
+function createScatter(viewer: Viewer) {
+  const options = getEchartsOption()
+  const echartsLayer = new CesiumEarth.EchartsLayer(viewer, options)
   return echartsLayer
 }
 
@@ -205,7 +206,7 @@ function getEchartsOption() {
     { name: '武汉', value: 273 },
     { name: '大庆', value: 279 },
   ]
-  const geoCoordMap = {
+  const geoCoordMap: Record<string, [number, number]> = {
     海门: [121.15, 31.89],
     鄂尔多斯: [109.781327, 39.608266],
     招远: [120.38, 37.35],
@@ -398,7 +399,7 @@ function getEchartsOption() {
     大庆: [125.03, 46.58],
   }
 
-  const convertData = function (data) {
+  const convertData = (data: any[]) => {
     const res = []
     for (let i = 0; i < data.length; i++) {
       const geoCoord = geoCoordMap[data[i].name]
@@ -419,23 +420,21 @@ function getEchartsOption() {
         type: 'scatter',
         coordinateSystem: 'cesium',
         data: convertData(data),
-        symbolSize: function (val) {
+        symbolSize: (val: any) => {
           return val[2] / 20
         },
         label: {
-          normal: {
-            formatter: '{b}',
-            position: 'right',
-            show: false,
-          },
-          emphasis: {
+          formatter: '{b}',
+          position: 'right',
+          show: false,
+        },
+        emphasis: {
+          label: {
             show: true,
-          },
+          }
         },
         itemStyle: {
-          normal: {
-            color: '#ddb926',
-          },
+          color: '#ddb926',
         },
       },
       {
@@ -449,27 +448,25 @@ function getEchartsOption() {
             })
             .slice(0, 6),
         ),
-        symbolSize: function (val) {
+        symbolSize: (val: any) => {
           return val[2] / 20
         },
         showEffectOn: 'render',
         rippleEffect: {
           brushType: 'stroke',
         },
-        hoverAnimation: true,
+        emphasis: {
+          scale: true
+        },
         label: {
-          normal: {
-            formatter: '{b}',
-            position: 'right',
-            show: true,
-          },
+          formatter: '{b}',
+          position: 'right',
+          show: true,
         },
         itemStyle: {
-          normal: {
-            color: '#f4e925',
-            shadowBlur: 10,
-            shadowColor: '#333',
-          },
+          color: '#f4e925',
+          shadowBlur: 10,
+          shadowColor: '#333',
         },
         zlevel: 1,
       },

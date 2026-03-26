@@ -4,15 +4,15 @@
  ****************************************************************************/
 
 import CesiumEarth from "@/lib/CesiumEarth"
-
-function createInflow() {
-  let options = getEchartsOption()
-  let echartsLayer = new CesiumEarth.EchartsLayer(CesiumEarth.getMainViewer(), options)
+import type { Viewer } from "cesium"
+function createInflow(viewer: Viewer) {
+  const options = getEchartsOption()
+  const echartsLayer = new CesiumEarth.EchartsLayer(viewer, options)
   return echartsLayer
 }
 
 function getEchartsOption() {
-  const chinaGeoCoordMap = {
+  const chinaGeoCoordMap: Record<string, [number, number]> = {
     黑龙江: [127.9688, 45.368],
     内蒙古: [110.3467, 41.4899],
     吉林: [125.8154, 44.2584],
@@ -215,7 +215,7 @@ function getEchartsOption() {
       },
     ],
   ]
-  function convertData(data) {
+  function convertData(data: any[]) {
     const res = []
     for (let i = 0; i < data.length; i++) {
       const dataItem = data[i]
@@ -235,8 +235,8 @@ function getEchartsOption() {
     }
     return res
   }
-  const series = [];
-  [['北京市', chinaDatas]].forEach(function (item, i) {
+  const series: any[] = [];
+  [['北京市', chinaDatas]].forEach((item: any, i) => {
     series.push(
       {
         type: 'lines',
@@ -250,12 +250,10 @@ function getEchartsOption() {
           symbolSize: 5, //图标大小
         },
         lineStyle: {
-          normal: {
-            width: 1, //尾迹线条宽度
-            opacity: 1, //尾迹线条透明度
-            color: '#00EAFF', //线的颜色
-            curveness: 0.3, //尾迹线条曲直度
-          },
+          width: 1, //尾迹线条宽度
+          opacity: 1, //尾迹线条透明度
+          color: '#00EAFF', //线的颜色
+          curveness: 0.3, //尾迹线条曲直度
         },
         data: convertData(item[1]),
       },
@@ -270,31 +268,29 @@ function getEchartsOption() {
           scale: 4, //波纹圆环最大限制，值越大波纹越大
         },
         label: {
-          normal: {
-            show: true,
-            position: 'right', //显示位置
-            offset: [5, 0], //偏移设置
-            formatter: function (params) {
-              //圆环显示文字
-              return params.data.name
-            },
-            fontSize: 13,
+          show: true,
+          position: 'right', //显示位置
+          offset: [5, 0], //偏移设置
+          formatter: (params: any) => {
+            //圆环显示文字
+            return params.data.name
           },
-          emphasis: {
+          fontSize: 13,
+        },
+        emphasis: {
+          label: {
             show: true,
           },
         },
         symbol: 'circle',
-        symbolSize: function (val) {
+        symbolSize: (val: any) => {
           return 5 + val[2] * 5 //圆环大小
         },
         itemStyle: {
-          normal: {
-            show: false,
-            color: '#32ff9d', //颜色
-          },
+          show: false,
+          color: '#32ff9d', //颜色 
         },
-        data: item[1].map(function (dataItem) {
+        data: item[1].map((dataItem: any) => {
           return {
             name: dataItem[0].name,
             value: chinaGeoCoordMap[dataItem[0].name].concat([dataItem[0].value]),
@@ -311,21 +307,16 @@ function getEchartsOption() {
           scale: 4,
         },
         itemStyle: {
-          normal: {
-            color: '#ff0617', //颜色
-          },
+          color: '#ff0617', //颜色
         },
         label: {
-          normal: {
-            show: true,
-            position: 'right',
-            color: '#0f0',
-            formatter: '{b}',
-            textStyle: {
-              color: '#0f0',
-            },
-          },
-          emphasis: {
+          show: true,
+          position: 'right',
+          color: '#0f0',
+          formatter: '{b}',
+        },
+        emphasis: {
+          label: {
             show: true,
             color: '#f60',
           },

@@ -5,12 +5,16 @@
  最后修改日期：2022-04-18
  ****************************************************************************/
 
+import CesiumEarth from "@/lib/CesiumEarth"
+import { mapv } from "@/lib/CesiumEarth/ts/cesium.earth"
+import { Viewer } from "cesium"
+
 /**
  * 创建mapvLayer图层
  * @returns {*[]} 所创建的所有的mapvLayer图层
  */
-function createMigrate() {
-  var geojsonOptions = {
+function createMigrate(viewer: Viewer) {
+  const geojsonOptions = {
     gradient: {
       0: 'rgba(55, 50, 250, 0.4)',
       1: 'rgba(55, 50, 250, 1)',
@@ -19,11 +23,11 @@ function createMigrate() {
     draw: 'intensity',
   }
 
-  var geojsonDataSet = mapv.geojson.getDataSet(getData())
+  let geojsonDataSet = mapv.geojson.getDataSet(getData())
 
-  var to = '北京'
+  const to = '北京'
 
-  var qianxi = new mapv.DataSet([
+  const qianxi = new mapv.DataSet([
     {
       from: '河北',
       count: 354551,
@@ -76,18 +80,19 @@ function createMigrate() {
     },
   ])
 
-  var qianxiData = qianxi.get()
+  const qianxiData = qianxi.get()
 
-  var lineData = []
-  var pointData = []
-  var textData = []
-  var timeData = []
+  const lineData = []
+  const pointData = []
+  const textData = []
+  const timeData = []
 
-  var citys = {}
+  const citys: any = {}
 
-  for (var i = 0; i < qianxiData.length; i++) {
-    var fromCenter = mapv.utilCityCenter.getCenterByCityName(qianxiData[i].from)
-    var toCenter = mapv.utilCityCenter.getCenterByCityName(qianxiData[i].to)
+  for (let i = 0; i < qianxiData.length; i++) {
+    const fromCenter = mapv.utilCityCenter.getCenterByCityName(qianxiData[i].from)
+
+    const toCenter = mapv.utilCityCenter.getCenterByCityName(qianxiData[i].to)
     if (!fromCenter || !toCenter) {
       continue
     }
@@ -120,9 +125,9 @@ function createMigrate() {
       text: qianxiData[i].to,
     })
 
-    var curve = mapv.utilCurve.getPoints([fromCenter, toCenter])
+    const curve = mapv.utilCurve.getPoints([fromCenter, toCenter])
 
-    for (var j = 0; j < curve.length; j++) {
+    for (let j = 0; j < curve.length; j++) {
       timeData.push({
         geometry: {
           type: 'Point',
@@ -143,8 +148,8 @@ function createMigrate() {
     })
   }
 
-  var data = geojsonDataSet.get({
-    filter: function (item) {
+  const data = geojsonDataSet.get({
+    filter: (item: any) => {
       if (!citys[item.name]) {
         return false
       }
@@ -154,15 +159,15 @@ function createMigrate() {
   })
   geojsonDataSet = new mapv.DataSet(data)
 
-  var mapvLayer = new CesiumEarth.MapVLayer(
-    CesiumEarth.getMainViewer(),
+  const mapvLayer = new CesiumEarth.MapVLayer(
+    viewer,
     geojsonDataSet,
     geojsonOptions,
   )
 
-  var textDataSet = new mapv.DataSet(textData)
+  const textDataSet = new mapv.DataSet(textData)
 
-  var textOptions = {
+  const textOptions = {
     draw: 'text',
     font: '14px Arial',
     fillStyle: 'white',
@@ -172,15 +177,15 @@ function createMigrate() {
     shadowBlur: 10,
   }
 
-  var textMapvLayer = new CesiumEarth.MapVLayer(
-    CesiumEarth.getMainViewer(),
+  const textMapvLayer = new CesiumEarth.MapVLayer(
+    viewer,
     textDataSet,
     textOptions,
   )
 
-  var lineDataSet = new mapv.DataSet(lineData)
+  const lineDataSet = new mapv.DataSet(lineData)
 
-  var lineOptions = {
+  const lineOptions = {
     strokeStyle: 'rgba(255, 250, 50, 0.8)',
     shadowColor: 'rgba(255, 250, 50, 1)',
     shadowBlur: 20,
@@ -189,9 +194,9 @@ function createMigrate() {
     draw: 'simple',
   }
 
-  var lineLayer = new CesiumEarth.MapVLayer(CesiumEarth.getMainViewer(), lineDataSet, lineOptions)
+  const lineLayer = new CesiumEarth.MapVLayer(viewer, lineDataSet, lineOptions)
 
-  var pointOptions = {
+  const pointOptions = {
     fillStyle: 'rgba(254,175,3,0.7)',
     shadowColor: 'rgba(55, 50, 250, 0.5)',
     shadowBlur: 10,
@@ -200,15 +205,15 @@ function createMigrate() {
     draw: 'simple',
   }
 
-  var pointDataSet = new mapv.DataSet(pointData)
-  var pointLayer = new CesiumEarth.MapVLayer(
-    CesiumEarth.getMainViewer(),
+  const pointDataSet = new mapv.DataSet(pointData)
+  const pointLayer = new CesiumEarth.MapVLayer(
+    viewer,
     pointDataSet,
     pointOptions,
   )
-  var timeDataSet = new mapv.DataSet(timeData)
+  const timeDataSet = new mapv.DataSet(timeData)
 
-  var timeOptions = {
+  const timeOptions = {
     fillStyle: 'rgba(255, 250, 250, 0.5)',
     zIndex: 200,
     size: 2.5,
@@ -224,8 +229,8 @@ function createMigrate() {
     draw: 'simple',
   }
 
-  var timeMapvLayer = new CesiumEarth.MapVLayer(
-    CesiumEarth.getMainViewer(),
+  const timeMapvLayer = new CesiumEarth.MapVLayer(
+    viewer,
     timeDataSet,
     timeOptions,
   )

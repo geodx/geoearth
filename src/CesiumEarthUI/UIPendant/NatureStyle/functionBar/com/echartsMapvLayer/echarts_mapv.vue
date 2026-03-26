@@ -4,7 +4,7 @@
 ****************************************************************************/
 
 <template>
-    <div v-if="false" class="base-map">
+    <div v-if="show" class="base-map">
         <div class="tool-title">
             <div>
                 <img alt="" src="./img/base-map.png">
@@ -43,36 +43,40 @@ import createHeatmap from './lib/MapVLayer/heat_map';
 import createStrongboundary from './lib/MapVLayer/strong_boundary';
 import createBeehive from './lib/MapVLayer/beehive';
 import createSquaregraph from './lib/MapVLayer/square_graph';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore';
 import { Cartesian3 } from 'cesium';
 import { useEarthStore } from '@/stores/EarthStore';
+import type { Viewer } from 'cesium';
 const ceStore = useCesiumEarthStore()
 const earthStore = useEarthStore()
 
 const selItem = ref('')
 const layerList = ref([
-    { name: '迁徙图1', iconSrc: './app/vge/echartsMapvLayerDemo/migrate1.png' },
-    { name: '迁徙图2', iconSrc: './app/vge/echartsMapvLayerDemo/migrate2.png' },
-    { name: '迁徙图3', iconSrc: './app/vge/echartsMapvLayerDemo/migrate3.png' },
-    { name: '流出线', iconSrc: './app/vge/echartsMapvLayerDemo/outflow.png' },
-    { name: '流入线', iconSrc: './app/vge/echartsMapvLayerDemo/inflow.png' },
-    { name: '散点图', iconSrc: './app/vge/echartsMapvLayerDemo/scatter.png' },
-    { name: '迁徙图', iconSrc: './app/vge/echartsMapvLayerDemo/migrate.png' },
-    { name: '大迁徙图', iconSrc: './app/vge/echartsMapvLayerDemo/big_migrate.png' },
-    // {name: '强力图', iconSrc: './app/vge/echartsMapvLayerDemo/heat_map.png'},
-    { name: '强边界图', iconSrc: './app/vge/echartsMapvLayerDemo/strong_boundary.png' },
-    { name: '蜂巢图', iconSrc: './app/vge/echartsMapvLayerDemo/beehive.png' },
-    { name: '方格图', iconSrc: './app/vge/echartsMapvLayerDemo/square_graph.png' }
+    { name: '迁徙图1', iconSrc: './CesiumEarth/echartsMapvLayer/migrate1.png' },
+    { name: '迁徙图2', iconSrc: './CesiumEarth/echartsMapvLayer/migrate2.png' },
+    { name: '迁徙图3', iconSrc: './CesiumEarth/echartsMapvLayer/migrate3.png' },
+    { name: '流出线', iconSrc: './CesiumEarth/echartsMapvLayer/outflow.png' },
+    { name: '流入线', iconSrc: './CesiumEarth/echartsMapvLayer/inflow.png' },
+    { name: '散点图', iconSrc: './CesiumEarth/echartsMapvLayer/scatter.png' },
+    { name: '迁徙图', iconSrc: './CesiumEarth/echartsMapvLayer/migrate.png' },
+    { name: '大迁徙图', iconSrc: './CesiumEarth/echartsMapvLayer/big_migrate.png' },
+    { name: '强力图', iconSrc: './CesiumEarth/echartsMapvLayer/heat_map.png' },
+    { name: '强边界图', iconSrc: './CesiumEarth/echartsMapvLayer/strong_boundary.png' },
+    { name: '蜂巢图', iconSrc: './CesiumEarth/echartsMapvLayer/beehive.png' },
+    { name: '方格图', iconSrc: './CesiumEarth/echartsMapvLayer/square_graph.png' }
 ])
 
 let echarts: any;
 let mapv: any;
-
+let viewer: Viewer;
 const show = computed(() => {
     return ceStore.comStatus('Echarts-MapV');
 })
-
+onMounted(async () => {
+    const earth = await earthStore.getEarth()
+    viewer = earth.viewer3D
+})
 //销毁图层
 function clearLayer() {
     if (echarts) {
@@ -89,11 +93,9 @@ function clearLayer() {
 
 //设置视角
 function setView() {
-    earthStore.getEarth().then(earth => {
-        earth.viewer3D.camera.setView({
-            destination: Cartesian3.fromDegrees(117.16, 32.71, 15000000.0)
-        });
-    })
+    viewer.camera.setView({
+        destination: Cartesian3.fromDegrees(117.16, 32.71, 15000000.0)
+    });
 }
 function close() {
     ceStore.setCesiumEarthComAction('Echarts-MapV', 2)
@@ -103,40 +105,40 @@ function toggleActive(echartsItem: string) {
     setView();
     switch (echartsItem) {
         case '迁徙图1':
-            echarts = createMigrate1();
+            echarts = createMigrate1(viewer);
             break;
         case '迁徙图2':
-            echarts = createMigrate2();
+            echarts = createMigrate2(viewer);
             break;
         case '迁徙图3':
-            echarts = createMigrate3();
+            echarts = createMigrate3(viewer);
             break;
         case '流出线':
-            echarts = createOutflow();
+            echarts = createOutflow(viewer);
             break;
         case '流入线':
-            echarts = createInflow();
+            echarts = createInflow(viewer);
             break;
         case '散点图':
-            echarts = createScatter();
+            echarts = createScatter(viewer);
             break;
         case '迁徙图':
-            mapv = createMigrate();
+            mapv = createMigrate(viewer);
             break;
         case '大迁徙图':
-            mapv = createBigmigrate();
+            mapv = createBigmigrate(viewer);
             break;
         case '强力图':
-            mapv = createHeatmap();
+            mapv = createHeatmap(viewer);
             break;
         case '强边界图':
-            mapv = createStrongboundary();
+            mapv = createStrongboundary(viewer);
             break;
         case '蜂巢图':
-            mapv = createBeehive();
+            mapv = createBeehive(viewer);
             break;
         case '方格图':
-            mapv = createSquaregraph();
+            mapv = createSquaregraph(viewer);
             break;
     }
     selItem.value = echartsItem;
