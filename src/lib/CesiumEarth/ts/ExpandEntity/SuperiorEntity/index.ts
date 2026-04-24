@@ -6,7 +6,7 @@ export { PopupWindow2 } from './ts/PopupWindow2';
 export { HudPanel } from './ts/HudPanel'
 export { HlsVideoWindow } from './ts/HlsVideoWindow'
 
-export { DivPoint } from './ts/DivPoint1';
+export { DivPoint } from './ts/DivPoint';
 export { ErectLabelPoint } from './ts/ErectLabelPoint';
 export { HotSpotBoardPoint } from './ts/HotSpotBoardPoint';
 export { PrimitiveLabelCol } from './ts/PrimitiveLabelCol';
