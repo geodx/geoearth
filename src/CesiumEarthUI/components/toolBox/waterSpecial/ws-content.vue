@@ -68,21 +68,21 @@ watch(() => color.value, (newValue, oldValue) => {
     color_a.value = Number(colorArr[3]);
 })
 function save() {
-    setTimeout(async () => {
-        earth = await earthStore.getEarth()
-        let options = earth.viewer3DWorkSpace.waterManage.options;
+    // setTimeout(async () => {
+    //     earth = await earthStore.getEarth()
+    //     let options = earth.viewer3DWorkSpace.waterManage.options;
 
-        !isNaN(color_r.value) && (options.red = color_r.value);
-        !isNaN(color_g.value) && (options.green = color_g.value);
-        !isNaN(color_b.value) && (options.blue = color_b.value);
-        !isNaN(color_a.value) && (options.alpha = color_a.value);
-        !isNaN(water_freq.value) && (options.frequency = water_freq.value);
-        !isNaN(water_animationspeed.value) && (options.animationSpeed = water_animationspeed.value);
-        !isNaN(water_amplitude.value) && (options.amplitude = water_amplitude.value);
-        !isNaN(height.value) && (options.height = height.value);
+    //     !isNaN(color_r.value) && (options.red = color_r.value);
+    //     !isNaN(color_g.value) && (options.green = color_g.value);
+    //     !isNaN(color_b.value) && (options.blue = color_b.value);
+    //     !isNaN(color_a.value) && (options.alpha = color_a.value);
+    //     !isNaN(water_freq.value) && (options.frequency = water_freq.value);
+    //     !isNaN(water_animationspeed.value) && (options.animationSpeed = water_animationspeed.value);
+    //     !isNaN(water_amplitude.value) && (options.amplitude = water_amplitude.value);
+    //     !isNaN(height.value) && (options.height = height.value);
 
-        earth.viewer3DWorkSpace.waterManage.reLoad();
-    }, 100);
+    //     earth.viewer3DWorkSpace.waterManage.reLoad();
+    // }, 100);
 }
 function close() {
     ceStore.setCesiumEarthComAction('waterSpecial', 2)

@@ -106,7 +106,7 @@ class PlotDataSource implements DataSource {
     static clampToGround = DEFAULT_CLAMP_TO_GROUND;
 
     // ---- DataSource字段 ----
-    public _name?: string;
+    public _name: string;
     public _changed: Event;
     private _error: Event;
     public _loading: Event;
@@ -122,7 +122,7 @@ class PlotDataSource implements DataSource {
 
     public readonly viewer: Viewer;
     constructor(viewer: Viewer, name?: string) {
-        this._name = name;
+        this._name = name || "PlotDataSource";
         this._changed = new Event();
         this._error = new Event();
         this._isLoading = false;

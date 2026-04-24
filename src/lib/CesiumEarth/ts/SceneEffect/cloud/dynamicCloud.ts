@@ -1,6 +1,6 @@
-import { Viewer, Geometry } from "cesium";
+import * as Cesium from "cesium";
 
-export default function dynamicCloud(viewer: Viewer){
+export default function dynamicCloud(viewer: Cesium.Viewer) {
     let rectangle = new Cesium.RectangleGeometry({
         ellipsoid: Cesium.Ellipsoid.WGS84,
         height: 800000.0,
@@ -11,7 +11,7 @@ export default function dynamicCloud(viewer: Viewer){
 
     let reactgeometry = Cesium.RectangleGeometry.createGeometry(rectangle);
     let geometry = new Cesium.GeometryInstance({
-        geometry: reactgeometry as Geometry,
+        geometry: reactgeometry as Cesium.Geometry,
     });
 
     let cloudPrimitive = new Cesium.Primitive({
@@ -23,7 +23,7 @@ export default function dynamicCloud(viewer: Viewer){
                 fabric: {
                     type: 'Image',
                     uniforms: {
-                        image: require("../../assets/img/cloud/cloud.png"),
+                        image: new URL("../../assets/img/cloud/cloud.png", import.meta.url).href,
                         radians: 90
                     }
                 }
@@ -35,7 +35,7 @@ export default function dynamicCloud(viewer: Viewer){
     });
 
     viewer.scene.primitives.add(cloudPrimitive);
-    let interVal = setInterval(function() {
+    let interVal = setInterval(function () {
         let anglex = 0.05;
         // 获取模型当前的变换矩阵
         let m = cloudPrimitive.modelMatrix;

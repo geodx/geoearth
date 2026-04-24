@@ -25,8 +25,9 @@ defineProps(['tool', 'toggleEffect']);
 const dxkzValue = ref(1);
 const dbtmValue = ref(0.8);
 let viewer: Viewer;
-onMounted(() => {
-    viewer = earthStore.viewer
+onMounted(async () => {
+    const earth = await earthStore.getEarth();
+    viewer = earth.viewer3D;
 })
 function valueChange() {
     viewer.scene.verticalExaggeration = dxkzValue.value;

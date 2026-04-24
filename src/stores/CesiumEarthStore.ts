@@ -16,7 +16,7 @@ interface ComAction {
 interface Legend {
   title: string
   img: string
-  list: any[],
+  list: any,
 }
 export const useCesiumEarthStore = defineStore('CesiumEarth', () => {
   // state

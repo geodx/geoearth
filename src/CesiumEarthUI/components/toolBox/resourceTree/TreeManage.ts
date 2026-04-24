@@ -14,7 +14,7 @@ export interface TreeNode {
 export class TreeManage {
     private earth: CesiumEarth.Earth
     private workSpace: any
-    public treeData: TreeNode[] = []
+    public treeData: any[] = []
 
     constructor(earth: CesiumEarth.Earth) {
         this.earth = earth

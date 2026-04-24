@@ -7,9 +7,10 @@ import type Player from "video.js/dist/types/player";
 import { nextTick } from "vue";
 export interface HlsVideoInfo {
     id?: string;
+    title?: string;
     url: string; // HLS m3u8
     position: WorldDegree;
-    name: string
+    name?: string
 }
 
 export class HlsVideoWindow extends DomPointBase {

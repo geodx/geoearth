@@ -5,7 +5,6 @@
 </template>
 
 <script>
-import VGEUtils from '@/VGEUtils/components/VGEUtils.vue';
 
 let handleKeyDown;
 let eyeSeparation = 0;

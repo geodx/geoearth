@@ -1,17 +1,17 @@
-import { Cartesian3, Color, CustomShader, UniformSpecifier } from "cesium";
+import * as Cesium from "cesium";
 
 export type lightOptionsType = {
-    position: Cartesian3;
-    lightColor?: Color;
+    position: Cesium.Cartesian3;
+    lightColor?: Cesium.Color;
     lightRadius?: number;
 };
 
 export default function createOption(lightDataList: lightOptionsType[]) {
-    if(!lightDataList.length) {
+    if (!lightDataList.length) {
         console.log("没有光源数据");
         return;
     }
-    let uniforms: Record<string, UniformSpecifier> = {};
+    let uniforms: Record<string, Cesium.UniformSpecifier> = {};
     let moreLightGlsl = "";
     for (let i = 0; i < lightDataList.length; i++) {
         let lightData = lightDataList[i];
@@ -30,7 +30,7 @@ export default function createOption(lightDataList: lightOptionsType[]) {
             type: Cesium.UniformType.FLOAT,
             value: lightData.lightRadius || 1000,
         };
-        if (i >=1) {
+        if (i >= 1) {
             moreLightGlsl += createLightGlsl(p, c, r);
         }
     }

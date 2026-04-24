@@ -10,7 +10,7 @@
             <div class="centreBox">
                 <span v-show="legends.title" class="title">{{ legends.title }}</span>
             </div>
-            <div v-for="item in legends.list" v-if="!legends.list.flag" :key="item.color" class="bottomBox">
+            <div v-for="item in legends.list" v-if="!legends.list" :key="item.color" class="bottomBox">
                 <div v-if="!item.isLine" class="colorBox" v-bind:style="{ 'background-color': item.color }"></div>
                 <div v-else class="colorBox"
                     v-bind:style="{ 'border-color': item.color, 'border-style': 'solid', 'border-width': '1px' }"></div>
@@ -69,7 +69,7 @@ const colors = ref(colormap({
 const legends = computed(() => {
     return ceStore.legendCurrent
 })
-function addFunc(e) {
+function addFunc(e: any) {
     if (e.properties.legend) {
         ceStore.setLegendCurrent({
             title: '',

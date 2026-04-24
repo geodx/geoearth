@@ -1,4 +1,7 @@
-import { Color, PolygonHierarchy } from "cesium";
+import {
+    PolygonGeometry, EllipsoidSurfaceAppearance, GroundPrimitive,
+    GeometryInstance, Material, Color, PolygonHierarchy
+} from "cesium";
 
 export type waterOptionType = {
     baseWaterColor?: Color,  // 水颜色
@@ -10,21 +13,21 @@ export type waterOptionType = {
     specularIntensity?: number, // 反射强度
 }
 
-export default function waterEffect(hierarchy: PolygonHierarchy, options: waterOptionType = {}){
-    const polygon = new Cesium.PolygonGeometry({
+export default function waterEffect(hierarchy: PolygonHierarchy, options: waterOptionType = {}) {
+    const polygon = new PolygonGeometry({
         polygonHierarchy: hierarchy,
         perPositionHeight: true,
-        vertexFormat: Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
+        vertexFormat: EllipsoidSurfaceAppearance.VERTEX_FORMAT
     });
 
     options = Object.assign(defaultOptions(), options)
 
-    const primitive = new Cesium.GroundPrimitive({
-        geometryInstances: new Cesium.GeometryInstance({
+    const primitive = new GroundPrimitive({
+        geometryInstances: new GeometryInstance({
             geometry: polygon
         }),
-        appearance: new Cesium.EllipsoidSurfaceAppearance({
-            material: new Cesium.Material({
+        appearance: new EllipsoidSurfaceAppearance({
+            material: new Material({
                 fabric: {
                     type: 'Water',
                     uniforms: { ...options, }
@@ -37,10 +40,10 @@ export default function waterEffect(hierarchy: PolygonHierarchy, options: waterO
     return { primitive, options }
 }
 
-export function defaultOptions():waterOptionType {
+export function defaultOptions(): waterOptionType {
     return {
-        baseWaterColor: new Cesium.Color(0.117647, 0.564706, 1, 0.7),
-        normalMap: require("../../assets/img/waterEffect/waterNormals.jpg"),
+        baseWaterColor: new Color(0.117647, 0.564706, 1, 0.7),
+        normalMap: new URL("../../assets/img/waterEffect/waterNormals.jpg", import.meta.url).href,
         frequency: 100,
         animationSpeed: 0.05,
         amplitude: 1,

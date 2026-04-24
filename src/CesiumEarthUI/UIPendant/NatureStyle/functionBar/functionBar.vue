@@ -98,7 +98,7 @@ function changeSelected(val: string) {
             }
             break
         case 'spatialAnalyze': {
-            ceStore.setCesiumEarthComAction('setCesiumEarthComAction', 3)
+            ceStore.setCesiumEarthComAction('spatialAnalyze', 3)
         }
     }
 

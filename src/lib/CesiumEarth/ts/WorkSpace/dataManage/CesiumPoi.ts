@@ -3,6 +3,7 @@ import { CustomDataSource, Entity, Viewer } from 'cesium';
 import { CesiumData } from './impl/CesiumData';
 import type { ResourceItem } from '../../Config';
 import { Cartesian3, NearFarScalar, HeightReference, VerticalOrigin, Color, LabelStyle, HorizontalOrigin, Cartesian2, HeadingPitchRange } from 'cesium';
+import type { ImageryLayerProps } from '../../Config/ResourceItem/ImageryLayerProps';
 
 
 class CesiumPoi extends CesiumData<Entity> {
@@ -16,11 +17,11 @@ class CesiumPoi extends CesiumData<Entity> {
 
     async addData(sourceItem: ResourceItem): Promise<any> {
         let pid = sourceItem.pid;
+        const properties = sourceItem.properties as any
+        let { longitude, latitude } = properties.position;
 
-        let { longitude, latitude } = sourceItem.properties.position;
-
-        let text_string = sourceItem.properties.text_string;
-        let image_path = sourceItem.properties.image_path;
+        let text_string = properties.text_string;
+        let image_path = properties.image_path;
 
         let mark = this.dataSourceToo.entities.add({
             id: pid,

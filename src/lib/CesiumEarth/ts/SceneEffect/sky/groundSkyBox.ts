@@ -6,13 +6,13 @@
  * @FilePath: \cesium-secdev-set\src\secdev\sceneEffect\sky\groundSkyBox.ts
  * @Description: 近景天空盒
  */
-import { SkyBox } from "cesium";
+import * as Cesium from "cesium";
 
-export default class groundSkyBox extends SkyBox{
+export default class groundSkyBox extends Cesium.SkyBox {
     constructor(options: {
         sources?: any;
         show?: boolean;
-    }){
+    }) {
         super(options);
     }
 
@@ -32,7 +32,7 @@ export default class groundSkyBox extends SkyBox{
             }
         `
         //片元着色器，直接从源码复制
-        const SkyBoxFS =`
+        const SkyBoxFS = `
             uniform samplerCube u_cubeMap;
             varying vec3 v_texCoord;
             void main(){

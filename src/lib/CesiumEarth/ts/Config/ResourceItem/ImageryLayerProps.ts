@@ -21,18 +21,18 @@ import type { LayerSchemeEnum } from "../Enum/LayerSchemeEnum";
 
 interface ImageryLayerProps {
   scheme: LayerSchemeEnum
-  baseLayer: boolean
+  baseLayer?: boolean
   minimumLevel?: number,
   maximumLevel?: number
-
-  tileWidth: number
-  tileHeight: number
   url: string
 
   queryParameters?: object
   assetId?: number
   rectangle?: Rectangle
-  layers?: string
+  layers?: string,
+  layer?: string
+  tileWidth?: number,
+  tileHeight?: number
   scale?: number
   position?: {
     longitude: number,

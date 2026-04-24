@@ -4,7 +4,7 @@
  最后修改日期：2022-03-19
  ****************************************************************************/
 
-import { Viewer } from 'cesium';
+import { Cartesian2, Cartographic, Viewer } from 'cesium';
 
 function getCameraRectanglePoint(viewer: Viewer) {
     // 取屏幕的点，左上角为 x：0，y：0，左下角为：x：0，y：viewer.scene.canvas.height
@@ -55,13 +55,13 @@ function getCameraRectanglePoint(viewer: Viewer) {
 
     let points: number[][] = [];
     screenPoint.forEach(p => {
-        let pick = new Cesium.Cartesian2(p.x, p.y);
+        let pick = new Cartesian2(p.x, p.y);
         let ray = viewer.camera.getPickRay(pick);
         if (ray) {
             let cartesian = viewer.scene.globe.pick(ray, viewer.scene);
 
             if (cartesian) {
-                let cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+                let cartographic = Cartographic.fromCartesian(cartesian);
                 let point = [cartographic.longitude / Math.PI * 180, cartographic.latitude / Math.PI * 180];
                 points.push(point);
             }

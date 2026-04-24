@@ -1,3 +1,5 @@
+import { Cartesian3, Cartographic, Ellipsoid } from "cesium";
+import { GISMathUtils } from "../Utils";
 
 /**
  * 画斜矩形的点位计算辅助函数，根据A、B两点和 E（C-D线的中心点）偏移点，计算出 C、D两点
@@ -9,9 +11,9 @@
  * @param cartesian2 D点
  */
 function getInclinedRectangle(start: Cartesian3, end: Cartesian3, offset: Cartesian3, cartesian1: Cartesian3, cartesian2: Cartesian3) {
-    let cartographicStart = Cesium.Cartographic.fromCartesian(start);
-    let cartographicEnd = Cesium.Cartographic.fromCartesian(end);
-    let cartographicOffset = Cesium.Cartographic.fromCartesian(offset);
+    let cartographicStart = Cartographic.fromCartesian(start);
+    let cartographicEnd = Cartographic.fromCartesian(end);
+    let cartographicOffset = Cartographic.fromCartesian(offset);
 
     let cx = (cartographicStart.longitude + cartographicEnd.longitude) / 2.0;
     let cy = (cartographicStart.latitude + cartographicEnd.latitude) / 2.0;
@@ -64,9 +66,9 @@ function getInclinedRectangle(start: Cartesian3, end: Cartesian3, offset: Cartes
     cartographicEnd.longitude = point2Lon;
     cartographicEnd.latitude = point2Lat;
 
-    Cesium.Cartographic.toCartesian(cartographicStart, Cesium.Ellipsoid.WGS84,
+    Cartographic.toCartesian(cartographicStart, Ellipsoid.WGS84,
         cartesian2);
-    Cesium.Cartographic.toCartesian(cartographicEnd, Cesium.Ellipsoid.WGS84,
+    Cartographic.toCartesian(cartographicEnd, Ellipsoid.WGS84,
         cartesian1);
 }
 

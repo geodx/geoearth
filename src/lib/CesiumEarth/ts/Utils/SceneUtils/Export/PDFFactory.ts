@@ -8,7 +8,7 @@ class PDFFactory {
     }
 
     export(fileName = '') {
-        window.html2canvas(this.dom, {
+        (window as any).html2canvas(this.dom, {
             onrendered: function (canvas: HTMLCanvasElement) {
                 let contentWidth = canvas.width;
                 let contentHeight = canvas.height;
@@ -25,7 +25,7 @@ class PDFFactory {
 
                 let pageData = canvas.toDataURL('image/jpeg', 1.0);
 
-                let pdf = new window.jsPDF('', 'pt', 'a4');
+                let pdf = new (window as any).jsPDF('', 'pt', 'a4');
 
                 //有两个高度需要区分，一个是html页面的实际高度，和生成pdf的页面高度(841.89)
                 //当内容未超过pdf一页显示的范围，无需分页

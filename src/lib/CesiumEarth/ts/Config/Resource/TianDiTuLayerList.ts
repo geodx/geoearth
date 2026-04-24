@@ -18,7 +18,7 @@ const TianDiTuLayerList: ResourceItem[] = [
         show: false,
         offlineCache: false,
         properties: {
-            scheme: LayerSchemeEnum['layer-wmts'],
+            scheme: LayerSchemeEnum.layer_wmts,
             layer: 'vec_w',
             url: 'https://bj.webgpu.top:3006/mapServices/tianditu-wmts/vec_w/{TileMatrix}/{TileCol}/{TileRow}.png'
             // url: 'http://t0.tianditu.gov.cn/vec_w/wmts?service=wmts&request=GetTile&version=1.0.0' +
@@ -36,7 +36,7 @@ const TianDiTuLayerList: ResourceItem[] = [
         show: false,
         offlineCache: false,
         properties: {
-            scheme: LayerSchemeEnum['layer-wmts'],
+            scheme: LayerSchemeEnum.layer_wmts,
             layer: 'cva_w',
             url: 'https://bj.webgpu.top:3006/mapServices/tianditu-wmts/cva_w/{TileMatrix}/{TileCol}/{TileRow}.png'
             // url: 'http://t0.tianditu.gov.cn/cva_w/wmts?service=wmts&request=GetTile&version=1.0.0' +
@@ -54,7 +54,7 @@ const TianDiTuLayerList: ResourceItem[] = [
         show: false,
         offlineCache: false,
         properties: {
-            scheme: LayerSchemeEnum['layer-wmts'],
+            scheme: LayerSchemeEnum.layer_wmts,
             layer: 'img_w',
             url: 'https://bj.webgpu.top:3006/mapServices/tianditu-wmts/img_w/{TileMatrix}/{TileCol}/{TileRow}.png'
             // url: 'http://t0.tianditu.gov.cn/img_w/wmts?service=wmts&request=GetTile&version=1.0.0' +
@@ -72,7 +72,7 @@ const TianDiTuLayerList: ResourceItem[] = [
         show: false,
         offlineCache: false,
         properties: {
-            scheme: LayerSchemeEnum['layer-wmts'],
+            scheme: LayerSchemeEnum.layer_wmts,
             layer: 'cia_w',
             url: 'https://bj.webgpu.top:3006/mapServices/tianditu-wmts/cia_w/{TileMatrix}/{TileCol}/{TileRow}.png'
             // url: 'http://t0.tianditu.gov.cn/cia_w/wmts?service=wmts&request=GetTile&version=1.0.0' +
@@ -90,7 +90,7 @@ const TianDiTuLayerList: ResourceItem[] = [
         show: false,
         offlineCache: false,
         properties: {
-            scheme: LayerSchemeEnum['layer-wmts'],
+            scheme: LayerSchemeEnum.layer_wmts,
             layer: 'ter_w',
             url: 'https://bj.webgpu.top:3006/mapServices/tianditu-wmts/ter_w/{TileMatrix}/{TileCol}/{TileRow}.png'
             // url: 'http://t0.tianditu.gov.cn/ter_w/wmts?service=wmts&request=GetTile&version=1.0.0' +
@@ -108,7 +108,7 @@ const TianDiTuLayerList: ResourceItem[] = [
         show: false,
         offlineCache: false,
         properties: {
-            scheme: LayerSchemeEnum['layer-wmts'],
+            scheme: LayerSchemeEnum.layer_wmts,
             layer: 'cta_w',
             url: 'https://bj.webgpu.top:3006/mapServices/tianditu-wmts/cta_w/{TileMatrix}/{TileCol}/{TileRow}.png'
             // url: 'http://t0.tianditu.gov.cn/cta_w/wmts?service=wmts&request=GetTile&version=1.0.0' +
@@ -126,7 +126,7 @@ const TianDiTuLayerList: ResourceItem[] = [
         show: false,
         offlineCache: false,
         properties: {
-            scheme: LayerSchemeEnum['layer-wmts'],
+            scheme: LayerSchemeEnum.layer_wmts,
             layer: 'ibo_w',
             url: 'https://bj.webgpu.top:3006/mapServices/tianditu-wmts/ibo_w/{TileMatrix}/{TileCol}/{TileRow}.png'
             // url: 'https://t0.tianditu.gov.cn/ibo_w/wmts?service=wmts&request=GetTile&version=1.0.0' +

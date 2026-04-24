@@ -1,7 +1,7 @@
-import { Color, PolygonHierarchy } from "cesium";
+import * as Cesium from "cesium";
 
 export default function waterEffect(
-    hierarchy: PolygonHierarchy,
+    hierarchy: Cesium.PolygonHierarchy,
 ) {
     const polygon = new Cesium.PolygonGeometry({
         polygonHierarchy: hierarchy,
