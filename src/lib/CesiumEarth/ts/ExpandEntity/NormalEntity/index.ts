@@ -1,3 +1,3 @@
-export { BouncePoint } from './BouncePoint1';
+export { BouncePoint } from './BouncePoint';
 export { BouncePointDecorator } from './BouncePointDecorator';
 export { buildBillboard } from './buildBillboard';
