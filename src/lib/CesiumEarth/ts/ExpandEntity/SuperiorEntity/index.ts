@@ -8,7 +8,7 @@ export { HlsVideoWindow } from './ts/HlsVideoWindow'
 
 export { DivPoint } from './ts/DivPoint';
 export { ErectLabelPoint } from './ts/ErectLabelPoint';
-export { HotSpotBoardPoint } from './ts/HotSpotBoardPoint1';
+export { HotSpotBoardPoint } from './ts/HotSpotBoardPoint';
 export { PrimitiveLabelCol } from './ts/PrimitiveLabelCol';
 export { Liquidfill } from './ts/Liquidfill';
 export { FloatMarker } from './ts/FloatMarker';
