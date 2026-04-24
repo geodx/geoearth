@@ -7,7 +7,7 @@ export { HudPanel } from './ts/HudPanel'
 export { HlsVideoWindow } from './ts/HlsVideoWindow'
 
 export { DivPoint } from './ts/DivPoint';
-export { ErectLabelPoint } from './ts/ErectLabelPoint1';
+export { ErectLabelPoint } from './ts/ErectLabelPoint';
 export { HotSpotBoardPoint } from './ts/HotSpotBoardPoint';
 export { PrimitiveLabelCol } from './ts/PrimitiveLabelCol';
 export { Liquidfill } from './ts/Liquidfill';
