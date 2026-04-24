@@ -4,7 +4,7 @@ let CesiumEarth_SDK_isLoaded: boolean = false
 if (!CesiumEarth_SDK_isLoaded) {
     CesiumEarth_SDK_isLoaded = true;
 
-    console.log(`%c⭐ 开发工具包：%cCesiumEarth%c${DefaultConfig.Version}%c，基于 Cesium ^${Cesium.VERSION}\n` +
+    console.log(`%c⭐ 开发工具包：%cCesiumEarth%c${DefaultConfig.Version}%c，基于 Cesium ^${(Cesium as any).VERSION}\n` +
         `‍💻 版权所有： ©️geoearth.dev\n` +
         `📀 帮助文档：http://8.146.208.114:8083`,
         'color:green;font-size:14px;font-weight: bold;',

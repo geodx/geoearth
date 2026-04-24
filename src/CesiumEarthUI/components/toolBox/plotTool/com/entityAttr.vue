@@ -144,8 +144,7 @@ function initGeoJsonTree() {
 function flyToEntity() {
     if (TreeNode) {
         let entity = earth.plotTool.dataSourceTool._entityCollection.getById(TreeNode.value.id);
-        console.log(entity);
-        earth.viewer3D.flyTo(entity);
+        if (entity) earth.viewer3D.flyTo(entity);
 
     }
 }

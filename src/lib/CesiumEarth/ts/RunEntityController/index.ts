@@ -2,7 +2,7 @@ import { Entity, PositionProperty, Viewer } from 'cesium';
 
 import * as  Polyline from '../ExpandEntity/Material/Polyline/index';
 import { CustomDataSource, JulianDate, Cartesian3, Transforms, HeadingPitchRoll, Color } from 'cesium';
-
+import * as turf from "@turf/turf";
 
 class RunEntityController {
     private viewer: Viewer;
@@ -48,7 +48,7 @@ class RunEntityController {
         // 设定模拟时间的界限
         const start = JulianDate.fromDate(new Date());
 
-        const length = window.turf.length(this.lineGeoJson, { units: 'meters' });  // 本条路线总长度
+        const length = turf.length(this.lineGeoJson, { units: 'meters' });  // 本条路线总长度
 
         let previousPosition: number[] = [];
 
@@ -56,7 +56,7 @@ class RunEntityController {
         // @ts-ignore
         this.entity.position = new CallbackProperty((time, result) => {
             if (!this.playing && previousPosition.length >= 2) {
-                return Cartesian3.fromDegrees(...previousPosition);
+                // return Cartesian3.fromDegrees(...previousPosition);
             }
 
             const completionTime = length / this.speed;                        // 跑完全程需要，多少秒
@@ -83,7 +83,7 @@ class RunEntityController {
             formStartDistance = formStartDistance < 0 ? 0 : formStartDistance;
 
             // 通过行程距离，计算当前位置
-            const along = window.turf.along(this.lineGeoJson, formStartDistance, { units: 'meters' });
+            const along = turf.along(this.lineGeoJson, formStartDistance, { units: 'meters' });
 
             let lastPosition = [];
 
@@ -105,7 +105,7 @@ class RunEntityController {
                 }
 
 
-                let currentLineLength = window.turf.distance(window.turf.point(lastPosition), window.turf.point(endCoordinates), { units: 'meters' });
+                let currentLineLength = turf.distance(turf.point(lastPosition), turf.point(endCoordinates), { units: 'meters' });
 
                 startPointFromPass = passDistance;
                 endPointFromPass = passDistance + currentLineLength;
@@ -126,16 +126,16 @@ class RunEntityController {
 
 
             if (previousPosition.length > 0 && (LonLat[0] !== previousPosition[0] || LonLat[1] !== previousPosition[1])) {
-                let point1 = window.turf.point([LonLat[0], LonLat[1]]);
-                let point2 = window.turf.point([previousPosition[0], previousPosition[1]]);
-                let bearing = window.turf.bearing(point2, point1);
+                let point1 = turf.point([LonLat[0], LonLat[1]]);
+                let point2 = turf.point([previousPosition[0], previousPosition[1]]);
+                let bearing = turf.bearing(point2, point1);
 
                 if (bearing < 0) {
                     bearing = bearing + 360;
                 }
 
-                let h = Math.toRadians(-90 + bearing);
-                this.entity.orientation = Transforms.headingPitchRollQuaternion(position, new HeadingPitchRoll(h, 0, 0));
+                // let h = Math.toRadians(-90 + bearing);
+                // this.entity.orientation = Transforms.headingPitchRollQuaternion(position, new HeadingPitchRoll(h, 0, 0));
             }
             previousPosition = [LonLat[0], LonLat[1], height];
 

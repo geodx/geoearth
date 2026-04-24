@@ -34,12 +34,11 @@
 
 <script lang="ts" setup>
 import Viewer from '@/CesiumEarthUI/components/viewer/viewer.vue';
-import CesiumEarth from '@/lib/cesium-earth';
 import { Delete, Edit, Refresh, Share } from '@element-plus/icons-vue';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import * as Cesium from 'cesium'
 
-const htmlList = ref([])
+const htmlList = ref<any[]>([])
 const iframeUrl = ref('')
 
 const ver = (Cesium as any).VERSION ?? 'unknown'
@@ -48,29 +47,42 @@ console.log(ver);
 const VERSION = ref(CesiumEarth.ConfigTool.config.Version)
 console.log(ver, VERSION.value);
 
-// const menuList = computed(() => {
-//     const map = new Map<string, HtmlItem[]>()
-//     for (const item of htmlList.value) {
-//         const arr = map.get(item.group)
-//         arr ? arr.push(item) : map.set(item.group, [item])
-//     }
-//     const out: MenuGroup[] = []
-//     map.forEach((list, group) => out.push({ group, list }))
-//     return out
-// })
+onMounted(async () => {
+    await loadHtmlList()
+    // window.Sandbox = Sandbox.value
+
+    // const demoPidParam = Number(router.params.demoPid as string | undefined)
+    // if (Number.isFinite(demoPidParam) && htmlList.value.length) {
+    //     openDemo(demoPidParam)
+    // } else if (menuList.value.length && menuList.value[0].list.length) {
+    //     openDemo(menuList.value[0].list[0].pid)
+    // }
+})
+const menuList: any = computed(() => {
+    const map = new Map<string, any[]>()
+    for (const item of htmlList.value) {
+        const arr = map.get(item.group)
+        arr ? arr.push(item) : map.set(item.group, [item])
+    }
+    const out: any[] = []
+    map.forEach((list, group) => out.push({ group, list }))
+    return out
+})
 async function loadHtmlList() {
     const res = await fetch(`${(window as any).demoServer}/Demo/htmlList.json`)
     htmlList.value = await res.json()
 }
 import router from '@/router';
+import CesiumEarth from '@/lib/CesiumEarth';
+import type { AnyColumn } from 'element-plus/es/components/table-v2/src/common.mjs';
 async function openDemo(pid: number) {
     iframeUrl.value = ''
     await nextTick()
     router.push({ name: 'example', params: { demoPid: pid } })
     iframeUrl.value = `./app/WebEditor/index.html?demo=${pid}`
     // 标签页标题
-    const found = htmlList.value.find(i => i.pid === pid)
-    if (found?.name) document.title = found.name
+    // const found = htmlList.value.find(i => i.pid === pid)
+    // if (found?.name) document.title = found.name
 }
 function handleClick(menuItem: { pid: number; }) {
     openDemo(menuItem.pid);
@@ -82,17 +94,7 @@ function handleClick(menuItem: { pid: number; }) {
 //     iframeUrl.value = url
 // }
 
-onMounted(async () => {
-    await loadHtmlList()
-    window.Sandbox = Sandbox.value
 
-    const demoPidParam = Number(route.params.demoPid as string | undefined)
-    if (Number.isFinite(demoPidParam) && htmlList.value.length) {
-        openDemo(demoPidParam)
-    } else if (menuList.value.length && menuList.value[0].list.length) {
-        openDemo(menuList.value[0].list[0].pid)
-    }
-}) 
 </script>
 
 <style lang="scss" scoped>

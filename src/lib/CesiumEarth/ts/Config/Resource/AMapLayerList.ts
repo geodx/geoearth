@@ -1,7 +1,7 @@
 import { DataTypeEnum } from '../Enum/DataTypeEnum';
 import type { ResourceItem } from '../ResourceItem';
 
-const AMapLayerList: ResourceItem[] = [
+const AMapLayerList: any[] = [
     {
         pid: 'ba4d5925-2278-0f89-444a-6640795adaa0',
         name: '高德影像',

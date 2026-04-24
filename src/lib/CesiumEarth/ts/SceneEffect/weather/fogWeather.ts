@@ -1,16 +1,16 @@
-import { Color, Viewer } from "cesium";
+import { Color, Viewer, PostProcessStage } from "cesium";
 
 export type fogOptionType = {
     visibility: number, // 雾浓度
     fogColor: Color,    // 雾颜色
 }
 
-export default function fogWeather(viewer: Viewer, options: Partial<fogOptionType>={}){
+export default function fogWeather(viewer: Viewer, options: Partial<fogOptionType> = {}) {
     let o = Object.assign({
         visibility: 0.1,
-        fogColor: new Cesium.Color(0.8,0.8,0.8,0.5)
+        fogColor: new Color(0.8, 0.8, 0.8, 0.5)
     }, options)
-    const wfStage = new Cesium.PostProcessStage({
+    const wfStage = new PostProcessStage({
         fragmentShader: fogSource(),
         uniforms: {
             visibility: o.visibility,
@@ -23,7 +23,7 @@ export default function fogWeather(viewer: Viewer, options: Partial<fogOptionTyp
     }
 }
 
-function fogSource(){
+function fogSource() {
     return `
         uniform sampler2D colorTexture;
         uniform sampler2D depthTexture;

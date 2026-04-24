@@ -1,7 +1,7 @@
-import { Viewer } from "cesium";
+import { Viewer, PostProcessStage } from "cesium";
 
-export default function snowWeather(viewer: Viewer){
-    const wfStage = new Cesium.PostProcessStage({
+export default function snowWeather(viewer: Viewer) {
+    const wfStage = new PostProcessStage({
         fragmentShader: snowSource(),
     });
     viewer.scene.postProcessStages.add(wfStage);
@@ -10,7 +10,7 @@ export default function snowWeather(viewer: Viewer){
     }
 }
 
-function snowSource(){
+function snowSource() {
     return `
         uniform sampler2D colorTexture;
         varying vec2 v_textureCoordinates;

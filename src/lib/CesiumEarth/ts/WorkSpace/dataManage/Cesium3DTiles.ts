@@ -16,7 +16,7 @@ class Cesium3DTiles extends CesiumData<Cesium3DTileset> {
   async addData(sourceItem: ResourceItem): Promise<Cesium3DTileset> {
 
     const prop = sourceItem.properties as Cesium3DTileProps;
-    const url = prop.url;
+    const url = prop.url ?? "";
     const queryParameters = prop.queryParameters || {};
 
     // 对地形进行深度测试
@@ -124,9 +124,9 @@ class Cesium3DTiles extends CesiumData<Cesium3DTileset> {
 
     // 设置模型的位置偏移修正
     const offset = prop.offset;
-    const lon = offset.lon;
-    const lat = offset.lat;
-    const height = offset.height;
+    const lon = offset?.lon;
+    const lat = offset?.lat;
+    const height = offset?.height;
     if (offset) {
       offSetTileSetByCartographic(tileSet, lon, lat, height);
     }

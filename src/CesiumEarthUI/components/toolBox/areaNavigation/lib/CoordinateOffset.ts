@@ -1,7 +1,7 @@
 let CoordinateOffset = {
     PI: 3.14159265358979324,
     x_pi: 3.14159265358979324 * 3000.0 / 180.0,
-    delta: function (lat, lon) {
+    delta: function (lat: number, lon: number) {
         // Krasovsky 1940
         //
         // a = 6378245.0, 1/f = 298.3
@@ -20,21 +20,21 @@ let CoordinateOffset = {
         return { 'lat': dLat, 'lon': dLon };
     },
     //WGS-84 to GCJ-02
-    gcj_encrypt: function (wgsLat, wgsLon) {
+    gcj_encrypt: function (wgsLat: number, wgsLon: any) {
         if (this.outOfChina(wgsLat, wgsLon))
             return { 'lat': wgsLat, 'lon': wgsLon };
         let d = this.delta(wgsLat, wgsLon);
         return { 'lat': wgsLat + d.lat, 'lon': wgsLon + d.lon };
     },
     //GCJ-02 to WGS-84
-    gcj_decrypt: function (gcjLat, gcjLon) {
+    gcj_decrypt: function (gcjLat: number, gcjLon: number) {
         if (this.outOfChina(gcjLat, gcjLon))
             return { 'lat': gcjLat, 'lon': gcjLon };
         let d = this.delta(gcjLat, gcjLon);
         return { 'lat': gcjLat - d.lat, 'lon': gcjLon - d.lon };
     },
     //GCJ-02 to WGS-84 exactly
-    gcj_decrypt_exact: function (gcjLat, gcjLon) {
+    gcj_decrypt_exact: function (gcjLat: number, gcjLon: number) {
         let initDelta = 0.01;
         let threshold = 0.000000001;
         let dLat = initDelta, dLon = initDelta;
@@ -64,7 +64,7 @@ let CoordinateOffset = {
         return { 'lat': wgsLat, 'lon': wgsLon };
     },
     //GCJ-02 to BD-09
-    bd_encrypt: function (gcjLat, gcjLon) {
+    bd_encrypt: function (gcjLat: any, gcjLon: any) {
         let x = gcjLon, y = gcjLat;
         let z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * this.x_pi);
         let theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * this.x_pi);
@@ -73,7 +73,7 @@ let CoordinateOffset = {
         return { 'lat': bdLat, 'lon': bdLon };
     },
     //BD-09 to GCJ-02
-    bd_decrypt: function (bdLat, bdLon) {
+    bd_decrypt: function (bdLat: number, bdLon: number) {
         let x = bdLon - 0.0065, y = bdLat - 0.006;
         let z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * this.x_pi);
         let theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * this.x_pi);
@@ -83,7 +83,7 @@ let CoordinateOffset = {
     },
     //WGS-84 to Web mercator
     //mercatorLat -> y mercatorLon -> x
-    mercator_encrypt: function (wgsLat, wgsLon) {
+    mercator_encrypt: function (wgsLat: number, wgsLon: number) {
         let x = wgsLon * 20037508.34 / 180.;
         let y = Math.log(Math.tan((90. + wgsLat) * this.PI / 360.)) / (this.PI / 180.);
         y = y * 20037508.34 / 180.;
@@ -99,7 +99,7 @@ let CoordinateOffset = {
     },
     // Web mercator to WGS-84
     // mercatorLat -> y mercatorLon -> x
-    mercator_decrypt: function (mercatorLat, mercatorLon) {
+    mercator_decrypt: function (mercatorLat: number, mercatorLon: number) {
         let x = mercatorLon / 20037508.34 * 180.;
         let y = mercatorLat / 20037508.34 * 180.;
         y = 180 / this.PI * (2 * Math.atan(Math.exp(y * this.PI / 180.)) - this.PI / 2);
@@ -116,7 +116,7 @@ let CoordinateOffset = {
          //*/
     },
     // two point's distance
-    distance: function (latA, lonA, latB, lonB) {
+    distance: function (latA: number, lonA: number, latB: number, lonB: number) {
         let earthR = 6371000.;
         let x = Math.cos(latA * this.PI / 180.) * Math.cos(latB * this.PI / 180.) * Math.cos((lonA - lonB) * this.PI / 180);
         let y = Math.sin(latA * this.PI / 180.) * Math.sin(latB * this.PI / 180.);
@@ -129,21 +129,21 @@ let CoordinateOffset = {
         let distance = alpha * earthR;
         return distance;
     },
-    outOfChina: function (lat, lon) {
+    outOfChina: function (lat: number, lon: number) {
         if (lon < 72.004 || lon > 137.8347)
             return true;
         if (lat < 0.8293 || lat > 55.8271)
             return true;
         return false;
     },
-    transformLat: function (x, y) {
+    transformLat: function (x: number, y: number) {
         let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
         ret += (20.0 * Math.sin(6.0 * x * this.PI) + 20.0 * Math.sin(2.0 * x * this.PI)) * 2.0 / 3.0;
         ret += (20.0 * Math.sin(y * this.PI) + 40.0 * Math.sin(y / 3.0 * this.PI)) * 2.0 / 3.0;
         ret += (160.0 * Math.sin(y / 12.0 * this.PI) + 320 * Math.sin(y * this.PI / 30.0)) * 2.0 / 3.0;
         return ret;
     },
-    transformLon: function (x, y) {
+    transformLon: function (x: number, y: number) {
         let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
         ret += (20.0 * Math.sin(6.0 * x * this.PI) + 20.0 * Math.sin(2.0 * x * this.PI)) * 2.0 / 3.0;
         ret += (20.0 * Math.sin(x * this.PI) + 40.0 * Math.sin(x / 3.0 * this.PI)) * 2.0 / 3.0;

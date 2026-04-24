@@ -1,16 +1,16 @@
-import { Cartesian3, Color, CustomShader, UniformSpecifier } from "cesium";
+import * as Cesium from "cesium";
 
 export type lightOptionsType = {
-    position: Cartesian3; // 光源位置
-    lightColor?: Color; // 光源颜色
+    position: Cesium.Cartesian3; // 光源位置
+    lightColor?: Cesium.Color; // 光源颜色
     lightRadius?: number; // 光源辐射半径
 };
 
 export default function createOption(lightDataList: lightOptionsType[], options: {
-    baseColor?: Color, // 3dtiles底色，默认为原色
+    baseColor?: Cesium.Color, // 3dtiles底色，默认为原色
     useLight?: boolean, // 是否采用光照及阴影，默认为 true
 } = {}) {
-    if(!lightDataList.length) {
+    if (!lightDataList.length) {
         console.log("没有光源数据");
         return;
     }
@@ -18,7 +18,7 @@ export default function createOption(lightDataList: lightOptionsType[], options:
         baseColor: new Cesium.Color(-1, -1, -1),
         useLight: true,
     }, options)
-    let uniforms: Record<string, UniformSpecifier> = {
+    let uniforms: Record<string, Cesium.UniformSpecifier> = {
         u_baseColor: {
             type: Cesium.UniformType.VEC3,
             value: options.baseColor!,

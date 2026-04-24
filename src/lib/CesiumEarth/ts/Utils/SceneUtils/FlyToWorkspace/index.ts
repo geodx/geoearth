@@ -21,7 +21,7 @@ let FlyToWorkspace = {
         viewer.camera.flyTo({
             destination: this.contents[0],
             duration: 2,
-            complete: function () {
+            complete: () => {
                 viewer.camera.flyTo({
                     destination: this.contents[1],
                     complete: function () {

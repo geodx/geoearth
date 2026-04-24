@@ -753,7 +753,7 @@ class DrawShape {
         outlineColor: Color.BLUE
       }
     });
-    this.drawEntities.drawYPlan = 'drawYPlan';
+    // this.drawEntities.drawYPlan = 'drawYPlan';
 
     handler.setInputAction((movement: { position: Cartesian3 | any; }) => {
       let pickedObject = this.viewer.scene.pick(movement.position);
@@ -762,15 +762,15 @@ class DrawShape {
         defined(pickedObject.id.plane) &&
         pickedObject.id.drawYPlan == 'drawYPlan') {
         selectedPlane = pickedObject.id.plane;
-        selectedPlane.material = Color.RED.withAlpha(0.5);
-        selectedPlane.outlineColor = Color.RED;
+        // selectedPlane.material = Color.RED.withAlpha(0.5);
+        // selectedPlane.outlineColor = Color.RED;
         this.viewer.scene.screenSpaceCameraController.enableInputs = false;
       }
     }, ScreenSpaceEventType.LEFT_DOWN);
 
     handler.setInputAction(() => {
       if (defined(selectedPlane)) {
-        selectedPlane.material = Color.BLUE.withAlpha(0.5);
+        // selectedPlane.material = Color.BLUE.withAlpha(0.5);
         selectedPlane.outlineColor = Color.BLUE;
         selectedPlane = undefined;
       }

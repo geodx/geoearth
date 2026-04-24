@@ -1,5 +1,5 @@
 // 尾迹线流动
-import { Color, Property, Material, defined } from 'cesium';
+import { Color, Event, Material, defined, JulianDate } from 'cesium';
 import { PolylineBaseMaterial } from './PolylineBaseMaterial';
 
 //尾迹线 流动
@@ -8,31 +8,29 @@ class PolylineTrialFlowMaterial extends PolylineBaseMaterial {
     private duration: number;
     private color: Color;
     private _color: undefined;
-    private _colorSubscription: undefined;
-
+    private _definitionChanged: Event
     constructor(options: any) {
         super();
-        this._color = undefined;
-        this._colorSubscription = undefined;
         this.color = options.color;
         this.duration = options.duration;
         this._time = performance.now();
+        this._definitionChanged = new Event()
         this.init();
     }
 
-    get isConstant() {
-        return false;
+    get isConstant(): boolean {
+        return true
     }
 
-    get definitionChanged() {
-        return this._definitionChanged;
+    get definitionChanged(): any {
+        return this._definitionChanged
     }
 
     getType() {
         return 'PolylineTrialFlow';
     };
 
-    getValue(time: number, result: any) {
+    getValue(time: JulianDate, result: any) {
         if (!defined(result)) {
             result = {};
         }
@@ -74,7 +72,7 @@ class PolylineTrialFlowMaterial extends PolylineBaseMaterial {
                 },
                 source: PolylineTrialFlowSource
             },
-            translucent: function () {
+            translucent: () => {
                 return true;
             }
         });

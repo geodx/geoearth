@@ -1,5 +1,4 @@
-import { Cartesian3, Viewer } from 'cesium';
-
+import { HeadingPitchRoll, Transforms, Model, Ellipsoid, Matrix4, Cartesian3, Viewer, Math } from 'cesium';
 interface KeyboardModelOptions {
     modelUrl: string,
     scale: number,
@@ -52,10 +51,10 @@ class KeyboardModel {
         this.enable = false;
         this.options = _options;
         /**旋转角度*/
-        this.radian = Cesium.Math.toRadians(_options.angle || 1);
+        this.radian = Math.toRadians(_options.angle || 1);
         /**速度*/
         this.speed = _options.speed || 1;
-        this.speedVector = new Cesium.Cartesian3();
+        this.speedVector = new Cartesian3();
 
         /**状态标志 即按下了那个按键*/
         this.flag =
@@ -75,8 +74,8 @@ class KeyboardModel {
         canvas.setAttribute('tabindex', '0'); //地图获取焦点后才可操作
         canvas.focus();
         if (this.enable) return;
-        this.hpRoll = new Cesium.HeadingPitchRoll();
-        this.fixedFrameTransforms = Cesium.Transforms.localFrameToFixedFrameGenerator('north', 'west');
+        this.hpRoll = new HeadingPitchRoll();
+        this.fixedFrameTransforms = Transforms.localFrameToFixedFrameGenerator('north', 'west');
 
         this.addModelPrimitive().then(e => {
             this.registerEvens();
@@ -87,10 +86,9 @@ class KeyboardModel {
     /**
      * 添加模型*/
     async addModelPrimitive() {
-        console.log(Cesium);
-        this.moveModel = this.viewer.scene.primitives.add(await Cesium.Model.fromGltfAsync({
+        this.moveModel = this.viewer.scene.primitives.add(await Model.fromGltfAsync({
             url: this.modelUrl,
-            modelMatrix: Cesium.Transforms.headingPitchRollToFixedFrame(this.position, this.hpRoll, Cesium.Ellipsoid.WGS84, this.fixedFrameTransforms),
+            modelMatrix: Transforms.headingPitchRollToFixedFrame(this.position, this.hpRoll, Ellipsoid.WGS84, this.fixedFrameTransforms),
             scale: this.options.scale,
             minimumPixelSize: this.options.minimumPixelSize
         }));
@@ -146,12 +144,12 @@ class KeyboardModel {
         //单独改变方向 不前进后退
         if ((flag.moveLeft) && (!flag.moveDown) && (!flag.moveUp) && (!flag.moveRight)) {
             hpRoll.heading -= radian;
-            Cesium.Transforms.headingPitchRollToFixedFrame(this.position, hpRoll, Cesium.Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
+            Transforms.headingPitchRollToFixedFrame(this.position, hpRoll, Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
         }
         //单独改变方向 不前进后退
         if ((flag.moveRight) && (!flag.moveDown) && (!flag.moveUp) && (!flag.moveLeft)) {
             hpRoll.heading += radian;
-            Cesium.Transforms.headingPitchRollToFixedFrame(this.position, hpRoll, Cesium.Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
+            Transforms.headingPitchRollToFixedFrame(this.position, hpRoll, Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
         }
     }
 
@@ -161,14 +159,14 @@ class KeyboardModel {
     moveModelByKey(isUP: boolean) {
         // 计算速度矩阵
         if (isUP) {
-            this.speedVector = Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.UNIT_X, this.speed, this.speedVector);
+            this.speedVector = Cartesian3.multiplyByScalar(Cartesian3.UNIT_X, this.speed, this.speedVector);
         } else {
-            this.speedVector = Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.UNIT_X, -this.speed, this.speedVector);
+            this.speedVector = Cartesian3.multiplyByScalar(Cartesian3.UNIT_X, -this.speed, this.speedVector);
         }
         // 根据速度计算出下一个位置的坐标
-        let position = Cesium.Matrix4.multiplyByPoint(this.moveModel.modelMatrix, this.speedVector, this.position);
+        let position = Matrix4.multiplyByPoint(this.moveModel.modelMatrix, this.speedVector, this.position);
         // 移动
-        Cesium.Transforms.headingPitchRollToFixedFrame(position, this.hpRoll, Cesium.Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
+        Transforms.headingPitchRollToFixedFrame(position, this.hpRoll, Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
     }
 
     /**

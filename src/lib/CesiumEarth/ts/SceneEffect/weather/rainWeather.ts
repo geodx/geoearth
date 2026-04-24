@@ -1,7 +1,7 @@
-import { Viewer } from "cesium";
+import { Viewer, PostProcessStage } from "cesium";
 
-export default function rainWeather(viewer: Viewer){
-    const wfStage = new Cesium.PostProcessStage({
+export default function rainWeather(viewer: Viewer) {
+    const wfStage = new PostProcessStage({
         fragmentShader: rainSource(),
     });
     viewer.scene.postProcessStages.add(wfStage);
@@ -10,7 +10,7 @@ export default function rainWeather(viewer: Viewer){
     }
 }
 
-function rainSource(){
+function rainSource() {
     return `
         uniform sampler2D colorTexture;
         varying vec2 v_textureCoordinates;

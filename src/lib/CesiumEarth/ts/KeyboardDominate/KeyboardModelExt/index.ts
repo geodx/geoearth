@@ -6,7 +6,10 @@
  最后修改日期：2022-07-14
  ****************************************************************************/
 
-import { Cartesian3, HeadingPitchRange, Viewer } from 'cesium';
+import {
+    HeadingPitchRoll, Transforms, Model, Ellipsoid, Matrix4, Cartographic,
+    Cartesian3, HeadingPitchRange, Viewer, Math as CesiumMath
+} from 'cesium';
 
 interface KeyboardModelExtOptions {
     modelUrl: string,
@@ -64,12 +67,11 @@ class KeyboardModelExt {
         this.keyboardModelExtOptions.speed = keyboardModelExtOptions.speed || 1;
         this.keyboardModelExtOptions.aotuPickHeight = keyboardModelExtOptions.aotuPickHeight || true;
 
-        this.speedVector = new Cesium.Cartesian3();
-
+        this.speedVector = new Cartesian3();
 
         //旋转角度
-        this.radian = Cesium.Math.toRadians(keyboardModelExtOptions.angle || 1);
-        this.hpRange = new Cesium.HeadingPitchRange();
+        this.radian = CesiumMath.toRadians(keyboardModelExtOptions.angle || 1);
+        this.hpRange = new HeadingPitchRange();
         // 速度
         this.role = keyboardModelExtOptions.role || 0; //0 自由视角 1 第一视角
         //状态标志 即按下了那个按键
@@ -89,8 +91,8 @@ class KeyboardModelExt {
         canvas.setAttribute('tabindex', '0'); //地图获取焦点后才可操作
         canvas.focus();
         if (this.enable) return;
-        this.hpRoll = new Cesium.HeadingPitchRoll();
-        this.fixedFrameTransforms = Cesium.Transforms.localFrameToFixedFrameGenerator('north', 'west');
+        this.hpRoll = new HeadingPitchRoll();
+        this.fixedFrameTransforms = Transforms.localFrameToFixedFrameGenerator('north', 'west');
 
 
         this.addModelPrimitive().then(e => {
@@ -102,9 +104,9 @@ class KeyboardModelExt {
     /**
      * 添加模型*/
     async addModelPrimitive() {
-        this.moveModel = this.viewer.scene.primitives.add(await Cesium.Model.fromGltfAsync({
+        this.moveModel = this.viewer.scene.primitives.add(await Model.fromGltfAsync({
             url: this.keyboardModelExtOptions.modelUrl,
-            modelMatrix: Cesium.Transforms.headingPitchRollToFixedFrame(this.position, this.hpRoll, Cesium.Ellipsoid.WGS84, this.fixedFrameTransforms),
+            modelMatrix: Transforms.headingPitchRollToFixedFrame(this.position, this.hpRoll, Ellipsoid.WGS84, this.fixedFrameTransforms),
             scale: this.keyboardModelExtOptions.scale,
             minimumPixelSize: this.keyboardModelExtOptions.minimumPixelSize
         }));
@@ -160,17 +162,17 @@ class KeyboardModelExt {
         //单独改变方向 不前进后退
         if ((flag.moveLeft) && (!flag.moveDown) && (!flag.moveUp) && (!flag.moveRight)) {
             hpRoll.heading -= radian;
-            Cesium.Transforms.headingPitchRollToFixedFrame(this.position, hpRoll, Cesium.Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
+            Transforms.headingPitchRollToFixedFrame(this.position, hpRoll, Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
         }
         //单独改变方向 不前进后退
         if ((flag.moveRight) && (!flag.moveDown) && (!flag.moveUp) && (!flag.moveLeft)) {
             hpRoll.heading += radian;
-            Cesium.Transforms.headingPitchRollToFixedFrame(this.position, hpRoll, Cesium.Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
+            Transforms.headingPitchRollToFixedFrame(this.position, hpRoll, Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
         }
 
         //所有键盘抬起 是否锁定
         if ((!flag.moveLeft) && (!flag.moveDown) && (!flag.moveUp) && (!flag.moveRight)) {
-            this.viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+            this.viewer.camera.lookAtTransform(Matrix4.IDENTITY);
         } else {
             this.lookAt();
         }
@@ -179,10 +181,10 @@ class KeyboardModelExt {
     lookAt() {
         if (!this.role) return;
         let r = 2.0 * Math.max(this.moveModel.boundingSphere.radius, this.viewer.camera.frustum.near);
-        let centerGAI = new Cesium.Cartesian3();
-        Cesium.Matrix4.multiplyByPoint(this.moveModel.modelMatrix, centerGAI, this.position);
+        let centerGAI = new Cartesian3();
+        Matrix4.multiplyByPoint(this.moveModel.modelMatrix, centerGAI, this.position);
         this.hpRange.heading = this.hpRoll.heading;
-        this.hpRange.pitch = this.hpRoll.pitch - Cesium.Math.toRadians(30);
+        this.hpRange.pitch = this.hpRoll.pitch - CesiumMath.toRadians(30);
         this.hpRange.range = r * 5.0;
         this.viewer.camera.lookAt(this.position, this.hpRange);
     }
@@ -193,28 +195,28 @@ class KeyboardModelExt {
     moveModelByKey(isUP: boolean) {
         // 计算速度矩阵
         if (isUP) {
-            this.speedVector = Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.UNIT_X, this.keyboardModelExtOptions.speed, this.speedVector);
+            this.speedVector = Cartesian3.multiplyByScalar(Cartesian3.UNIT_X, this.keyboardModelExtOptions.speed, this.speedVector);
         } else {
-            this.speedVector = Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.UNIT_X, -this.keyboardModelExtOptions.speed, this.speedVector);
+            this.speedVector = Cartesian3.multiplyByScalar(Cartesian3.UNIT_X, -this.keyboardModelExtOptions.speed, this.speedVector);
         }
         // 根据速度计算出下一个位置的坐标
-        let position = Cesium.Matrix4.multiplyByPoint(this.moveModel.modelMatrix, this.speedVector, this.position);
+        let position = Matrix4.multiplyByPoint(this.moveModel.modelMatrix, this.speedVector, this.position);
         if (this.keyboardModelExtOptions.aotuPickHeight) {
             position = this.getPositionByHeight(position);
         }
         // 移动
-        Cesium.Transforms.headingPitchRollToFixedFrame(position, this.hpRoll, Cesium.Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
+        Transforms.headingPitchRollToFixedFrame(position, this.hpRoll, Ellipsoid.WGS84, this.fixedFrameTransforms, this.moveModel.modelMatrix);
     }
 
     /**高度转换
      * @param position*/
     getPositionByHeight(position: Cartesian3) {
-        let cartographic = Cesium.Cartographic.fromCartesian(position);
-        let height = this.viewer.scene.sampleHeight(cartographic, [this.moveModel]);
+        let cartographic = Cartographic.fromCartesian(position);
+        let height = this.viewer.scene.sampleHeight(cartographic, [this.moveModel]) ?? 0;
         cartographic.height = height;
-        return Cesium.Cartographic.toCartesian(
+        return Cartographic.toCartesian(
             cartographic,
-            Cesium.Ellipsoid.WGS84
+            Ellipsoid.WGS84
         );
     }
 
