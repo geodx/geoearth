@@ -6,12 +6,12 @@ const UIConfig = {
   themeColor: 'green',
   titleHeader: {
     left: [
-      { id: 'Introduce', name: '平台介绍', type: 'url', defaultOptions: false, url: 'http://8.146.208.114:8083/' },
-      { id: 'UserBook', name: '用户手册', type: 'url', defaultOptions: false, url: 'http://8.146.208.114:8083/zh/简介/' },
-      { id: 'APIBook', name: 'API文档', type: 'url', defaultOptions: false, url: 'http://8.146.208.114:3000/CesiumEarth-SDK-API/index.html' }
+      { id: 'Introduce', name: '平台介绍', type: 'url', defaultOptions: false, url: 'http://geoearth.dev:8083/' },
+      { id: 'UserBook', name: '用户手册', type: 'url', defaultOptions: false, url: 'http://geoearth.dev:8083/zh/简介/' },
+      { id: 'APIBook', name: 'API文档', type: 'url', defaultOptions: false, url: 'http://geoearth.dev:3000/CesiumEarth-SDK-API/index.html' }
     ],
     right: [
-      { id: 'codeBase', name: '开源代码', type: 'url', defaultOptions: false, url: 'https://github.com/WangShan010/Metaearth-3DVis-Vue3' },
+      { id: 'codeBase', name: '开源代码', type: 'url', defaultOptions: false, url: 'https://github.com/lost2FA/Geoearth-3DVis-Vue3' },
       { id: 'CodeView', name: '代码示例', type: 'url', defaultOptions: false, url: './#/example' },
       { id: 'productsView', name: '案例展示', type: 'menu', defaultOptions: false }
     ]

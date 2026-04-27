@@ -10,9 +10,9 @@ import { OSMLayersList } from "./Resource/OSMLayerList";
 import { MapBoxLayerList } from "./Resource/MapBoxLayerList";
 import { BingMapLayerList } from "./Resource/BingMapLayerList";
 import { TerrainList } from "./Resource/TerrainList";
-// import { ScopeType } from "../EventManage/impl/ScopeType";
-// import { EventManage } from "../EventManage/manage";
-// import * as listenType from '../EventManage/impl/ListenType';
+import { ScopeType } from "../EventManage/impl/ScopeType";
+import { EventManage } from "../EventManage/manage";
+import * as listenType from '../EventManage/impl/ListenType';
 const config: ConfigImpl = DefaultConfig;
 /**
  * 名称：SDK 配置参数 的操作工具
@@ -22,6 +22,7 @@ const ConfigTool = {
    * 获取配置参数
    */
   get config() {
+    this.applyAppMeta()
     return config;
   },
   applyAppMeta() {
@@ -196,7 +197,7 @@ const ConfigTool = {
       // }
 
       // 配置文件内的资源项发生变动，触发事件
-      // EventManage.sourceEvent.raiseEvent(listenType.DataEventType.addData, ScopeType.Viewer3D, resourceItem);
+      EventManage.sourceEvent.raiseEvent(listenType.DataEventType.addData, ScopeType.Viewer3D, resourceItem);
     }
     return resourceItem;
   },
