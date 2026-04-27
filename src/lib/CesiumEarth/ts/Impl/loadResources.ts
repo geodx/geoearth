@@ -6,7 +6,7 @@ if (!CesiumEarth_SDK_isLoaded) {
 
     console.log(`%c⭐ 开发工具包：%cCesiumEarth%c${DefaultConfig.Version}%c，基于 Cesium ^${(Cesium as any).VERSION}\n` +
         `‍💻 版权所有： ©️geoearth.dev\n` +
-        `📀 帮助文档：http://8.146.208.114:8083`,
+        `📀 帮助文档：http:/geoearth.dev:8083`,
         'color:green;font-size:14px;font-weight: bold;',
         'padding: 0 5px; border-radius: 3px 0 0 3px; color: #fff; background: #e52; font-weight: bold;',
         'padding: 0 5px; border-radius: 0 3px 3px 0; color: #de3; background: #1c1c1c; font-weight: bold;',
