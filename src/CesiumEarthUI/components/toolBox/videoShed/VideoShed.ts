@@ -1,9 +1,9 @@
-import CesiumEarth from "@/lib/CesiumEarth";
+import { VideoPlugin } from "@/lib/CesiumEarth/ts/cesium.earth";
 import { Cartesian3, Viewer } from "cesium";
 
 export default class VideoShed {
     viewer: Viewer;
-    videoShed?: CesiumEarth.VideoPlugin.VideoShed;
+    videoShed?: VideoPlugin.VideoShed;
     constructor(viewer: Viewer) {
         this.viewer = viewer;
     }
@@ -15,7 +15,7 @@ export default class VideoShed {
         const videoEl = document.getElementById('testVideo') as HTMLVideoElement //播放成功的video标签
         // videoEl.src = "http://playertest.longtailvideo.com/adaptive/bipbop/gear4/prog_index.m3u8"
         videoEl.src = "/CesiumEarth/lukou.mp4";
-        this.videoShed = new CesiumEarth.VideoPlugin.VideoShed(this.viewer, videoEl, {
+        this.videoShed = new VideoPlugin.VideoShed(this.viewer, videoEl, {
             cameraPosition: Cartesian3.fromDegrees(121.53806, 29.87179, 48.5), //摄像机位置
             //旋转参数
             rotation: {

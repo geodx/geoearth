@@ -3,7 +3,7 @@ import 'echarts-liquidfill'
 import { Viewer } from "cesium";
 import type { EChartsType } from "echarts";
 import DomPointBase from "./base/DomPointBase";
-import type { WorldDegree } from "../../../cesium.earth";
+import type { WorldDegree } from "../../../Impl/Declare";
 
 export class Liquidfill extends DomPointBase {
     #contextNumber: number;

@@ -1,18 +1,14 @@
-import * as Cesium from "cesium";
+
 import {
-    Viewer,
-    Event,
-    Quaternion,
-    Primitive,
-    Camera,
-    PerspectiveFrustum,
-    PostProcessStage,
-    Cartesian3,
+    Viewer, Cartesian3, Quaternion, Camera, Primitive, PostProcessStage,
+    HeadingPitchRoll, PixelFormat, PixelDatatype, Matrix3, PerspectiveFrustum,
+    GeometryInstance, FrustumOutlineGeometry, ColorGeometryInstanceAttribute,
+    Color, PerInstanceColorAppearance, Cartesian2, Cartesian4, Event, Math
 } from "cesium";
-// @ts-ignore
 import videoShed3dShader from "../glsl/index.js";
-import { calculateHPRPosition } from "./tool.js";
-import type { videoShedOptions, cameraOrientationVector } from "../Type/type.js";
+import type { videoShedOptions, cameraOrientationVector } from "../Type/type";
+import { calculateHPRPosition } from "./tool";
+
 
 export class VideoShed {
     #viewer: Viewer;
@@ -55,14 +51,14 @@ export class VideoShed {
             options
         );
         // shadowMap Cartesian3 坐标
-        this.#position = new Cesium.Cartesian3();
+        this.#position = new Cartesian3();
         // 视锥方向参数
-        this.#orientation = new Cesium.Quaternion();
+        this.#orientation = new Quaternion();
         // 相机方向向量
         this.#cameraOrientationVector = {
-            upVector: new Cesium.Cartesian3(),
-            directionVector: new Cesium.Cartesian3(),
-            rightVector: new Cesium.Cartesian3(),
+            upVector: new Cartesian3(),
+            directionVector: new Cartesian3(),
+            rightVector: new Cartesian3(),
         };
         // clock 监听事件,随video源修改纹理
         this.#activeVideoListener = undefined;
@@ -70,7 +66,7 @@ export class VideoShed {
         this.#videoTexture = undefined;
         this.#viewShadowMap = undefined;
         this.#cameraFrustum = undefined;
-        this.#shadowMapCamera = new Cesium.Camera(viewer.scene);
+        this.#shadowMapCamera = new Camera(viewer.scene);
         this.#postProcess = undefined;
         this.#curDepth = viewer.scene.globe.depthTestAgainstTerrain;
         this.#isStart = false;
@@ -138,7 +134,7 @@ export class VideoShed {
         this.#activeVideoListener = undefined;
         this.#viewShadowMap = undefined;
         this.#videoTexture = undefined;
-        this.#shadowMapCamera = new Cesium.Camera(this.#viewer.scene);
+        this.#shadowMapCamera = new Camera(this.#viewer.scene);
         this.#viewer.scene.globe.depthTestAgainstTerrain = this.#curDepth;
         this.#viewer.scene.primitives.remove(this);
         this.#isStart = false;
@@ -151,7 +147,7 @@ export class VideoShed {
      * 【不要调用】实现Primitive接口,供Cesium内部在每一帧中调用。
      * 因为此类本质为自定义primitive,故要实现 update 接口,Cesium
      * 每一帧都会调用一次
-     * @param { Cesium.FrameState } frameState
+     * @param { FrameState } frameState
      */
     update(frameState: any) {
         this.#viewShadowMap && frameState.shadowMaps.push(this.#viewShadowMap);
@@ -173,7 +169,7 @@ export class VideoShed {
         let cameraOrientationVector: cameraOrientationVector;
         ({ worldMapPoint, ...cameraOrientationVector } = calculateHPRPosition(
             this.#options.cameraPosition,
-            Cesium.HeadingPitchRoll.fromDegrees(
+            HeadingPitchRoll.fromDegrees(
                 rotation!.heading,
                 rotation!.pitch,
                 rotation!.roll
@@ -199,14 +195,14 @@ export class VideoShed {
             this.#activeVideoListener = () => {
                 this.#videoTexture && this.#videoTexture.destroy();
                 // @ts-ignore
-                this.#videoTexture = new Cesium.Texture({
+                this.#videoTexture = new Texture({
                     // @ts-ignore
                     context: this.#viewer.scene.context,
                     source: video,
                     width: 1,
                     height: 1,
-                    pixelFormat: Cesium.PixelFormat.RGBA,
-                    pixelDatatype: Cesium.PixelDatatype.UNSIGNED_BYTE,
+                    pixelFormat: PixelFormat.RGBA,
+                    pixelDatatype: PixelDatatype.UNSIGNED_BYTE,
                 });
             };
             this.#viewer.clock.onTick.addEventListener(
@@ -219,31 +215,31 @@ export class VideoShed {
      * 计算视锥方向
      */
     #getOrientation() {
-        let camera = new Cesium.Camera(this.#viewer.scene);
+        let camera = new Camera(this.#viewer.scene);
         camera.position = this.#options.cameraPosition;
         camera.direction = this.#cameraOrientationVector.directionVector;
         camera.up = this.#cameraOrientationVector.upVector;
         camera.right = this.#cameraOrientationVector.rightVector;
 
-        let direction = Cesium.Cartesian3.negate(
+        let direction = Cartesian3.negate(
             camera.directionWC,
-            new Cesium.Cartesian3()
+            new Cartesian3()
         );
 
-        let up = Cesium.Cartesian3.negate(camera.upWC, new Cesium.Cartesian3());
+        let up = Cartesian3.negate(camera.upWC, new Cartesian3());
 
-        let right = Cesium.Cartesian3.negate(
+        let right = Cartesian3.negate(
             camera.rightWC,
-            new Cesium.Cartesian3()
+            new Cartesian3()
         );
 
-        let matrix3 = new Cesium.Matrix3();
-        Cesium.Matrix3.setColumn(matrix3, 0, right, matrix3);
-        Cesium.Matrix3.setColumn(matrix3, 1, up, matrix3);
-        Cesium.Matrix3.setColumn(matrix3, 2, direction, matrix3);
-        let orientation = Cesium.Quaternion.fromRotationMatrix(
+        let matrix3 = new Matrix3();
+        Matrix3.setColumn(matrix3, 0, right, matrix3);
+        Matrix3.setColumn(matrix3, 1, up, matrix3);
+        Matrix3.setColumn(matrix3, 2, direction, matrix3);
+        let orientation = Quaternion.fromRotationMatrix(
             matrix3,
-            new Cesium.Quaternion()
+            new Quaternion()
         );
         this.#orientation = orientation;
     }
@@ -254,27 +250,27 @@ export class VideoShed {
      * 然后把不同类型的Texture传给他就可以了
      */
     #createShadowMap() {
-        this.#shadowMapCamera = new Cesium.Camera(this.#viewer.scene);
+        this.#shadowMapCamera = new Camera(this.#viewer.scene);
         this.#shadowMapCamera.position = this.#options.cameraPosition;
-        this.#shadowMapCamera.right = Cesium.Cartesian3.negate(
+        this.#shadowMapCamera.right = Cartesian3.negate(
             this.#cameraOrientationVector.rightVector,
-            new Cesium.Cartesian3()
+            new Cartesian3()
         );
-        this.#shadowMapCamera.direction = Cesium.Cartesian3.negate(
+        this.#shadowMapCamera.direction = Cartesian3.negate(
             this.#cameraOrientationVector.directionVector,
-            new Cesium.Cartesian3()
+            new Cartesian3()
         );
 
         this.#shadowMapCamera.up = this.#cameraOrientationVector.upVector;
 
-        this.#shadowMapCamera.frustum = new Cesium.PerspectiveFrustum({
-            fov: Cesium.Math.toRadians(this.#options.fov!),
+        this.#shadowMapCamera.frustum = new PerspectiveFrustum({
+            fov: Math.toRadians(this.#options.fov!),
             aspectRatio: this.#options.aspectRatio,
             near: this.#options.near,
             far: this.#options.far,
         });
         // @ts-ignore
-        this.#viewShadowMap = new Cesium.ShadowMap({
+        this.#viewShadowMap = new ShadowMap({
             lightCamera: this.#shadowMapCamera,
             enable: false,
             darkness: 1,
@@ -291,9 +287,9 @@ export class VideoShed {
      * 创建视锥
      */
     #addCameraFrustum() {
-        this.#cameraFrustum = new Cesium.Primitive({
-            geometryInstances: new Cesium.GeometryInstance({
-                geometry: new Cesium.FrustumOutlineGeometry({
+        this.#cameraFrustum = new Primitive({
+            geometryInstances: new GeometryInstance({
+                geometry: new FrustumOutlineGeometry({
                     origin: this.#options.cameraPosition,
                     orientation: this.#orientation,
                     frustum: this.#shadowMapCamera
@@ -302,12 +298,12 @@ export class VideoShed {
                     _drawNearPlane: true,
                 }),
                 attributes: {
-                    color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-                        Cesium.Color.YELLOW.withAlpha(0.5)
+                    color: ColorGeometryInstanceAttribute.fromColor(
+                        Color.YELLOW.withAlpha(0.5)
                     ),
                 },
             }),
-            appearance: new Cesium.PerInstanceColorAppearance({
+            appearance: new PerInstanceColorAppearance({
                 translucent: false,
                 flat: true,
             }),
@@ -324,7 +320,7 @@ export class VideoShed {
         let bias = this.#viewShadowMap._isPointLight
             ? this.#viewShadowMap._pointBias
             : this.#viewShadowMap._primitiveBias;
-        this.#postProcess = new Cesium.PostProcessStage({
+        this.#postProcess = new PostProcessStage({
             fragmentShader: videoShed3dShader,
             uniforms: {
                 mixNum: () => {
@@ -343,10 +339,10 @@ export class VideoShed {
                     return this.#viewShadowMap._lightPositionEC;
                 },
                 shadowMap_texelSizeDepthBiasAndNormalShadingSmooth: () => {
-                    let cartesian2 = new Cesium.Cartesian2();
+                    let cartesian2 = new Cartesian2();
                     cartesian2.x = 1 / this.#viewShadowMap._textureSize.x;
                     cartesian2.y = 1 / this.#viewShadowMap._textureSize.y;
-                    return Cesium.Cartesian4.fromElements(
+                    return Cartesian4.fromElements(
                         cartesian2.x,
                         cartesian2.y,
                         bias.depthBias,
@@ -356,7 +352,7 @@ export class VideoShed {
                 // @ts-ignore
                 shadowMap_normalOffsetScaleDistanceMaxDistanceAndDarkness:
                     () => {
-                        return Cesium.Cartesian4.fromElements(
+                        return Cartesian4.fromElements(
                             bias.normalOffsetScale,
                             this.#viewShadowMap._distance,
                             this.#viewShadowMap.maximumDistance,

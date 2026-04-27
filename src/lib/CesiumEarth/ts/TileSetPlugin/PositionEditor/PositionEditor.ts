@@ -1,5 +1,4 @@
 
-import CesiumEarth from "@/lib/CesiumEarth";
 import { Cesium3DTileFeature, JulianDate, ScreenSpaceEventType, Matrix3, Matrix4, Transforms } from "cesium";
 import { ColorMaterialProperty } from "cesium";
 import { ScreenSpaceEventHandler } from "cesium";

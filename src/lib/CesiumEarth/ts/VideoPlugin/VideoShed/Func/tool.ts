@@ -77,27 +77,27 @@ export function drawCoordinateAxis(
     let h = height || 100;
     let o = matrix4
         ? coordinateTransform(
-              matrix4,
-              new Cesium.Cartesian3(center.x || 0, center.y || 0, center.z || 0)
-          )
+            matrix4,
+            new Cesium.Cartesian3(center.x || 0, center.y || 0, center.z || 0)
+        )
         : center;
     let x = matrix4
         ? coordinateTransform(
-              matrix4,
-              new Cesium.Cartesian3(center.x + h, center.y, center.z)
-          )
+            matrix4,
+            new Cesium.Cartesian3(center.x + h, center.y, center.z)
+        )
         : new Cesium.Cartesian3(center.x + h, center.y, center.z);
     let y = matrix4
         ? coordinateTransform(
-              matrix4,
-              new Cesium.Cartesian3(center.x, center.y + h, center.z)
-          )
+            matrix4,
+            new Cesium.Cartesian3(center.x, center.y + h, center.z)
+        )
         : new Cesium.Cartesian3(center.x, center.y + h, center.z);
     let z = matrix4
         ? coordinateTransform(
-              matrix4,
-              new Cesium.Cartesian3(center.x, center.y, center.z + h)
-          )
+            matrix4,
+            new Cesium.Cartesian3(center.x, center.y, center.z + h)
+        )
         : new Cesium.Cartesian3(center.x, center.y, center.z + h);
     viewer.entities.add({
         polyline: {

@@ -15,7 +15,7 @@ import { addMigrateLines, removeMigrateLines } from './lib/PolyLineMigrate';
 import { addSuperLines, removeSuperLines } from './lib/PolyLineSuper';
 import { addVolumeTrialLines, removeVolumeTrial } from './lib/PolyLineVolumeTrial';
 import { addEarthTopo, removeEarthTope } from './lib/EarthTopo';
-import CesiumEarth from '@/lib/CesiumEarth/index';
+import CesiumEarth from '@/lib/CesiumEarth';
 import { useEarthStore } from '@/stores/EarthStore';
 import { onMounted, onUnmounted } from 'vue';
 const earthStore = useEarthStore()

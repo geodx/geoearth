@@ -6,11 +6,12 @@ import {
 } from 'cesium';
 
 import type { Feature } from 'geojson';
-import { getMostDetailedHeight, type WorldDegree } from '../../cesium.earth';
 import { CartographicTool } from '../../Utils';
 import { PolylineLightingMaterial } from '../Material/Polyline';
 import * as turf from "@turf/turf";
 import { CallbackPositionProperty } from 'cesium';
+import { getMostDetailedHeight } from '../../Utils/SceneUtils/getMostDetailedHeight';
+import type { WorldDegree } from '../../Impl/Declare';
 
 /**
  * 名称：Entity 快捷创建库

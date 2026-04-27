@@ -7,8 +7,9 @@ import {
     ConstantPositionProperty, BillboardGraphics, VerticalOrigin, ModelGraphics,
     PolylineGraphics, ArcType, PolygonGraphics, PolygonHierarchy, Viewer
 } from "cesium";
-import CesiumEarth from "../..";
 import type { MaterialProperty } from "cesium";
+import { Material, SuperiorEntity } from "../ExpandEntity";
+import { FireParticle, FountainParticle, SmokeParticle } from "../SceneEffect";
 export interface PlotLoadOptions {
     credit?: string | Credit;
     sourceUri?: string;
@@ -367,16 +368,16 @@ function addPointEntity(ds: PlotDataSource, feature: any, coords: number[], opts
     const pe = props;
     const worldDegrees = { longitude: coords[0]!, latitude: coords[1]!, height: coords[2]! };
     const position = Cartesian3.fromDegrees(worldDegrees.longitude, worldDegrees.latitude, worldDegrees.height)
-    if (pe.code === "winInfo-SimpleLabel") new CesiumEarth.SuperiorEntity.SampleLablePoint(ds.viewer, worldDegrees, pe.内容);
-    if (pe.code === "winInfo-Bubble-1") new CesiumEarth.SuperiorEntity.PopupWindow1(ds.viewer, worldDegrees, pe.paramList?.[0]?.value, pe.paramList?.[1]?.value);
-    if (pe.code === "GradientLabelPointDecorator") new CesiumEarth.SuperiorEntity.GradientLabelPoint(ds.viewer, worldDegrees, document.createElement("div"));
-    if (pe.code === "winInfo-Bubble-2") new CesiumEarth.SuperiorEntity.PopupWindow2(ds.viewer, worldDegrees, pe.paramList?.[0]?.value, pe.paramList?.[1]?.value);
-    if (pe.code === "winInfo-device") new CesiumEarth.SuperiorEntity.HudPanel(ds.viewer, worldDegrees, pe.paramList?.[0]?.value, pe.paramList?.[1]?.value, pe.颜色);
-    if (pe.code === "winInfo-HLS") new CesiumEarth.SuperiorEntity.HlsVideoWindow(ds.viewer, { title: pe.paramList?.[0]?.value, url: pe.paramList?.[1]?.value, position: worldDegrees });
+    if (pe.code === "winInfo-SimpleLabel") new SuperiorEntity.SampleLablePoint(ds.viewer, worldDegrees, pe.内容);
+    if (pe.code === "winInfo-Bubble-1") new SuperiorEntity.PopupWindow1(ds.viewer, worldDegrees, pe.paramList?.[0]?.value, pe.paramList?.[1]?.value);
+    if (pe.code === "GradientLabelPointDecorator") new SuperiorEntity.GradientLabelPoint(ds.viewer, worldDegrees, document.createElement("div"));
+    if (pe.code === "winInfo-Bubble-2") new SuperiorEntity.PopupWindow2(ds.viewer, worldDegrees, pe.paramList?.[0]?.value, pe.paramList?.[1]?.value);
+    if (pe.code === "winInfo-device") new SuperiorEntity.HudPanel(ds.viewer, worldDegrees, pe.paramList?.[0]?.value, pe.paramList?.[1]?.value, pe.颜色);
+    if (pe.code === "winInfo-HLS") new SuperiorEntity.HlsVideoWindow(ds.viewer, { title: pe.paramList?.[0]?.value, url: pe.paramList?.[1]?.value, position: worldDegrees });
 
-    if (pe.code === "particleSystem-fire") new CesiumEarth.FireParticle(ds.viewer, position);
-    if (pe.code === "particleSystem-fountain") new CesiumEarth.FountainParticle(ds.viewer, position);
-    if (pe.code === "particleSystem-smoke") new CesiumEarth.SmokeParticle(ds.viewer, position);
+    if (pe.code === "particleSystem-fire") new FireParticle(ds.viewer, position);
+    if (pe.code === "particleSystem-fountain") new FountainParticle(ds.viewer, position);
+    if (pe.code === "particleSystem-smoke") new SmokeParticle(ds.viewer, position);
 }
 // function sC(type: string, d = []) {
 //     let y = {},
@@ -408,25 +409,25 @@ function addPolylineEntity(ds: PlotDataSource, feature: any, coords: number[][],
     //  自定义材质
     switch (materialType) {
         case "PolylineArrowMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineArrowMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
+            material = new Material.Polyline.PolylineArrowMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
             break;
         case "PolylineEnergyTransMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineEnergyTransMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
+            material = new Material.Polyline.PolylineEnergyTransMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
             break;
         case "PolylineLightingMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineLightingMaterial(Color.AQUA);
+            material = new Material.Polyline.PolylineLightingMaterial(Color.AQUA);
             break;
         case "PolylineLinkPulseMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineLinkPulseMaterial({ color: Color.AQUA, duration: 5000 });
+            material = new Material.Polyline.PolylineLinkPulseMaterial({ color: Color.AQUA, duration: 5000 });
             break;
         case "PolylineSpriteMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineSpriteMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
+            material = new Material.Polyline.PolylineSpriteMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
             break;
         case "PolylineSuperMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineSuperMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
+            material = new Material.Polyline.PolylineSuperMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
             break;
         case "PolylineTrailMaterial":
-            material = new CesiumEarth.Material.Polyline.PolylineTrailMaterial({ speed: 5 * Math.random(), color: Color.CYAN, percent: 0.5, gradient: 0.01 });
+            material = new Material.Polyline.PolylineTrailMaterial({ speed: 5 * Math.random(), color: Color.CYAN, percent: 0.5, gradient: 0.01 });
             break;
         default: {
             const w = props["stroke-width"];

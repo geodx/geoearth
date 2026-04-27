@@ -37,16 +37,16 @@
 
 
 
-import { Viewer, CustomDataSource } from "cesium";
+import { Viewer } from "cesium";
 import * as turf from "@turf/turf";
 import type { FeatureCollection } from "geojson";
-import { BOMTool, DrawShape, PlotDataSource, SafeTool } from "../cesium.earth";
-import CesiumEarth from "../..";
 import { kml } from "@tmcw/togeojson";
 import { toKML } from "@placemarkio/tokml";
 import { CoordinateType } from "../DrawShape/CoordinateType";
-import type { Cartesian3 } from "cesium";
-import { ScreenSpaceEventHandler } from "cesium";
+import { PlotDataSource } from "./PlotDataSource";
+import { DrawShape } from "../DrawShape";
+import { EventManage, ScopeType, ScreenSpaceEventType } from "../EventManage";
+import { BOMTool, SafeTool } from "../Utils/Common";
 function readFile({ errFunc, endFunc }: { errFunc: Function, endFunc: Function }) {
   document.getElementById("_ef")?.remove();
   const inputObj = document.createElement("input");
@@ -149,13 +149,13 @@ class PlotTool {
     this.initEvent();
   }
   private initEvent() {
-    CesiumEarth.EventManage.screenEvent.addEventListener(
-      CesiumEarth.ScreenSpaceEventType.MOUSE_MOVE,
-      CesiumEarth.ScopeType.Viewer3D,
+    EventManage.screenEvent.addEventListener(
+      ScreenSpaceEventType.MOUSE_MOVE,
+      ScopeType.Viewer3D,
       this.mouseMoveEvent);
-    CesiumEarth.EventManage.screenEvent.addEventListener(
-      CesiumEarth.ScreenSpaceEventType.LEFT_CLICK,
-      CesiumEarth.ScopeType.Viewer3D,
+    EventManage.screenEvent.addEventListener(
+      ScreenSpaceEventType.LEFT_CLICK,
+      ScopeType.Viewer3D,
       this.leftClickEvent);
   }
   private mouseMoveEvent = (e: any) => { }
@@ -318,8 +318,8 @@ class PlotTool {
   destroy() {
     this.dataSourceTool.entities.removeAll();
     this.viewer.dataSources.remove(this.dataSourceTool);
-    CesiumEarth.EventManage.screenEvent.removeEventListener(this.mouseMoveEvent);
-    CesiumEarth.EventManage.screenEvent.removeEventListener(this.leftClickEvent);
+    EventManage.screenEvent.removeEventListener(this.mouseMoveEvent);
+    EventManage.screenEvent.removeEventListener(this.leftClickEvent);
     document.body.style.cursor = "default";
   }
 

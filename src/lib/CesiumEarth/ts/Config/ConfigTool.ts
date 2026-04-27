@@ -1,5 +1,3 @@
-import { BingMapLayerList, MapBoxLayerList, OSMLayersList, TerrainList } from "../cesium.earth";
-import { EventManage, ScopeType } from "../EventManage";
 import type { ConfigImpl } from "./ConfigImpl";
 import { DefaultConfig } from "./DefaultConfig";
 import { DataTypeEnum } from "./Enum/DataTypeEnum";
@@ -8,8 +6,13 @@ import { TianDiTuLayerList } from "./Resource/TianDiTuLayerList";
 import type { ResourceItem } from "./ResourceItem";
 import type { ImageryLayerProps } from "./ResourceItem/ImageryLayerProps";
 import { ResourceItemTool } from "./ResourceItemTool";
-import * as listenType from '../EventManage/impl/ListenType';
-
+import { OSMLayersList } from "./Resource/OSMLayerList";
+import { MapBoxLayerList } from "./Resource/MapBoxLayerList";
+import { BingMapLayerList } from "./Resource/BingMapLayerList";
+import { TerrainList } from "./Resource/TerrainList";
+// import { ScopeType } from "../EventManage/impl/ScopeType";
+// import { EventManage } from "../EventManage/manage";
+// import * as listenType from '../EventManage/impl/ListenType';
 const config: ConfigImpl = DefaultConfig;
 /**
  * 名称：SDK 配置参数 的操作工具
@@ -19,21 +22,23 @@ const ConfigTool = {
    * 获取配置参数
    */
   get config() {
-    // 设置页面标题
+    return config;
+  },
+  applyAppMeta() {
     window.document.title = config.appTitle;
-    // 设置页面 Tabs 图标
+
     const links = [...document.getElementsByTagName('link')];
     const iconLink = links.find((item) => {
       return item.rel === 'shortcut icon' && item.type === 'image/x-icon';
     });
+
     if (!iconLink) {
       const link: HTMLLinkElement = document.createElement('link');
       link.href = config.appIcon;
       link.type = 'image/x-icon';
       link.rel = 'shortcut icon';
-      document.getElementsByTagName('head')[0]?.appendChild(link)
+      document.getElementsByTagName('head')[0]?.appendChild(link);
     }
-    return config;
   },
   loadConfig(newConfig: ConfigImpl | any) {
     if (newConfig) {
@@ -191,7 +196,7 @@ const ConfigTool = {
       // }
 
       // 配置文件内的资源项发生变动，触发事件
-      EventManage.sourceEvent.raiseEvent(listenType.DataEventType.addData, ScopeType.Viewer3D, resourceItem);
+      // EventManage.sourceEvent.raiseEvent(listenType.DataEventType.addData, ScopeType.Viewer3D, resourceItem);
     }
     return resourceItem;
   },
@@ -202,7 +207,7 @@ const ConfigTool = {
     });
   },
   getAllSources() {
-    let s = this.config;
+    let s = config;
     return [
       ...s.layerList,
       ...s.terrainList,
