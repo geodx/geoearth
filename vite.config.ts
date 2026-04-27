@@ -37,12 +37,12 @@ export default defineConfig({
       verbose: false, //false（默认）则不输出日志
       deleteOriginFile: false, //指定压缩完文件后删除源文件 默认false
     }),
-    visualizer({
-      filename: 'dist/stats.html',
-      open: true,
-      gzipSize: true,
-      brotliSize: true,
-    })
+    // visualizer({
+    //   filename: 'dist/stats.html',
+    //   open: true,
+    //   gzipSize: true,
+    //   brotliSize: true,
+    // })
   ],
   // base: '/',
   define: {

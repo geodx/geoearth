@@ -7,7 +7,6 @@
 
 <script lang="ts" setup>
 import { onMounted, onUnmounted } from 'vue';
-import json from './busstop2016.json';
 import CesiumEarth from '@/lib/CesiumEarth/index';
 import { Cartesian3 } from 'cesium';
 
@@ -21,7 +20,9 @@ let heatMapObj: HeatMapJS | undefined;
 let earth: CesiumEarth.Earth
 let values: HeatmapPoint[] = [];
 onMounted(async () => {
-    json.features.forEach(f => {
+    const response = await fetch(new URL('/CesiumEarth/heatMap/busstop2016.json', import.meta.url))
+    const json = await response.json()
+    json.features.forEach((f: any) => {
         values.push({
             x: f.geometry.coordinates[0]!,
             y: f.geometry.coordinates[1]!,
