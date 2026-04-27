@@ -1,6 +1,7 @@
 import { Viewer } from "cesium";
 import DomPointBase from "./base/DomPointBase";
-import { AsyncTool, SafeTool, type WorldDegree } from "../../../cesium.earth";
+import type { WorldDegree } from "../../../Impl/Declare";
+import { SafeTool } from "../../../Utils/Common/Source/SafeTool";
 export class PopupWindow1 extends DomPointBase {
     #contextDom: HTMLElement;
     #boardVisible: boolean;

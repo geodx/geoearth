@@ -1,6 +1,6 @@
 import { Viewer } from "cesium";
 import DomPointBase from "./base/DomPointBase";
-import type { WorldDegree } from "../../../cesium.earth";
+import type { WorldDegree } from "../../../Impl/Declare";
 
 export class ErectLabelPoint extends DomPointBase {
     #contextLabel: string;

@@ -1,12 +1,11 @@
-import CesiumEarth from "@/lib/CesiumEarth";
 import type { Appearance } from "cesium";
-import { MaterialAppearance, Material } from "cesium";
 import {
     Viewer, Color, Cartesian3, Entity, Primitive, PolygonGeometry,
     PolygonHierarchy, VertexFormat, GeometryInstance, PerInstanceColorAppearance,
     PolylineDashMaterialProperty, DistanceDisplayCondition, NearFarScalar,
     VerticalOrigin, LabelStyle, Cartesian2
 } from "cesium";
+import { SuperiorEntity } from "../..";
 export class AreaLabel {
     private viewer: Viewer;
 
@@ -82,7 +81,7 @@ export class AreaLabel {
         const primitive = this.viewer.scene.primitives.add(
             new Primitive({
                 geometryInstances: geometryInstance,
-                appearance: new CesiumEarth.SuperiorEntity.PrimitiveGradientAppearance(color) as Appearance,
+                appearance: new SuperiorEntity.PrimitiveGradientAppearance(color) as Appearance,
                 // asynchronous: false,
                 asynchronous: !import.meta.env.DEV,
             }),

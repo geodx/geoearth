@@ -45,16 +45,20 @@
 import { useEarthStore } from '@/stores/EarthStore'
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue'
 import { useCesiumEarthStore } from '@/stores/CesiumEarthStore'
-import CesiumEarth from '@/lib/CesiumEarth'
-import { ConfigTool, type ResourceItem } from '@/lib/CesiumEarth/ts/Config'
+import { ConfigTool } from '@/lib/CesiumEarth/ts/Config/ConfigTool'
+import type { ResourceItem } from '@/lib/CesiumEarth/ts/Config/ResourceItem'
+
 import type { ElTree } from 'element-plus'
 import { EventManage, ListenType, ScopeType } from '@/lib/CesiumEarth/ts/EventManage'
+import type { WorkSpace } from '@/lib/CesiumEarth/ts/WorkSpace'
+import type { Earth } from '@/lib/CesiumEarth/ts/Earth'
+import { DataTypeEnum } from '@/lib/CesiumEarth/ts/Config/Enum/DataTypeEnum'
 const earthStore = useEarthStore()
 const ceStore = useCesiumEarthStore()
 
 const isReloadTree = ref(false)
 let reloadTimer: number
-let earth: CesiumEarth.Earth
+let earth: Earth
 
 const treeRef = ref<InstanceType<typeof ElTree>>()
 type TreeNode = {
@@ -71,7 +75,7 @@ const treeProps = {
 	label: 'label',
 	children: 'children',
 }
-let workSpace: CesiumEarth.WorkSpace;
+let workSpace: WorkSpace;
 const folderCloseIcon = new URL('./img/tree/folder-close.png', import.meta.url).href
 const folderOpenIcon = new URL('./img/tree/folder-open.png', import.meta.url).href
 const show = computed(() => {
@@ -152,7 +156,7 @@ function collectCheckedKeys(nodes: TreeNode[]): string[] {
 
 function buildTreeData(): TreeNode[] {
 	// 获取配置文件中全部的资源
-	let sourceLists: ResourceItem[] = CesiumEarth.ConfigTool.getAllSources()
+	let sourceLists: ResourceItem[] = ConfigTool.getAllSources()
 	// 过滤掉不需要在树图上显示的资源项
 	sourceLists = sourceLists.filter((item: any) => item.showInTree);
 	const catalogMap = new Map<string, TreeNode[]>()
@@ -191,17 +195,17 @@ function buildTreeData(): TreeNode[] {
 }
 function getTreeIcon(dataType: string) {
 	switch (dataType) {
-		case CesiumEarth.DataTypeEnum.layer:
+		case DataTypeEnum.layer:
 			return new URL('./img/tree/图层.png', import.meta.url).href
-		case CesiumEarth.DataTypeEnum.terrain:
+		case DataTypeEnum.terrain:
 			return new URL('./img/tree/地形.png', import.meta.url).href
-		case CesiumEarth.DataTypeEnum.Cesium3DTile:
+		case DataTypeEnum.Cesium3DTile:
 			return new URL('./img/tree/倾斜摄影.png', import.meta.url).href
-		case CesiumEarth.DataTypeEnum.gltf:
+		case DataTypeEnum.gltf:
 			return new URL('./img/tree/模型.png', import.meta.url).href
-		case CesiumEarth.DataTypeEnum.poi:
+		case DataTypeEnum.poi:
 			return new URL('./img/tree/点.png', import.meta.url).href
-		case CesiumEarth.DataTypeEnum.geoJson:
+		case DataTypeEnum.geoJson:
 			return new URL('./img/tree/geoJson.png', import.meta.url).href
 		default:
 			return ''
@@ -239,8 +243,8 @@ function onLabelClick(data: TreeNode) {
 function toggleReload() {
 	isReloadTree.value = !isReloadTree.value
 	if (!isReloadTree.value) {
-		CesiumEarth.ConfigTool.config.cesium3DTileSetList =
-			(CesiumEarth.ConfigTool.config.cesium3DTileSetList || []).filter((item) => {
+		ConfigTool.config.cesium3DTileSetList =
+			(ConfigTool.config.cesium3DTileSetList || []).filter((item) => {
 				return item.properties?.type !== 'realtime'
 			})
 
@@ -257,7 +261,7 @@ async function reloadTree() {
 		res.json(),
 	)
 
-	const configTileSetList = CesiumEarth.ConfigTool.config.cesium3DTileSetList || []
+	const configTileSetList = ConfigTool.config.cesium3DTileSetList || []
 
 	const newItems = realTimeData.filter(
 		(realTimeItem: ResourceItem) =>
@@ -285,14 +289,14 @@ async function reloadTree() {
 			},
 		} as ResourceItem
 
-		CesiumEarth.ConfigTool.addResourceItem(tileSet3D)
+		ConfigTool.addResourceItem(tileSet3D)
 	}
 
 	for (let j = 0; j < removedItems.length; j++) {
 		const removedItem = removedItems[j]
 
-		CesiumEarth.ConfigTool.config.cesium3DTileSetList =
-			CesiumEarth.ConfigTool.config.cesium3DTileSetList.filter(
+		ConfigTool.config.cesium3DTileSetList =
+			ConfigTool.config.cesium3DTileSetList.filter(
 				(item) => item.pid !== removedItem.pid,
 			)
 

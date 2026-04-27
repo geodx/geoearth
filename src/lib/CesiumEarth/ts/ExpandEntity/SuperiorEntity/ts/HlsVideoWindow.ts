@@ -1,10 +1,10 @@
 // HlsVideoWindow.ts
 import * as Cesium from "cesium";
 import DomPointBase from "./base/DomPointBase";
-import { type WorldDegree } from "../../../cesium.earth";
 import videojs from "video.js";
 import type Player from "video.js/dist/types/player";
 import { nextTick } from "vue";
+import type { WorldDegree } from "../../../Impl/Declare";
 export interface HlsVideoInfo {
     id?: string;
     title?: string;

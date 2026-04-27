@@ -5,8 +5,8 @@
  ****************************************************************************/
 
 import { ScreenSpaceEventHandler, Viewer, Math, EllipsoidTerrainProvider, ScreenSpaceEventType, Cartesian2 } from 'cesium';
-import { getTerrainMostDetailedHeight } from '../../cesium.earth';
 import { getCameraHeight, getCameraInfo } from '../../Utils';
+import { getTerrainMostDetailedHeight } from '../../Utils/SceneUtils/getTerrainMostDetailedHeight';
 
 
 function initMonitorCoordinates(viewer: Viewer, moveFun: Function) {

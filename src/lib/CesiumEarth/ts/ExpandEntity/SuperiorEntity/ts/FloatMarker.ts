@@ -1,9 +1,10 @@
 import { Viewer, Entity, DistanceDisplayCondition } from "cesium";
-import { getTerrainMostDetailedHeight, type WorldDegree } from "../../../cesium.earth";
 import {
     Cartesian3, BillboardGraphics, PolylineGraphics, PolylineDashMaterialProperty, Color,
     CallbackPositionProperty
 } from "cesium";
+import type { WorldDegree } from "../../../Impl/Declare";
+import { getTerrainMostDetailedHeight } from "../../../Utils/SceneUtils/getTerrainMostDetailedHeight";
 
 
 type styleType = {

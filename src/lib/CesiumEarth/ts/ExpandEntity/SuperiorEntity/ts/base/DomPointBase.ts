@@ -1,6 +1,6 @@
 import { Cartesian2, Cartesian3, Viewer, Entity, PointGraphics, Color, SceneTransforms, Ellipsoid } from "cesium";
 import { getTerrainMostDetailedHeight, isOnBack } from "../../../../Utils/SceneUtils";
-import type { WorldDegree } from "../../../../cesium.earth";
+import type { WorldDegree } from "@/lib/CesiumEarth/ts/Impl/Declare";
 
 type domRenderType = {
     directionX?: "left" | "center" | "right";

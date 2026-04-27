@@ -4,9 +4,12 @@ import {
     CzmlDataSource, JulianDate, HeadingPitchRange
 } from "cesium";
 import { ElMessage } from "element-plus";
-import { } from "cesium";
-import { Cartesian3Tool, DrawShape, EntityFactory, getMostDetailedHeight, type WorldDegree } from "../../cesium.earth";
 import { CoordinateType } from "../../DrawShape/CoordinateType";
+import { DrawShape } from "../../DrawShape";
+import { getMostDetailedHeight } from "../SceneUtils/getMostDetailedHeight";
+import type { WorldDegree } from "../../Impl/Declare";
+import { Cartesian3Tool } from "../CoordinateTool/Cartesian3Tool";
+import { EntityFactory } from "../../ExpandEntity/EntityFactory";
 
 export enum RoamingEnum {
     PEOPLE_ROAM = 1,

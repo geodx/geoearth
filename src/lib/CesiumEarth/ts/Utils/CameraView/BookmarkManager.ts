@@ -1,5 +1,5 @@
 import { Viewer, Cartesian3, HeadingPitchRoll } from "cesium";
-import { BOMTool, SafeTool, Utils } from "../../cesium.earth";
+import { BOMTool, SafeTool, Utils } from "../Common";
 
 
 export type CameraViewType = {

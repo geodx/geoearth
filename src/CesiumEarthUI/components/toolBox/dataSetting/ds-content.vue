@@ -94,7 +94,7 @@ import { useCesiumEarthStore } from '@/stores/CesiumEarthStore'
 import CesiumEarth from '@/lib/CesiumEarth'
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import type { ResourceItem } from '@/lib/CesiumEarth/ts/Config'
+import type { ResourceItem } from '@/lib/CesiumEarth/ts/Config/ResourceItem'
 const earthStore = useEarthStore()
 const ceStore = useCesiumEarthStore()
 

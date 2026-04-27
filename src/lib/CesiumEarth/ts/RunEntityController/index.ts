@@ -1,8 +1,6 @@
-import { Entity, PositionProperty, Viewer } from 'cesium';
-
-import * as  Polyline from '../ExpandEntity/Material/Polyline/index';
-import { CustomDataSource, JulianDate, Cartesian3, Transforms, HeadingPitchRoll, Color } from 'cesium';
+import { Entity, PositionProperty, Viewer, CustomDataSource, JulianDate, Cartesian3, Color } from 'cesium';
 import * as turf from "@turf/turf";
+import { PolylineLinkPulseMaterial } from '../ExpandEntity/Material/Polyline/lib/PolylineLinkPulseMaterial';
 
 class RunEntityController {
     private viewer: Viewer;
@@ -155,7 +153,7 @@ class RunEntityController {
             polyline: {
                 positions: Cartesian3.fromDegreesArray(this.lineGeoJson.geometry.coordinates.map((item: number[]) => [item[0], item[1]]).flat()),
                 width: 12,
-                material: new Polyline.PolylineLinkPulseMaterial({
+                material: new PolylineLinkPulseMaterial({
                     color: Color.AQUA,
                     duration: 5000
                 }),
