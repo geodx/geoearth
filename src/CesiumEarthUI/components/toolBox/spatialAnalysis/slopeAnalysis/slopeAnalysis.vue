@@ -1,5 +1,5 @@
 <template>
-    <SlContent v-if="true"></SlContent>
+    <SlContent v-if="show"></SlContent>
 </template>
 <script lang="ts" setup>
 import { computed } from 'vue';
