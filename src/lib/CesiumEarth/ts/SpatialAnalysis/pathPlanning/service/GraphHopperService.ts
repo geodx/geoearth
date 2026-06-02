@@ -1,7 +1,7 @@
 import { Entity, Cartesian3, Color, PolylineDashMaterialProperty } from "cesium";
-import type { WorldDegree } from "../../Impl/Declare";
-import { CoordinateOffsetTool } from "../../Utils/CoordinateTool/CoordinateOffsetTool";
-import { Material } from "../../ExpandEntity";
+import { CoordinateOffsetTool } from "../../../Utils";
+import type { WorldDegree } from "../../../Impl/Declare";
+import { Material } from "../../../ExpandEntity";
 function gcjEncrypt(pos: WorldDegree): WorldDegree {
     const encrypt = CoordinateOffsetTool.gcj_encrypt(pos.latitude, pos.longitude);
     return { longitude: encrypt.lon, latitude: encrypt.lat };

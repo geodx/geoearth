@@ -18,6 +18,10 @@
     <dataSetting></dataSetting>
     <linkView></linkView>
     <!-- <waterSpecial></waterSpecial> -->
+    <spatialAnalysis></spatialAnalysis>
+    <surfaceExcavateAnalysis></surfaceExcavateAnalysis>
+    <heightLimitAnalysis></heightLimitAnalysis>
+    <slopeAnalysis></slopeAnalysis>
     <particleSystem></particleSystem>
     <firePlot></firePlot>
     <fountainPlot></fountainPlot>
@@ -48,6 +52,10 @@ import pluginManagement from './pluginManagement/pluginManagement.vue'
 import dataSetting from './dataSetting/dataSetting.vue'
 import linkView from './linkView/linkView.vue'
 import waterSpecial from './waterSpecial/waterSpecial.vue'
+import spatialAnalysis from './spatialAnalysis/spatialAnalysis.vue'
+import surfaceExcavateAnalysis from './spatialAnalysis/surfaceExcavateAnalysis/surfaceExcavateAnalysis.vue'
+import heightLimitAnalysis from './spatialAnalysis/heightLimitAnalysis/heightLimitAnalysis.vue'
+import slopeAnalysis from './spatialAnalysis/slopeAnalysis/slopeAnalysis.vue'
 import particleSystem from './particleSystem/particleSystem.vue'
 import firePlot from './particleSystem/firePlot/firePlot.vue'
 import fountainPlot from './particleSystem/fountainPlot/fountainPlot.vue'

@@ -32,6 +32,7 @@ const UIConfig = {
     // 工具箱内模块 
     { name: '图上量算', type: 'ToolBoxItem', open: false, comName: 'measureTool', config: { inToolBox: true, iconClass: 'earth-shuipingliangsuan' }, role: 'all' },
     { name: '剖面分析', type: 'ToolBoxItem', open: false, comName: 'geologicalSection', config: { inToolBox: true, iconClass: 'earth-shuipingliangsuan' }, role: 'all' },
+    { name: '空间分析', type: 'ToolBoxItem', open: false, comName: 'spatialAnalysis', config: { inToolBox: true, iconClass: 'earth-fenxi' }, role: 'all' },
     { name: '坐标定位', type: 'ToolBoxItem', open: false, comName: 'coordinates', config: { inToolBox: true, iconClass: 'earth-dingwei' }, role: 'all' },
     { name: '地区导航', type: 'ToolBoxItem', open: false, comName: 'areaNavigation', config: { inToolBox: true, iconClass: 'earth-daohang1' }, role: 'all' },
     { name: '视角书签', type: 'ToolBoxItem', open: false, comName: 'visualMarker', config: { inToolBox: true, iconClass: 'earth-biaoqian' }, role: 'all' },
@@ -56,7 +57,10 @@ const UIConfig = {
     { name: '火焰粒子', type: 'Pendant', open: false, comName: 'firePlot', role: 'all' },
     { name: '喷泉粒子', type: 'Pendant', open: false, comName: 'fountainPlot', role: 'all' },
     { name: '烟雾粒子', type: 'Pendant', open: false, comName: 'smokePlot', role: 'all' },
-    { name: '图例', type: 'Pendant', open: false, comName: 'legend' }
+    { name: '图例', type: 'Pendant', open: false, comName: 'legend' },
+    { name: '地形开挖', type: 'Pendant', open: false, comName: 'surfaceExcavateAnalysis', role: 'all' },
+    { name: '坡度分析', type: 'Pendant', open: false, comName: 'slopeAnalysis', role: 'all' },
+
   ]
 };
 
