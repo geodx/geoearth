@@ -10,40 +10,35 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import viteCompression from 'vite-plugin-compression'
 
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { cloudflare } from "@cloudflare/vite-plugin";
 const cesiumSource = "node_modules/cesium/Build/Cesium";
 const cesiumBaseUrl = "cesium";
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    vue(),
-    AutoImport({
-      resolvers: [ElementPlusResolver()],
-    }),
-    Components({
-      resolvers: [ElementPlusResolver()],
-    }),
-    viteStaticCopy({
-      targets: [
-        { src: `${cesiumSource}/ThirdParty`, dest: cesiumBaseUrl },
-        { src: `${cesiumSource}/Workers`, dest: cesiumBaseUrl },
-        { src: `${cesiumSource}/Assets`, dest: cesiumBaseUrl },
-        { src: `${cesiumSource}/Widgets`, dest: cesiumBaseUrl },
-      ],
-    }),
-    //gzip静态资源压缩
-    viteCompression({
-      threshold: 10240, // >10kb 压缩
-      algorithm: "gzip", // 压缩算法
-      verbose: false, //false（默认）则不输出日志
-      deleteOriginFile: false, //指定压缩完文件后删除源文件 默认false
-    }),
-    // visualizer({
-    //   filename: 'dist/stats.html',
-    //   open: true,
-    //   gzipSize: true,
-    //   brotliSize: true,
-    // })
-  ],
+  plugins: [vue(), AutoImport({
+    resolvers: [ElementPlusResolver()],
+  }), Components({
+    resolvers: [ElementPlusResolver()],
+  }), viteStaticCopy({
+    targets: [
+      { src: `${cesiumSource}/ThirdParty`, dest: cesiumBaseUrl },
+      { src: `${cesiumSource}/Workers`, dest: cesiumBaseUrl },
+      { src: `${cesiumSource}/Assets`, dest: cesiumBaseUrl },
+      { src: `${cesiumSource}/Widgets`, dest: cesiumBaseUrl },
+    ],
+  }), //gzip静态资源压缩
+  // visualizer({
+  //   filename: 'dist/stats.html',
+  //   open: true,
+  //   gzipSize: true,
+  //   brotliSize: true,
+  // })
+  viteCompression({
+    threshold: 10240, // >10kb 压缩
+    algorithm: "gzip", // 压缩算法
+    verbose: false, //false（默认）则不输出日志
+    deleteOriginFile: false, //指定压缩完文件后删除源文件 默认false
+  }), cloudflare()],
   // base: '/',
   define: {
     CESIUM_BASE_URL: JSON.stringify(cesiumBaseUrl),
