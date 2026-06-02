@@ -6,12 +6,13 @@ import {
 } from 'cesium';
 
 import type { Feature } from 'geojson';
-import { CartographicTool } from '../../Utils';
+import { CartographicTool, SafeTool } from '../../Utils';
 import { PolylineLightingMaterial } from '../Material/Polyline';
 import * as turf from "@turf/turf";
 import { CallbackPositionProperty } from 'cesium';
 import { getMostDetailedHeight } from '../../Utils/SceneUtils/getMostDetailedHeight';
 import type { WorldDegree } from '../../Impl/Declare';
+import type { Property } from 'cesium';
 
 /**
  * 名称：Entity 快捷创建库
@@ -333,6 +334,34 @@ const EntityFactory = {
         };
 
         return new Entity(options);
+    },
+    createHeightPloygon(
+        hierarchy: PolygonHierarchy | Property,
+        height: number | CallbackProperty,
+        options: Entity.ConstructorOptions = {}
+    ) {
+        const properties = {
+            id: "polygon-" + SafeTool.uuid(),
+            polygon: {
+                hierarchy: hierarchy,
+                material: new ColorMaterialProperty(
+                    Color.LIGHTSKYBLUE.withAlpha(0.5)
+                ),
+                arcType: ArcType.RHUMB,
+                outline: true,
+                outlineColor: Color.fromCssColorString("rgb(22,236,255)"),
+                outlineWidth: 3,
+                height: height,
+            },
+        };
+        const o = Object.assign(properties, options);
+
+        if (options.polygon) {
+            o.polygon.hierarchy = hierarchy;
+        }
+
+        const e = new Entity(o);
+        return e;
     }
 };
 

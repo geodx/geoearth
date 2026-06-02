@@ -17,8 +17,8 @@
                     <img v-else alt="" src="../assets/img/layer.png" />
                     <span :style="{ color: selected === 'Echarts-MapV' ? baseColor : '#fff' }">可视化</span>
                 </div>
-                <div @click="changeSelected('spatialAnalyze')">
-                    <img v-if="selected === 'spatialAnalyze'" :src="baseMapSelected" alt="" />
+                <div @click="changeSelected('spatialAnalysis')">
+                    <img v-if="selected === 'spatialAnalysis'" :src="baseMapSelected" alt="" />
                     <img v-else alt="" src="../assets/img/base-map.png" />
                     <span :style="{ color: selected === 'baseMap' ? baseColor : '#fff' }">分析</span>
                 </div>
@@ -26,6 +26,7 @@
             <BaseMap></BaseMap>
             <toolBox></toolBox>
             <echarts_mapv></echarts_mapv>
+            <toolBox></toolBox>
         </div>
     </div>
 </template>
@@ -76,6 +77,8 @@ function changeSelected(val: string) {
     if (val !== 'baseMap') ceStore.setCesiumEarthComAction('baseMap', 2)
     if (val !== 'resourceTree') ceStore.setCesiumEarthComAction('resourceTree', 2)
     if (val !== 'Echarts-MapV') ceStore.setCesiumEarthComAction('Echarts-MapV', 2)
+    if (val !== 'spatialAnalysis') ceStore.setCesiumEarthComAction('spatialAnalysis', 2)
+
     switch (val) {
         case 'toolBox':
             {
@@ -97,8 +100,8 @@ function changeSelected(val: string) {
                 ceStore.setCesiumEarthComAction('Echarts-MapV', 3)
             }
             break
-        case 'spatialAnalyze': {
-            ceStore.setCesiumEarthComAction('spatialAnalyze', 3)
+        case 'spatialAnalysis': {
+            ceStore.setCesiumEarthComAction('spatialAnalysis', 3)
         }
     }
 

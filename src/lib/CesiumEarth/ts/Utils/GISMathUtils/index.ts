@@ -249,13 +249,7 @@ const GISMathUtils = {
      * @returns {null|*[]}
      * @constructor
      */
-    InterpolateLineLonlat: function (start: {
-        lon: number;
-        lat: number;
-    }, end: {
-        lon: number;
-        lat: number;
-    }) {
+    InterpolateLineLonlat: function (start: { lon: number; lat: number; }, end: { lon: number; lat: number; }) {
         if (start && end) {
         } else {
             return null;
@@ -290,7 +284,30 @@ const GISMathUtils = {
         return result;
     },
 
+    /**
+     * @description: 两点间等距线性插值，返回所有点(包括首尾)
+     * @param {Cartesian3} start 起始点
+     * @param {Cartesian3} end 终点
+     * @param {number} distance (可选)采样间隔,默认为1米
+     * @return {Cartographic[]}
+     */
+    equidistantInterpolation: function (start: Cartesian3, end: Cartesian3, distance: number = 1) {
+        // 不贴地坐标
+        let lerpArray: Cartographic[] = [];
+        //插值数量
+        let splitNum = Math.floor(Cartesian3.distance(start, end) / distance);
 
+        let startCartographic = Cartographic.fromCartesian(start);
+        let endCartographic = Cartographic.fromCartesian(end);
+
+        lerpArray.push(new Cartographic(startCartographic.longitude, startCartographic.latitude));
+        for (let i = 1; i < splitNum; i++) {
+            const lon = CesiumMath.lerp(startCartographic.longitude, endCartographic.longitude, i / splitNum);
+            const lat = CesiumMath.lerp(startCartographic.latitude, endCartographic.latitude, i / splitNum);
+            lerpArray.push(new Cartographic(lon, lat))
+        }
+        return lerpArray;
+    },
     /**
      *计算线的方向向量
      *

@@ -17,26 +17,26 @@ const terrainList: any[] = [];
 const modelList: any[] = [];
 const cesium3DTileSetList = [
     {
-        pid: 'd76023df-981d-d4d5-5f46-21864b706b0e',
-        name: '天一阁-倾斜模型',
-        catalog: '三维模型',
-        dataType: 'Cesium3DTile',
-        defaultLoad: true,
-        show: true,
-        resourceImg: './app/ResourceImg/倾斜模型.png',
-        offlineCache: true,
-        netRootPaths: [
-            'https://nas.vgemap.site:3006/DBService/3DTiles-TianYi-en/'
-        ],
-        decryptionKey: 'SDcVrdKWEgjKPTGQgZ6zonZ7hLX+IjnF2Y0AwiKLXjewB5todhQ3UskdmWuGRl3FXYRUq37xlkrkmEyg+6Aub29/JH+Ga2AeS6AXTCcp1IMwxWXi4gMUhevgkwHt7AXl3GjsEiQ93HYVq/kXGcYx28aj/VrqPSCADtwjkQI+28Y=',
-        properties: {
-            url: 'http://localhost:8084/scense/campus/tileset.json',
-            maximumScreenSpaceError: 2,
-            maximumMemoryUsage: 8192,
-            offset: {
-                height: 25
-            }
-        }
+        // pid: 'd76023df-981d-d4d5-5f46-21864b706b0e',
+        // name: '天一阁-倾斜模型',
+        // catalog: '三维模型',
+        // dataType: 'Cesium3DTile',
+        // defaultLoad: true,
+        // show: true,
+        // resourceImg: './app/ResourceImg/倾斜模型.png',
+        // offlineCache: true,
+        // netRootPaths: [
+        //     'https://nas.vgemap.site:3006/DBService/3DTiles-TianYi-en/'
+        // ],
+        // decryptionKey: 'SDcVrdKWEgjKPTGQgZ6zonZ7hLX+IjnF2Y0AwiKLXjewB5todhQ3UskdmWuGRl3FXYRUq37xlkrkmEyg+6Aub29/JH+Ga2AeS6AXTCcp1IMwxWXi4gMUhevgkwHt7AXl3GjsEiQ93HYVq/kXGcYx28aj/VrqPSCADtwjkQI+28Y=',
+        // properties: {
+        //     url: 'http://localhost:8004/tile/model/service/C2swVtdo/tileset.json',
+        //     maximumScreenSpaceError: 2,
+        //     maximumMemoryUsage: 8192,
+        //     offset: {
+        //         height: 25
+        //     }
+        // }
     },
     // {
     //     pid: '8e2d4f81-122f-d1ba-8e42-2a20c2c9e42b',
@@ -81,9 +81,13 @@ const baseConfig = {
 
 
 // CesiumEarth.ConfigTool.addMapBoxOnAliYun(true);
-// CesiumEarth.ConfigTool.addAMapSatelliteLayerOnLine(false);
-// CesiumEarth.ConfigTool.addAMapLayerOnLine(false);
+// CesiumEarth.ConfigTool.addAMapSatelliteLayerOnLine(true);
+// CesiumEarth.ConfigTool.addAMapLayerOnLine(true);
 // CesiumEarth.ConfigTool.addTerrainOnAliYun(true);
+CesiumEarth.ConfigTool.addTerrainOnIon(true);
+CesiumEarth.ConfigTool.addBingMapOnIon(true);
+// CesiumEarth.ConfigTool.addBingMapHasLabelOnIon(true);
+CesiumEarth.ConfigTool.addAMapLayerHasLabelOnIon(true);
 // CesiumEarth.ConfigTool.addBingMapOnAliYun(true);
 // CesiumEarth.ConfigTool.addTianDiTuLayerList(['cia_w']);
 CesiumEarth.ConfigTool.loadConfig(baseConfig);

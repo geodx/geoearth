@@ -1,4 +1,3 @@
-
 import {
   CustomDataSource, Viewer, ScreenSpaceEventHandler, defined,
   Cartesian3, Entity, CallbackProperty, Cartographic,
@@ -406,7 +405,6 @@ class DrawShape {
       this.drawShapeEnd();
       // 如果绘制的点数少于最小点数，返回绘制失败
       if (returnPosition.length >= minPointsSize) {
-        returnPosition.push(returnPosition[0]!);
         commitEndCallBack(coordinateType, endCallback, returnPosition);
       } else {
         this.drawShapeErrorCallback(null);
