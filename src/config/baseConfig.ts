@@ -86,8 +86,8 @@ const baseConfig = {
 // CesiumEarth.ConfigTool.addTerrainOnAliYun(true);
 CesiumEarth.ConfigTool.addTerrainOnIon(true);
 CesiumEarth.ConfigTool.addBingMapOnIon(true);
-// CesiumEarth.ConfigTool.addBingMapHasLabelOnIon(true);
-CesiumEarth.ConfigTool.addAMapLayerHasLabelOnIon(true);
+CesiumEarth.ConfigTool.addBingMapHasLabelOnIon(true);
+// CesiumEarth.ConfigTool.addAMapLayerHasLabelOnIon(true);
 // CesiumEarth.ConfigTool.addBingMapOnAliYun(true);
 // CesiumEarth.ConfigTool.addTianDiTuLayerList(['cia_w']);
 CesiumEarth.ConfigTool.loadConfig(baseConfig);
