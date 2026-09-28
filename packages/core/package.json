@@ -1,0 +1,59 @@
+{
+  "name": "geoearth",
+  "version": "0.0.1",
+  "description": "A TypeScript toolkit for building Cesium-based 3D geospatial visualization applications.",
+  "type": "module",
+  "main": "./dist/geoearth.js",
+  "module": "./dist/geoearth.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/geoearth.js"
+    }, 
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "pack:test": "npm pack --dry-run"
+  },
+  "peerDependencies": {
+    "cesium": "^1.143.0",
+    "vite": "^7.0.0 || ^8.0.0"
+  },
+  "devDependencies": {
+    "cesium": "^1.143.0",
+    "sass": "^1.101.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.2",
+    "vite-plugin-dts": "^5.0.3"
+  },
+  "keywords": [
+    "geoearth",
+    "cesium",
+    "gis",
+    "webgis",
+    "3d-map",
+    "digital-earth",
+    "geospatial",
+    "visualization"
+  ],
+  "author": "Qiang Liu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lost2FA/geoearth.git"
+  },
+  "homepage": "https://github.com/lost2FA/geoearth#readme",
+  "bugs": {
+    "url": "https://github.com/lost2FA/geoearth/issues"
+  }
+}
