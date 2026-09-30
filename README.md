@@ -1,6 +1,17 @@
-# GeoEarth
+<div align="center">
 
-**基于 Cesium 的 TypeScript 三维地球 SDK。**
+<h1>GeoEarth</h1>
+
+<img src="docs/images/tech-globe-sm.webp" width="320" height="299" />
+<p><strong>基于 Cesium 的 TypeScript 三维地球 SDK。</strong></p>
+
+<p>
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&amp;logo=typescript&amp;logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Cesium-6CAD45?style=flat-square" alt="Cesium" />
+  <img src="https://img.shields.io/badge/ESM%20%2B%20IIFE-0EA5E9?style=flat-square" alt="ESM 和 IIFE" />
+  <img src="https://img.shields.io/badge/status-in%20development-F59E0B?style=flat-square" alt="开发中" />
+</p>
+</div>
 
 GeoEarth 封装地球初始化、资源管理、交互工具和常用组件，提供 ESM 与浏览器 IIFE 两种接入方式，并配有可在线编辑、运行 HTML 示例的工作台。
 
@@ -67,7 +78,13 @@ await earth.ready;
     <meta charset="UTF-8" />
     <title>GeoEarth 示例</title>
     <style>
-      html, body, #container { width: 100%; height: 100%; margin: 0; }
+      html,
+      body,
+      #container {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
     </style>
   </head>
   <body>
@@ -87,13 +104,13 @@ await earth.ready;
 
 ## 常用命令
 
-| 命令 | 说明 |
-| --- | --- |
-| `npm run dev` | 构建 SDK 并启动示例工作台 |
-| `npm run build` | 构建 ESM、IIFE、样式和类型声明 |
-| `npm run build:iife` | 单独构建浏览器 IIFE 产物 |
-| `npm run build:example` | 构建 SDK 和示例网站 |
-| `npm run typecheck` | 检查 SDK 的 TypeScript 类型 |
+| 命令                    | 说明                                  |
+| ----------------------- | ------------------------------------- |
+| `npm run dev`           | 构建 SDK 并启动示例工作台             |
+| `npm run build`         | 构建 ESM、IIFE、样式和类型声明        |
+| `npm run build:iife`    | 单独构建浏览器 IIFE 产物              |
+| `npm run build:example` | 构建 SDK 和示例网站                   |
+| `npm run typecheck`     | 检查 SDK 的 TypeScript 类型           |
 | `npm run pack:geoearth` | 预览 npm 包将包含的文件，不生成压缩包 |
 
 SDK 输出到 `packages/core/dist`；示例网站输出到 `examples/vue-demo/dist`，其中包含 `sdk` 目录。
