@@ -12,11 +12,11 @@ export default defineConfig({
     build: {
         lib: {
             entry: {
-                geoearth: path.resolve(__dirname, 'src/index.ts'),
+                index: path.resolve(__dirname, 'src/index.ts'),
                 vite: path.resolve(__dirname, 'src/vite.ts')
             },
             formats: ['es'],
-            // cssFileName: 'style',
+            cssFileName: "geoearth",
             fileName: (_format, entryName) => `${entryName}.js`
         },
         rollupOptions: {

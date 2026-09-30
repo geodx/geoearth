@@ -1,22 +1,54 @@
-import { defineConfig } from 'vite'
-import { fileURLToPath, URL } from 'node:url'
-import path from 'node:path'
+import { defineConfig } from "vite";
+import { fileURLToPath, URL } from "node:url";
+import vue from "@vitejs/plugin-vue";
+import Components from "unplugin-vue-components/vite";
+import AutoImport from 'unplugin-auto-import/vite';
+import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
+import { cp } from "node:fs/promises";
+import sirv from "sirv";
 
-import vue from '@vitejs/plugin-vue'
+const sdkDir = fileURLToPath(
+  new URL("../../packages/core/dist/", import.meta.url),
+);
 
-// import { geoEarth } from 'geoearth/vite'
-//临时，热更新调试
-import { geoEarth } from '../../packages/core/src/vite.ts'
 export default defineConfig({
   plugins: [
     vue(),
-    geoEarth()
+    AutoImport({
+      resolvers: [ElementPlusResolver()],
+    }),
+    Components({
+      resolvers: [ElementPlusResolver()],
+    }),
+    {
+      name: "geoearth-sdk",
+
+      configureServer(server) {
+        const serveSdk = sirv(sdkDir, { dev: true });
+
+        // 开发时直接读取 SDK 构建目录，不复制文件。
+        server.middlewares.use("/sdk", (req, res) => {
+          serveSdk(req, res, () => {
+            res.statusCode = 404;
+            res.end("SDK resource not found");
+          });
+        });
+      },
+
+      async writeBundle() {
+        // 构建时把 SDK 及其配套资源复制到示例站点。
+        const targetDir = fileURLToPath(
+          new URL("./dist/sdk/", import.meta.url),
+        );
+
+        await cp(sdkDir, targetDir, { recursive: true });
+      },
+    },
   ],
+
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      //临时，热更新调试
-      geoearth: path.resolve(__dirname, '../../packages/core/src/index.ts')
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
-  }
-})
+  },
+});

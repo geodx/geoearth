@@ -1,7 +1,6 @@
 * {
   box-sizing: border-box;
 }
-
 html,
 body,
 #app {
@@ -9,190 +8,74 @@ body,
   height: 100%;
   margin: 0;
 }
-
 body {
   overflow: hidden;
-  background: #05070b;
-  color: #edf3ff;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+:root {
+  --bg: var(--el-bg-color-page);
+  --surface: var(--el-bg-color);
+  --border: var(--el-border-color-lighter);
+  --text: var(--el-text-color-primary);
+  --muted: var(--el-text-color-regular);
+  --accent: var(--el-color-primary);
+  --selected: var(--el-color-primary-light-9);
+}
+html.dark {
+  --el-bg-color: #191c22;
+  --el-bg-color-page: #14171c;
+  --el-bg-color-overlay: #22262e;
+  --el-border-color-lighter: #2b3039;
+  --el-text-color-primary: #e0e5ed;
+  --el-text-color-regular: #aab4c2;
 }
 
-button,
-input,
-select {
-  font: inherit;
+/* 工作台共享的按钮样式。 */
+.workbench .el-button + .el-button {
+  margin-left: 0;
 }
-
-.app-shell {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  width: 100%;
-  height: 100%;
-  min-height: 0;
+.workbench .el-button > span {
+  gap: 6px;
 }
-
-.app-sidebar {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  min-width: 0;
-  min-height: 0;
-  border-right: 1px solid rgb(125 158 199 / 22%);
-  background: #090f18;
+.el-dropdown-menu__item.is-selected {
+  color: var(--accent);
+  font-weight: 600;
 }
-
-.brand {
-  border-bottom: 1px solid rgb(125 158 199 / 18%);
-  padding: 18px;
+.el-button.rail-button {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  flex: none;
+  font-size: 20px;
+  border-radius: 8px;
 }
-
-.brand strong {
-  display: block;
-  font-size: 18px;
+.el-button.rail-button.active {
+  color: var(--accent);
+  background: var(--selected);
 }
-
-.brand span {
-  display: block;
-  margin-top: 4px;
-  color: #8fa3bf;
-  font-size: 13px;
-}
-
-.test-nav {
-  height: 100%;
-  min-height: 0;
-  overflow: auto;
-  padding: 12px 10px;
-}
-
-.test-group {
-  border-bottom: 1px solid rgb(125 158 199 / 12%);
-  padding: 6px 0;
-}
-
-.test-group summary {
-  cursor: pointer;
-  list-style: none;
-  padding: 7px 8px;
-  color: #8fa3bf;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.test-group summary::-webkit-details-marker {
-  display: none;
-}
-
-.test-group summary::before {
+.el-button.rail-button.active::before {
   content: "";
-  display: inline-block;
-  width: 0;
-  height: 0;
-  margin-right: 8px;
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  border-left: 5px solid #52657f;
-  vertical-align: 1px;
+  position: absolute;
+  left: -8px;
+  width: 3px;
+  height: 20px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
 }
 
-.test-group[open] summary::before {
-  transform: rotate(90deg);
-}
-
-.test-group a {
-  display: block;
-  border-radius: 5px;
-  margin: 1px 0 1px 16px;
-  padding: 6px 8px;
-  color: #c7d5e8;
-  font-size: 13px;
-  text-decoration: none;
-}
-
-.test-group a.router-link-active {
-  background: rgb(78 140 255 / 18%);
-  color: #fff;
-}
-
-.app-main {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  min-height: 0;
-}
-
-.test-header {
-  border-bottom: 1px solid rgb(125 158 199 / 18%);
-  padding: 14px 18px;
-  background: #070b12;
-}
-
-.test-header h1 {
-  margin: 0;
-  font-size: 18px;
-}
-
-.test-header p {
-  margin: 5px 0 0;
-  color: #8fa3bf;
-  font-size: 13px;
-}
-
-.test-stage {
-  min-height: 0;
-}
-
-.demo-map {
-  width: 100%;
-  height: 100%;
-}
-
-.placeholder {
-  display: grid;
-  place-content: center;
-  min-height: 100%;
-  padding: 24px;
-  text-align: center;
-}
-
-.placeholder h2 {
-  margin: 0;
-  font-size: 22px;
-}
-
-.placeholder p {
-  max-width: 520px;
-  margin: 10px auto 0;
-  color: #8fa3bf;
-  line-height: 1.6;
-}
-
-.placeholder span {
-  display: inline-block;
-  margin-top: 16px;
-  border: 1px solid rgb(125 158 199 / 24%);
-  border-radius: 999px;
-  padding: 5px 12px;
-  color: #8fa3bf;
+/* 设置和帮助弹层共用的说明文字。 */
+.setting-note {
+  color: var(--muted);
   font-size: 12px;
+  line-height: 1.7;
+  margin: 8px 0 18px;
 }
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Element Plus 弹层挂载到 body，保留全局容器样式。 */
+.editor-settings {
+  max-width: calc(100vw - 76px);
 }
-
-::-webkit-scrollbar-track {
-  background: rgb(255 255 255 / 4%);
-}
-
-::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgb(126 146 178 / 42%);
+.guide-dialog {
+  max-width: calc(100vw - 32px);
 }

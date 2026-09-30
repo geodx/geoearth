@@ -1,0 +1,64 @@
+{
+  "nav": {
+    "guide": "Guide",
+    "docs": "Docs",
+    "source": "Source",
+    "theme": "Site theme",
+    "language": "Language",
+    "label": "Site navigation"
+  },
+  "theme": { "light": "Light", "dark": "Dark", "auto": "System" },
+  "directory": {
+    "title": "Examples",
+    "search": "Search examples…",
+    "empty": "No matching examples",
+    "activity": "Activity bar"
+  },
+  "panel": {
+    "tabs": "Workspace panels",
+    "workspace": "Example workspace",
+    "collapse": "Collapse panel",
+    "expand": "Expand panel"
+  },
+  "groups": { "basics": "Getting started" },
+  "demos": {
+    "basic": "Basic example",
+    "interaction": "Interaction example",
+    "fallback": "Playground",
+    "basicDescription": "Edit HTML and view the result in the preview.",
+    "interactionDescription": "Try JavaScript interactions, rerun and reset."
+  },
+  "editor": {
+    "title": "Example code",
+    "run": "Run",
+    "reset": "Reset",
+    "pending": "Unapplied changes",
+    "modified": "Modified · Run to apply",
+    "submitted": "Submitted to preview",
+    "missing": "Example not found",
+    "result": "Example preview",
+    "loading": "Loading example…",
+    "loadFailed": "Failed to load example. Check the file path and reopen it."
+  },
+  "settings": {
+    "title": "Editor settings",
+    "hint": "Applied instantly and saved in this browser.",
+    "theme": "Editor theme",
+    "follow": "Follow site",
+    "contrast": "High contrast",
+    "font": "Font family",
+    "size": "Font size",
+    "wrap": "Word wrap",
+    "minimap": "Minimap",
+    "note": "Fonts must be installed locally.",
+    "done": "Done"
+  },
+  "guide": {
+    "title": "Getting started",
+    "select": "Open the directory and select an example to view its code.",
+    "run": "Run to preview your changes. Reset restores and runs the original example.",
+    "resize": "Switch between directory and code, or collapse the panel, without restarting the preview.",
+    "settings": "Use settings at the bottom left to customize the editor.",
+    "note": "This guide covers the workspace. SDK docs currently link to the repository README."
+  }
+}
