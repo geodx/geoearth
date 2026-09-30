@@ -24,8 +24,8 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { CoordinateType, DrawCancelledError, GeoEarth, PolylineFlowMaterial, PolylineGlowMaterial, PolylinePulseMaterial, type DegreePosition } from 'geoearth'
-import { Cartesian3, Color, CustomDataSource, PolylineGlowMaterialProperty } from 'cesium'
+import { CoordinateType, DrawCancelledError, GeoEarth, PolylineGlowMaterial, type DegreePosition } from 'geoearth'
+import { Cartesian3, Color, CustomDataSource } from 'cesium'
  
 
 let earth: GeoEarth | undefined

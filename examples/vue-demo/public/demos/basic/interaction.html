@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>交互示例</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 32px;
+            font-family: sans-serif;
+            color: #1e293b;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>计数器示例</h1>
+    <p>当前计数：<strong id="count">0</strong></p>
+    <button id="add">加一</button>
+
+    <script type="module">
+        let count = 0
+
+        const countElement = document.getElementById('count')
+        const addButton = document.getElementById('add')
+
+        addButton.addEventListener('click', () => {
+            count += 1
+            countElement.textContent = String(count)
+        })
+    </script>
+</body>
+
+</html>

@@ -6,9 +6,10 @@
     "examples/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w examples/vue-demo",
+    "dev": "npm run build && npm run dev -w examples/vue-demo",
     "build": "npm run build -w packages/core",
-    "build:geoearth": "npm run build -w packages/core",
+    "build:iife": "npm run build:iife -w packages/core",
+    "build:example": "npm run build && npm run build -w examples/vue-demo",
     "typecheck": "npm run typecheck -w packages/core",
     "pack:geoearth": "npm run pack:test -w packages/core",
     "format": "prettier --write ."

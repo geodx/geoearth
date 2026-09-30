@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted } from 'vue'
 import { GeoEarth } from 'geoearth'
 
 let earth: GeoEarth | undefined

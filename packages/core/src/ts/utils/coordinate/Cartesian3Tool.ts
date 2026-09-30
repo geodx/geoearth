@@ -1,5 +1,10 @@
 import { Cartesian3 } from 'cesium';
-import type { WorldDegree } from '../../Impl/Declare';
+
+interface WorldDegree {
+    longitude: number;
+    latitude: number;
+    height?: number;
+}
 
 
 const Cartesian3Tool = {
