@@ -1,9 +1,14 @@
 <div align="center">
 
+<img src="docs/images/tech-globe-sm.webp" width="320" height="299" />
+  <br>
+<a href="./LICENSE">
+  <img src="https://img.shields.io/github/license/geoearth-dev/geoearth" alt="Apache License" />
+</a>
+  <br>  
 <h1>GeoEarth</h1>
 
-<img src="docs/images/tech-globe-sm.webp" width="320" height="299" />
-<p><strong>基于 Cesium 的 TypeScript 三维地球 SDK。</strong></p>
+<strong>基于 Cesium 的 TypeScript 三维地球 SDK。</strong>
 
 <p>
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&amp;logo=typescript&amp;logoColor=white" alt="TypeScript" />
