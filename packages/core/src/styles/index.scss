@@ -1,2 +1,3 @@
-@use "./cesium-overrides";
+@use "./main/cesium-overrides";
+@use "./main/cesium-container";
 @use "./widgets/overview";

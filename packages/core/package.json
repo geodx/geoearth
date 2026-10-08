@@ -50,13 +50,13 @@
     "visualization"
   ],
   "author": "Qiang Liu",
-  "license": "MIT",
+  "license": "Apache 2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lost2FA/geoearth.git"
+    "url": "git+https://github.com/geodx/geoearth.git"
   },
-  "homepage": "https://github.com/lost2FA/geoearth#readme",
+  "homepage": "https://www.geoearth.dev",
   "bugs": {
-    "url": "https://github.com/lost2FA/geoearth/issues"
+    "url": "https://github.com/geodx/geoearth/issues"
   }
 }
