@@ -82,15 +82,6 @@ await earth.ready;
   <head>
     <meta charset="UTF-8" />
     <title>GeoEarth 示例</title>
-    <style>
-      html,
-      body,
-      #container {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-      }
-    </style>
   </head>
   <body>
     <div id="container"></div>
