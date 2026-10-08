@@ -14,12 +14,13 @@ Vue 负责示例目录、代码编辑器和页面布局；每个示例都是独�
 
 示例网站自身的 Vue 代码支持 Vite 热更新；SDK 当前使用构建产物，不直接连接源码热更新。
 
-示例控制面板使用 lil-gui，通过 `/demo-vendor/lil-gui/lil-gui.umd.min.js` 加载本地脚本。开发服务器映射 npm 依赖，生产构建自动复制脚本及许可证；共享面板样式位于 `public/demo-common/panel.css`。部署时保留 `demo-vendor` 和 `demo-common` 目录。
+初始化配置示例通过 `/demo-assets/lil-gui.umd.min.js` 加载 lil-gui 0.21.0。脚本及许可证直接保存在 `public/demo-assets`，由 Vite 原样提供和复制，无需 npm 依赖或专用插件。共享面板样式位于 `public/demo-common/panel.css`。部署时保留 `demo-assets` 和 `demo-common` 目录。
 
 ## 文件职责
 
 ```text
 public/demos/             独立 HTML 示例，构建时原样复制
+public/demo-assets/       示例使用的第三方脚本及许可证
 src/
   App.vue                初始化共享状态和 Element Plus 语言
   layouts/

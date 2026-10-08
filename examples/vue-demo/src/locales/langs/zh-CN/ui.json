@@ -39,6 +39,7 @@
     "basic-initial-view": "初始视角",
     "initialViewDescription": "通过 homeView 设置经纬度、高度和相机姿态，演示角度与弧度配置。",
     "basic-start-animation": "开场动画",
+    "startAnimationDescription": "通过选择框开启或关闭开场动画，切换时重新创建地球。",
     "events-mouse-events": "鼠标事件",
     "events-camera-events": "相机事件",
     "events-resource-events": "资源事件",
