@@ -34,15 +34,6 @@ export enum SourceEventType {
 }
 
 
-/**
- * 配置变化类型。
- */
-export enum ConfigEventType {
-    LOAD = 'load',
-    CHANGE = 'change',
-    RESET = 'reset'
-}
-
 export interface ViewerEventPayload {
     type: ViewerEventType
     width?: number
@@ -59,16 +50,6 @@ export interface SourceEventPayload<T = unknown> {
     sourceType: SourceType
     source: T
     id?: string
-}
-
-export interface ConfigEventPayload<T = unknown> {
-    type: ConfigEventType
-    config: Readonly<T>
-
-    /**
-     * CHANGE 事件发生时，记录发生变化的配置字段。
-     */
-    changedKeys?: string[]
 }
 
 /**

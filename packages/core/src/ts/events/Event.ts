@@ -1,6 +1,5 @@
 import type { Viewer } from 'cesium'
 import { CameraEvent } from './modules/CameraEvent'
-import { ConfigEvent } from './modules/ConfigEvent'
 import { ScreenEvent } from './modules/ScreenEvent'
 import { SourceEvent } from './modules/SourceEvent'
 import { ViewerEvent } from './modules/ViewerEvent'
@@ -13,21 +12,18 @@ import { ViewerEvent } from './modules/ViewerEvent'
  * earth.event.camera
  * earth.event.viewer
  * earth.event.source
- * earth.event.config
  */
-export class Event<TConfig = unknown> {
+export class Event {
     readonly screen: ScreenEvent
     readonly camera: CameraEvent
     readonly viewer: ViewerEvent
     readonly source: SourceEvent
-    readonly config: ConfigEvent<TConfig>
 
     constructor(viewer: Viewer) {
         this.screen = new ScreenEvent(viewer)
         this.camera = new CameraEvent(viewer)
         this.viewer = new ViewerEvent()
         this.source = new SourceEvent()
-        this.config = new ConfigEvent<TConfig>()
     }
 
     destroy(): void {
@@ -35,6 +31,5 @@ export class Event<TConfig = unknown> {
         this.camera.destroy()
         this.viewer.destroy()
         this.source.destroy()
-        this.config.destroy()
     }
 }

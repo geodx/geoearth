@@ -10,8 +10,8 @@ import { ToolManager } from '../tools/ToolManager'
  * 每个 Viewer 分别持有自己的事件、资源和工具实例，
  * 不同 Viewer 可以复用相同的管理器实现，但不会共享具体资源实例。
  */
-export class ViewContext<TConfig = unknown> {
-    public readonly event: Event<TConfig>
+export class ViewContext {
+    public readonly event: Event
     public readonly sources: ResourceManager
     public readonly tools: ToolManager
 
@@ -22,7 +22,7 @@ export class ViewContext<TConfig = unknown> {
             throw new Error('Cannot create ViewContext from a destroyed Viewer.')
         }
 
-        this.event = new Event<TConfig>(viewer)
+        this.event = new Event(viewer)
         this.sources = new ResourceManager(viewer, this.event.source)
         this.tools = new ToolManager(viewer, this.event.screen)
     }
