@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · 开场动画</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  
+</head>
+
+<body>
+  <div id="earth"></div>
+  <aside class="demo-panel" aria-label="开场动画说明">
+    <p class="hint">加载基础影像后，从全球视角飞向目标位置，经高空和低空过渡后进入倾斜视角。刷新页面可再次播放。</p>
+    <div id="status" class="status" role="status" aria-live="polite" data-state="loading">正在加载影像并播放开场动画…</div>
+  </aside>
+  <script src="/sdk/geoearth.js"></script>
+  <script>
+    const statusText = document.getElementById("status");
+    const earth = new GeoEarth("earth", undefined, {
+      homeView: {
+        longitude: 108.387,
+        latitude: 30.71,
+        height: 50000,
+        heading: 0,
+        pitch: -45,
+        roll: 0,
+        unit: "degree",
+      },
+      startup: { animation: true },
+    });
+    let pageActive = true;
+
+    earth.onReady().then(() => {
+      if (!pageActive) return;
+      statusText.textContent = "初始化完成，可拖动、缩放地球。";
+      statusText.dataset.state = "ready";
+    }).catch((error) => {
+      if (!pageActive) return;
+      statusText.textContent = `初始化失败：${error instanceof Error ? error.message : String(error)}`;
+      statusText.dataset.state = "error";
+      console.error("GeoEarth 初始化失败", error);
+    });
+
+    window.addEventListener("pagehide", () => {
+      pageActive = false;
+      earth.destroy();
+    }, { once: true });
+  </script>
+</body>
+
+</html>

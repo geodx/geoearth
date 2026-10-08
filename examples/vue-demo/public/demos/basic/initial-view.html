@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · 初始视角</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+</head>
+
+<body>
+  <div id="earth"></div>
+  <aside class="demo-panel" aria-label="初始视角示例">
+    <button onclick="setInitialView('global')">全球俯视</button>
+    <button onclick="setInitialView('topDown')">中国俯视</button>
+    <button onclick="setInitialView('tilted')">中国斜视</button>
+    <button onclick="setInitialView('radian')">弧度姿态</button>
+    <p class="hint">通过构造函数第三个参数的 homeView 设置初始视角。切换示例会销毁旧实例并重新创建地球。</p>
+    <p class="hint">经纬度使用度，高度使用米。heading 是航向，pitch 是俯仰，roll 是翻滚；unit 指定这三个姿态角的单位。</p>
+    <strong>当前 homeView</strong>
+    <pre id="view-config" aria-label="当前初始视角配置"></pre>
+  </aside>
+  <script src="/sdk/geoearth.js"></script>
+  <script>
+    let earth;
+    const output = document.getElementById("view-config");
+    const views = {
+      global: {
+        longitude: 108.387, latitude: 30.71, height: 20000000,
+        heading: 0, pitch: -90, roll: 0, unit: "degree",
+      },
+      topDown: {
+        longitude: 108.387, latitude: 30.71, height: 4000000,
+        heading: 0, pitch: -90, roll: 0, unit: "degree",
+      },
+      tilted: {
+        longitude: 108.387, latitude: 30.71, height: 4000000,
+        heading: 45, pitch: -60, roll: 0, unit: "degree",
+      },
+      radian: {
+        longitude: 108.387, latitude: 30.71, height: 4000000,
+        heading: Math.PI / 4, pitch: -Math.PI / 3, roll: 0, unit: "radian",
+      },
+    };
+
+    function setInitialView(name) {
+      earth?.destroy();
+
+      const homeView = views[name];
+      const current = new GeoEarth("earth", undefined, {
+        homeView,
+        // 关闭开场动画，直接观察配置的初始视角。
+        startup: { animation: false, showFps: false },
+      });
+      earth = current;
+      output.textContent = JSON.stringify(homeView, null, 2);
+
+      current.onReady(() => {
+        if (earth === current) console.log("初始视角已应用：", homeView);
+      }).catch(console.error);
+    }
+
+    setInitialView("global");
+  </script>
+</body>
+
+</html>

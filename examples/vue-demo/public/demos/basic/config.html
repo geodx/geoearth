@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>初始化配置 · GeoEarth</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html,
+    body,
+    #earth {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="earth"></div>
+  <aside class="demo-panel" aria-label="初始化配置面板">
+    <div id="gui"></div>
+    <p class="hint">修改参数后点击“应用配置”，重新创建地球。未填写的配置由 SDK 使用默认值补齐。</p>
+    <p class="hint">本例默认关闭开场动画。分辨率倍率越高，渲染开销越大；关闭默认影像可观察地球底色。</p>
+    <div id="status" class="status" role="status" aria-live="polite">正在创建地球…</div>
+    <details>
+      <summary>查看当前已应用配置</summary>
+      <pre id="config-output"></pre>
+    </details>
+  </aside>
+  <script src="/sdk/geoearth.js"></script>
+  <script src="/demo-vendor/lil-gui/lil-gui.umd.min.js"></script>
+  <script>
+    const statusText = document.getElementById("status");
+    const output = document.getElementById("config-output");
+    const demoDefaults = {
+      homeView: {
+        longitude: 108.387, latitude: 30.71, height: 4000000,
+        heading: 0, pitch: -90, roll: 0, unit: "degree",
+      },
+      startup: {
+        animation: false, showFps: true, fxaa: false,
+        zoomFactor: 2, resolutionScale: 1,
+        backgroundColor: "#000000", globeBaseColor: "#000000",
+      },
+    };
+    // 面板绑定独立的草稿对象。点击应用时才把配置传给构造函数。
+    const params = structuredClone(demoDefaults);
+    const display = { showImagery: true };
+    let earth;
+    let initializing = false;
+    let pageActive = true;
+
+    const gui = new lil.GUI({
+      container: document.getElementById("gui"), title: "初始化配置",
+    });
+    const homeFolder = gui.addFolder("初始视角 · homeView");
+    const startupFolder = gui.addFolder("启动配置 · startup");
+    const numericRules = [
+      [params.homeView, "longitude", "经度（°）", -180, 180, 0.001],
+      [params.homeView, "latitude", "纬度（°）", -90, 90, 0.001],
+      [params.homeView, "height", "高度（米）", 100, 100000000, 100],
+      [params.homeView, "heading", "航向（°）", 0, 360, 0.1],
+      [params.homeView, "pitch", "俯仰（°）", -90, 0, 0.1],
+      [params.homeView, "roll", "翻滚（°）", -180, 180, 0.1],
+      [params.startup, "zoomFactor", "缩放系数", 0.1, 10, 0.1],
+      [params.startup, "resolutionScale", "分辨率倍率", 0.25, 2, 0.05],
+    ];
+    for (const [object, key, label, min, max, step] of numericRules) {
+      const folder = object === params.homeView ? homeFolder : startupFolder;
+      folder.add(object, key, min, max, step).name(label);
+    }
+    startupFolder.add(params.startup, "animation").name("开场动画");
+    startupFolder.add(params.startup, "showFps").name("显示 FPS");
+    startupFolder.add(params.startup, "fxaa").name("FXAA 抗锯齿");
+    startupFolder.addColor(params.startup, "backgroundColor").name("场景背景色");
+    startupFolder.addColor(params.startup, "globeBaseColor").name("地球底色");
+    gui.add(display, "showImagery").name("显示默认影像").onChange(updateImagery);
+    const actions = {
+      apply: () => void applyConfig(),
+      reset: () => {
+        if (initializing) return;
+        // 保留控制器绑定的对象引用，只恢复其字段。
+        Object.assign(params.homeView, demoDefaults.homeView);
+        Object.assign(params.startup, demoDefaults.startup);
+        display.showImagery = true;
+        gui.controllersRecursive().forEach((controller) => controller.updateDisplay());
+        void applyConfig();
+      },
+    };
+    gui.add(actions, "apply").name("应用配置");
+    gui.add(actions, "reset").name("恢复示例配置");
+    gui.onChange(({ object }) => {
+      if (!initializing && (object === params.homeView || object === params.startup)) {
+        setStatus("参数已修改，点击“应用配置”生效。", "pending");
+      }
+    });
+
+    function setStatus(message, state) {
+      statusText.textContent = message;
+      statusText.dataset.state = state;
+    }
+
+    function updateImagery() {
+      if (!earth || initializing) return;
+      earth.sources.imagery.setShow("geoearth-base-imagery", display.showImagery);
+    }
+
+    async function applyConfig() {
+      if (initializing || !pageActive) return;
+      for (const [object, key, label, min, max] of numericRules) {
+        if (!Number.isFinite(object[key]) || object[key] < min || object[key] > max) {
+          setStatus(`${label}需要在 ${min} 到 ${max} 之间。`, "error");
+          return;
+        }
+      }
+      const config = structuredClone(params);
+      initializing = true;
+      gui.controllersRecursive().forEach((controller) => controller.disable());
+      setStatus(config.startup.animation ? "正在加载影像并播放开场动画…" : "正在创建地球…", "loading");
+      output.textContent = "等待初始化完成…";
+      let current;
+
+      try {
+        const previous = earth;
+        earth = undefined;
+        previous?.destroy();
+        // 第三个参数是 GeoEarth 配置，第二个参数可传 Cesium Viewer 选项。
+        current = new GeoEarth("earth", undefined, config);
+        earth = current;
+        await current.onReady();
+        if (!pageActive || earth !== current) return;
+        output.textContent = JSON.stringify(config, null, 2);
+        setStatus("初始化完成，配置已应用。", "ready");
+      } catch (error) {
+        if (!pageActive) return;
+        earth = undefined;
+        try { current?.destroy(); } catch (cleanupError) { console.error(cleanupError); }
+        output.textContent = "配置未成功应用。";
+        setStatus(`初始化失败：${error instanceof Error ? error.message : String(error)}`, "error");
+        console.error("GeoEarth 初始化失败", error);
+      } finally {
+        initializing = false;
+        if (pageActive) {
+          gui.controllersRecursive().forEach((controller) => controller.enable());
+          updateImagery();
+        }
+      }
+    }
+
+    window.addEventListener("pagehide", () => {
+      pageActive = false;
+      const current = earth;
+      earth = undefined;
+      gui.destroy();
+      current?.destroy();
+    }, { once: true });
+    void applyConfig();
+  </script>
+</body>
+
+</html>

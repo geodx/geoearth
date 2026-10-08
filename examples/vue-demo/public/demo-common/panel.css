@@ -1,0 +1,84 @@
+.demo-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  width: min(320px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 12px;
+  box-sizing: border-box;
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid #334155;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px #0004;
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+}
+
+.demo-panel .lil-gui.lil-root { width: 100%; }
+
+.demo-panel .lil-gui {
+  --background-color: #0f172a;
+  --text-color: #e2e8f0;
+  --title-background-color: #1e293b;
+  --widget-color: #334155;
+  --hover-color: #475569;
+  --focus-color: #475569;
+  --number-color: #7dd3fc;
+  --string-color: #86efac;
+  --font-size: 12px;
+  --input-font-size: 12px;
+  --widget-height: 26px;
+  --name-width: 50%;
+  --slider-input-min-width: 72px;
+  --color-input-min-width: 64px;
+}
+
+.demo-panel .hint {
+  margin: 10px 0;
+  color: #94a3b8;
+  line-height: 1.7;
+}
+
+.demo-panel .info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  margin: 14px 0;
+}
+
+.demo-panel .info dt { color: #94a3b8; }
+.demo-panel .info dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.demo-panel [data-state="ready"] { color: #86efac; }
+.demo-panel [data-state="loading"] { color: #7dd3fc; }
+.demo-panel [data-state="error"],
+.demo-panel [data-state="failed"] { color: #fca5a5; }
+.demo-panel .status { margin-top: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+.demo-panel details { margin-top: 12px; }
+.demo-panel summary { cursor: pointer; color: #94a3b8; }
+.demo-panel summary:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+.demo-panel pre {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 5px;
+  background: #020617;
+  overflow: auto;
+  font-size: 11px;
+}
+
+.demo-panel .log {
+  margin: 8px 0 0;
+  padding: 10px;
+  list-style: none;
+  max-height: 180px;
+  overflow: auto;
+  border-radius: 6px;
+  background: #020617;
+  font-size: 11px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.demo-panel .log li + li { margin-top: 6px; }
+.demo-panel .log li[data-level="error"] { color: #fca5a5; }
