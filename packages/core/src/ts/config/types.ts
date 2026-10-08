@@ -2,7 +2,6 @@ import type { Viewer } from 'cesium'
 import { ImageryResourceItem, ResourceItem } from '../sources/types'
 import { Viewpoint } from '../viewer/types'
 
-
 export interface Config {
 
     ionAccessToken?: string

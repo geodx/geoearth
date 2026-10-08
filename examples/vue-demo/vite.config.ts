@@ -4,12 +4,16 @@ import vue from "@vitejs/plugin-vue";
 import Components from "unplugin-vue-components/vite";
 import AutoImport from 'unplugin-auto-import/vite';
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
-import { cp } from "node:fs/promises";
+import { cp, mkdir } from "node:fs/promises";
+import { createRequire } from "node:module";
+import path from "node:path";
 import sirv from "sirv";
 
 const sdkDir = fileURLToPath(
   new URL("../../packages/core/dist/", import.meta.url),
 );
+const require = createRequire(import.meta.url);
+const guiDir = path.dirname(require.resolve("lil-gui"));
 
 export default defineConfig({
   plugins: [
@@ -20,6 +24,36 @@ export default defineConfig({
     Components({
       resolvers: [ElementPlusResolver()],
     }),
+    {
+      name: "demo-lil-gui",
+
+      configureServer(server) {
+        const serveGui = sirv(guiDir, { dev: true });
+        server.middlewares.use("/demo-vendor/lil-gui", (req, res) => {
+          serveGui(req, res, () => {
+            res.statusCode = 404;
+            res.end("Demo GUI resource not found");
+          });
+        });
+      },
+
+      async writeBundle() {
+        const targetDir = fileURLToPath(
+          new URL("./dist/demo-vendor/lil-gui/", import.meta.url),
+        );
+        await mkdir(targetDir, { recursive: true });
+        await Promise.all([
+          cp(
+            path.join(guiDir, "lil-gui.umd.min.js"),
+            path.join(targetDir, "lil-gui.umd.min.js"),
+          ),
+          cp(
+            path.join(guiDir, "../LICENSE.md"),
+            path.join(targetDir, "LICENSE.md"),
+          ),
+        ]);
+      },
+    },
     {
       name: "geoearth-sdk",
 

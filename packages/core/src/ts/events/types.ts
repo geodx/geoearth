@@ -2,16 +2,13 @@ import type { Camera, ScreenSpaceEventHandler } from 'cesium'
 import { SourceType } from '../sources/types'
 
 /**
- * Viewer 生命周期事件。
- *
- * READY 不放在这里，因为构造完成前，外部无法注册监听。
- * 初始化完成统一使用 earth.ready。
+ * Viewer 生命周期事件。 
  */
 export enum ViewerEventType {
-    RESIZE = 'resize',
-    SHOW = 'show',
-    HIDE = 'hide',
-    DESTROY = 'destroy'
+    RESUME = 'resume',
+    PAUSE = 'pause',
+    BEFORE_DESTROY = 'beforeDestroy',
+    DESTROY = 'destroy',
 }
 
 /**

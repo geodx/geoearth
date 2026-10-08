@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth 生命周期</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+</head>
+
+<body>
+  <div id="earth"></div>
+  <aside class="demo-panel">
+    <button id="create" onclick="createEarth()">创建 Earth</button>
+    <button id="destroy" onclick="destroyEarth()" disabled>销毁 Earth</button>
+    <pre id="log" class="log" role="log" aria-label="生命周期回调日志"></pre>
+  </aside>
+
+  <script src="/sdk/geoearth.js"></script>
+  <script>
+    let earth;
+    const createButton = document.getElementById("create");
+    const destroyButton = document.getElementById("destroy");
+    const callbackLog = document.getElementById("log");
+
+    function log(message) {
+      console.log(message);
+      callbackLog.textContent += message + "\n";
+      callbackLog.scrollTop = callbackLog.scrollHeight;
+    }
+
+    function createEarth() {
+      if (earth) return;
+
+      earth = new GeoEarth("earth");
+      createButton.disabled = true;
+      destroyButton.disabled = false;
+
+      earth.onCreated(() => log("[onCreated] 地球创建完成"));
+      earth.onReady(() => log("[onReady] 地球初始化完成"));
+      earth.onPause(() => log("[onPause] 页面进入后台"));
+      earth.onResume(() => log("[onResume] 页面回到前台"));
+      earth.onBeforeDestroy(() => log("[onBeforeDestroy] 地球即将销毁"));
+      earth.onDestroyed(() => log("[onDestroyed] 地球销毁完成"));
+    }
+
+    function destroyEarth() {
+      if (!earth) return;
+
+      earth.destroy();
+      earth = undefined;
+      createButton.disabled = false;
+      destroyButton.disabled = true;
+    }  
+  </script>
+</body>
+
+</html>
