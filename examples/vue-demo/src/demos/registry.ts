@@ -39,7 +39,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "basic-start-animation",
         "title": "demos.basic-start-animation",
-        "description": "demos.placeholderDescription",
+        "description": "demos.startAnimationDescription",
         "path": "demos/basic/start-animation.html"
       },
       {

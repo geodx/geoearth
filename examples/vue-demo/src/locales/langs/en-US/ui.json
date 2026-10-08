@@ -39,6 +39,7 @@
     "basic-initial-view": "Initial view",
     "initialViewDescription": "Set the initial camera position and orientation through homeView, using degrees or radians.",
     "basic-start-animation": "Startup animation",
+    "startAnimationDescription": "Enable or disable the startup animation using a dropdown that recreates Earth on change.",
     "events-mouse-events": "Mouse events",
     "events-camera-events": "Camera events",
     "events-resource-events": "Resource events",
