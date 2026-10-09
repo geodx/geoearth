@@ -5,14 +5,139 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 资源事件</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
 </head>
 
 <body>
   <div id="earth"></div>
+  <aside class="demo-panel">
+    <button id="start" onclick="startListening()">开启监听</button>
+    <button id="stop" onclick="stopListening()" disabled>停止监听</button>
+    <button id="add" onclick="addLayer()">添加影像</button>
+    <button id="remove" onclick="removeLayer()" disabled>删除影像</button>
+    <button id="show" onclick="setShow(true)" disabled>显示影像</button>
+    <button id="hide" onclick="setShow(false)" disabled>隐藏影像</button>
+    <p>
+      <label for="alpha">透明度</label>
+      <input id="alpha" type="range" min="0" max="1" step="0.1" value="0.6"
+        onchange="setAlpha(Number(this.value))" disabled />
+    </p>
+    <p class="hint">操作本地网格影像，观察 add、remove、show、hide、change</p>
+    <pre id="state" aria-label="影像状态"></pre>
+    <pre id="log" class="log" role="log" aria-label="资源事件日志"></pre>
+  </aside>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“资源事件”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    // HTML 中从 GeoEarth 获取 API；npm 中从 'geoearth' 导入。
+    const { SourceEventType, SourceType, ImageryProviderType } = GeoEarth;
+    const earth = new GeoEarth("earth", undefined, {
+      startup: { animation: false },
+    });
+    const layerId = "resource-events-grid";
+    const startButton = document.getElementById("start");
+    const stopButton = document.getElementById("stop");
+    const addButton = document.getElementById("add");
+    const removeButton = document.getElementById("remove");
+    const showButton = document.getElementById("show");
+    const hideButton = document.getElementById("hide");
+    const alphaInput = document.getElementById("alpha");
+    const stateOutput = document.getElementById("state");
+    const eventLog = document.getElementById("log");
+    const logLines = [];
+    let listening = false;
+    let adding = false;
+
+    function log(message) {
+      console.log(message);
+      logLines.push(message);
+      if (logLines.length > 30) logLines.shift();
+      eventLog.textContent = logLines.join("\n");
+      eventLog.scrollTop = eventLog.scrollHeight;
+    }
+
+    function updateControls() {
+      const layer = earth.sources.imagery.get(layerId);
+      addButton.disabled = adding || Boolean(layer);
+      removeButton.disabled = !layer;
+      showButton.disabled = !layer || layer.show;
+      hideButton.disabled = !layer || !layer.show;
+      alphaInput.disabled = !layer;
+      if (layer) alphaInput.value = layer.alpha;
+      stateOutput.textContent = adding ? "影像加载中…" : layer
+        ? `ID：${layerId}\n显示：${layer.show}\n透明度：${layer.alpha.toFixed(1)}`
+        : "示例影像尚未添加";
+    }
+
+    function startListening() {
+      if (listening) return;
+      for (const type of [SourceEventType.ADD, SourceEventType.REMOVE,
+        SourceEventType.SHOW, SourceEventType.HIDE, SourceEventType.CHANGE]) {
+        earth.event.source.addEventListener(type, event => {
+          // REMOVE 的 source 已被销毁；只读取资源 ID 和类型。 
+          log(`[${event.type}] sourceType=${event.sourceType}, name=${event.source.name}`);
+        });
+      }
+      listening = true;
+      startButton.disabled = true;
+      stopButton.disabled = false;
+      log("已开启监听");
+    }
+
+    function stopListening() {
+      if (!listening) return;
+      earth.event.source.removeAllEventListeners();
+      listening = false;
+      startButton.disabled = false;
+      stopButton.disabled = true;
+      log("已停止监听");
+    }
+
+    async function addLayer() {
+      if (adding || earth.sources.imagery.has(layerId)) return;
+      adding = true;
+      updateControls();
+      try {
+        await earth.sources.add(SourceType.LAYER, {
+          id: layerId,
+          name: "资源事件示例网格",
+          show: true,
+          properties: {
+            providerType: ImageryProviderType.SINGLE_TILE,
+            url: "/demo-assets/resource-events-grid.png",
+            layerOptions: { alpha: Number(alphaInput.value) },
+          },
+        });
+      } catch (error) {
+        // 当前 SDK 尚未提供 ERROR 事件，这里处理 add() 的失败。
+        console.error("影像添加失败", error);
+        log(`[添加失败] ${error?.message ?? String(error)}`);
+      } finally {
+        adding = false;
+        updateControls();
+      }
+    }
+
+    function removeLayer() {
+      earth.sources.remove(SourceType.LAYER, layerId);
+      updateControls();
+    }
+
+    function setShow(show) {
+      earth.sources.imagery.setShow(layerId, show);
+      updateControls();
+    }
+
+    function setAlpha(alpha) {
+      earth.sources.imagery.setAlpha(layerId, alpha);
+      updateControls();
+    }
+
+    window.addEventListener("pagehide", event => {
+      if (!event.persisted) earth.destroy();
+    });
+
+    startListening();
+    updateControls();
   </script>
 </body>
 

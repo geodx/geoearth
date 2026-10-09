@@ -45,6 +45,7 @@
     "events-camera-events": "相机事件",
     "cameraEventsDescription": "监听相机视角变化、移动和飞行事件，查看当前视角，并演示飞行、取消飞行与取消监听。",
     "events-resource-events": "资源事件",
+    "resourceEventsDescription": "监听影像资源的添加、删除、显隐和属性变化，演示透明度调整与停止监听。",
     "events-picking-highlight": "对象拾取与高亮",
     "imagery-single-image": "单张影像",
     "imagery-xyz": "XYZ 影像",

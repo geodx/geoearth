@@ -30,15 +30,14 @@ export class ImageryManager {
 
         const id = getSourceId(config)
         const existingLayer = this.layers.get(id)
+        if (existingLayer) return existingLayer
 
-        if (existingLayer) {
-            return existingLayer
-        }
-
-        const provider = await this.createProvider(config) 
+        const provider = await this.createProvider(config)
 
         this.ensureAvailable()
-
+        // 等待 provider 创建期间，其他 add() 可能已经添加了这个 ID。
+        const loadedLayer = this.layers.get(id)
+        if (loadedLayer) return loadedLayer
         const layer = new ImageryLayer(provider, config.properties.layerOptions)
 
         layer.show = config.show ?? true
@@ -58,7 +57,7 @@ export class ImageryManager {
         this.sourceEvent.raiseEvent(SourceEventType.ADD, {
             type: SourceEventType.ADD,
             sourceType: SourceType.LAYER,
-            source: layer,
+            source: config,
             id
         })
 
@@ -282,7 +281,7 @@ export class ImageryManager {
                     providerOptions as TileMapServiceImageryProvider.ConstructorOptions
                 )
 
-            case ImageryProviderType.SINGLE_TILE:  
+            case ImageryProviderType.SINGLE_TILE:
                 return SingleTileImageryProvider.fromUrl(
                     this.createResource(config),
                     providerOptions as SingleTileImageryProvider.fromUrlOptions

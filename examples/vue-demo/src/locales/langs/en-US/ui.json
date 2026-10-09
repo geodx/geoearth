@@ -45,6 +45,7 @@
     "events-camera-events": "Camera events",
     "cameraEventsDescription": "Listen for camera changes, movement and flight events, inspect the current view, and try flight cancellation and unsubscribing.",
     "events-resource-events": "Resource events",
+    "resourceEventsDescription": "Listen for imagery addition, removal, visibility and property changes, adjust opacity, and stop listening.",
     "events-picking-highlight": "Object picking and highlighting",
     "imagery-single-image": "Single image",
     "imagery-xyz": "XYZ imagery",
