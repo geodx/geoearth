@@ -15,7 +15,7 @@ export const defaultConfig: Config = {
     },
     startup: {
         animation: true,
-        showFps: true,
+        showFps: false,
         zoomFactor: 2,
         resolutionScale: typeof window === 'undefined' ? 1 : window.devicePixelRatio,
         backgroundColor: '#000000',

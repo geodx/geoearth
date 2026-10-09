@@ -5,14 +5,127 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 相机事件</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
 </head>
 
 <body>
   <div id="earth"></div>
+  <aside class="demo-panel">
+    <button id="start" onclick="startListening()">开启监听</button>
+    <button id="stop" onclick="stopListening()" disabled>停止监听</button>
+    <button onclick="flyToView(116.391, 39.907, 1000000)">飞到北京</button>
+    <button onclick="flyHome()">返回初始视角</button>
+    <button onclick="cancelFlight()">取消飞行</button>
+    <p class="hint">拖动或缩放地球观察相机事件。飞行正常完成触发 flyEnd</p>
+    <pre id="view" aria-label="当前相机视角"></pre>
+    <pre id="log" class="log" role="log" aria-label="相机事件日志"></pre>
+  </aside>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“相机事件”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    // HTML 中从 GeoEarth 获取 API；npm 中从 'geoearth' 导入。
+    const { CameraEventType, flyTo } = GeoEarth;
+    const earth = new GeoEarth("earth", undefined, {
+      startup: { animation: false },
+    });
+    const startButton = document.getElementById("start");
+    const stopButton = document.getElementById("stop");
+    const viewOutput = document.getElementById("view");
+    const eventLog = document.getElementById("log");
+    let listening = false;
+    const logLines = [];
+
+    const cameraEvents = [
+      [CameraEventType.MOVE_START, "相机开始移动"],
+      [CameraEventType.MOVE_END, "相机停止移动"],
+      [CameraEventType.FLY_START, "飞行开始"],
+      [CameraEventType.FLY_END, "飞行正常完成"],
+    ];
+
+    function showView(camera) {
+      const position = camera.positionCartographic;
+      const degrees = radians => (radians * 180 / Math.PI).toFixed(2);
+      // 当场读取数值，不把实时变化的 camera 对象作为历史状态保存。
+      viewOutput.textContent = [
+        `经度：${degrees(position.longitude)}`,
+        `纬度：${degrees(position.latitude)}`,
+        `高度：${Math.round(position.height)} 米`,
+        `heading：${degrees(camera.heading)}`,
+        `pitch：${degrees(camera.pitch)}`,
+        `roll：${degrees(camera.roll)}`,
+      ].join("\n");
+    }
+
+    function log(message) {
+      console.log(message);
+      logLines.push(message);
+      if (logLines.length > 30) logLines.shift();
+      eventLog.textContent = logLines.join("\n");
+      eventLog.scrollTop = eventLog.scrollHeight;
+    }
+
+    function startListening() {
+      if (listening) return;
+
+      earth.event.camera.addEventListener(
+        CameraEventType.CHANGE,
+        event => {
+          showView(event.camera);
+          console.debug(`[change]\n${viewOutput.textContent}`);
+        }
+      );
+
+      for (const [type, name] of cameraEvents) {
+        earth.event.camera.addEventListener(type, event => {
+          showView(event.camera);
+          log(`[${type}] ${name}`);
+        });
+      }
+
+      listening = true;
+      startButton.disabled = true;
+      stopButton.disabled = false;
+      showView(earth.viewer.camera);
+      log("已开启监听");
+    }
+
+    function stopListening() {
+      if (!listening) return;
+
+      earth.event.camera.removeAllEventListeners();
+      listening = false;
+
+      startButton.disabled = false;
+      stopButton.disabled = true;
+      log("已停止监听");
+    }
+
+    function flyToView(longitude, latitude, height) {
+      // 使用 SDK 封装的 flyTo，才能收到 flyStart / flyEnd。
+      flyTo({
+        viewer: earth.viewer,
+        cameraEvent: earth.event.camera,
+        longitude,
+        latitude,
+        height,
+        duration: 3,
+      });
+    }
+
+    function flyHome() {
+      const { longitude, latitude, height } = earth.config.homeView;
+      flyToView(longitude, latitude, height);
+    }
+
+    function cancelFlight() {
+      earth.viewer.camera.cancelFlight();
+      log("已请求取消飞行");
+    }
+
+    window.addEventListener("pagehide", event => {
+      if (!event.persisted) earth.destroy();
+    });
+
+    startListening();
   </script>
 </body>
 

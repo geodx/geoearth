@@ -6,7 +6,7 @@ function toRadians(value = 0, unit: 'degree' | 'radian' = 'degree') {
 }
 
 export function initViewerState(viewer: Viewer, config: Config) {
-    const { homeView, startup } = config 
+    const { homeView, startup } = config
     viewer.scene.globe.baseColor = Color.fromCssColorString(startup.globeBaseColor)
     viewer.scene.backgroundColor = Color.fromCssColorString(startup.backgroundColor)
     viewer.scene.postProcessStages.fxaa.enabled = startup.fxaa
@@ -34,4 +34,5 @@ export function initViewerState(viewer: Viewer, config: Config) {
     })
 
     viewer.scene.screenSpaceCameraController.zoomFactor = startup.zoomFactor
+    viewer.camera.percentageChanged = 0.01
 }
