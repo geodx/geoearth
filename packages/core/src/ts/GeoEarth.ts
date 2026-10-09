@@ -1,11 +1,11 @@
 import type { Viewer } from 'cesium'
 import { createViewer } from './viewer/createViewer';
 
-import { PerformanceManager } from './performance'
+import { PerformanceManage } from './performance'
 
-import { Event } from './events/Event'
+import { EventManage } from './events/EventManage'
 import { StartAnimation } from './camera/animations/StartAnimation';
-import { loadBaseSources, loadDefaultSources, ResourceManager } from './sources';
+import { loadBaseSources, loadDefaultSources, ResourceManage } from './sources';
 import { ToolManager } from './tools/ToolManager';
 import { Config } from './config/types';
 import { createConfig } from './config/createConfig';
@@ -14,13 +14,14 @@ import { ViewerEventType } from './events/types';
 
 export class GeoEarth {
     public readonly viewer: Viewer
+    // public readonly camera: CameraManage
     public readonly config: Config
 
-    public readonly performance: PerformanceManager
+    public readonly performance: PerformanceManage
 
-    public readonly event: Event
+    public readonly event: EventManage
 
-    public readonly sources: ResourceManager
+    public readonly sources: ResourceManage
 
     public readonly tools: ToolManager
 
@@ -44,13 +45,15 @@ export class GeoEarth {
         this.viewer = createViewer(container, options, this.config)
 
         // 初始化事件
-        this.event = new Event(this.viewer)
+        this.event = new EventManage(this.viewer)
 
-        this.performance = new PerformanceManager(this.viewer)
+        // this.camera = new CameraManage(this.viewer)
+
+        this.performance = new PerformanceManage(this.viewer)
 
         this.startAnimation = new StartAnimation(this.viewer)
 
-        this.sources = new ResourceManager(this.viewer, this.event.source)
+        this.sources = new ResourceManage(this.viewer, this.event.source)
 
         this.tools = new ToolManager(this.viewer, this.event.screen)
 

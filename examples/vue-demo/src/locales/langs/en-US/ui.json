@@ -41,6 +41,7 @@
     "basic-start-animation": "Startup animation",
     "startAnimationDescription": "Enable or disable the startup animation using a dropdown that recreates Earth on change.",
     "events-mouse-events": "Mouse events",
+    "mouseEventsDescription": "Listen for mouse button, click, double-click, move and wheel events, inspect their parameters, and unsubscribe.",
     "events-camera-events": "Camera events",
     "events-resource-events": "Resource events",
     "events-picking-highlight": "Object picking and highlighting",

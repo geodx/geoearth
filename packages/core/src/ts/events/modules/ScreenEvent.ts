@@ -1,5 +1,6 @@
 import { ScreenSpaceEventHandler, type ScreenSpaceEventType, type Viewer } from 'cesium'
-import { EventCallback, RemoveCallback, ScreenEventPayload } from '../types'
+import { BaseEvent } from '../base/BaseEvent'
+import type { EventCallback, RemoveCallback, ScreenEventPayload } from '../types'
 
 /**
  * 屏幕事件管理器。
@@ -7,10 +8,8 @@ import { EventCallback, RemoveCallback, ScreenEventPayload } from '../types'
  * 整个 GeoEarth 实例只创建一个 ScreenSpaceEventHandler，
  * 普通功能通过 addEventListener 共享这个 handler。
  */
-export class ScreenEvent {
+export class ScreenEvent extends BaseEvent<ScreenSpaceEventType, ScreenEventPayload> {
   private readonly handler: ScreenSpaceEventHandler
-
-  private readonly listeners = new Map<ScreenSpaceEventType, Set<EventCallback<ScreenEventPayload>>>()
 
   /**
    * 记录已经绑定到底层 Cesium handler 的事件类型，
@@ -19,85 +18,40 @@ export class ScreenEvent {
   private readonly boundTypes = new Set<ScreenSpaceEventType>()
 
   constructor(viewer: Viewer) {
+    super()
+
     this.handler = new ScreenSpaceEventHandler(
       viewer.scene.canvas
     )
   }
 
-  addEventListener(type: ScreenSpaceEventType, listener: EventCallback<ScreenEventPayload>): RemoveCallback {
-    let typeListeners = this.listeners.get(type)
-
-    if (!typeListeners) {
-      typeListeners = new Set()
-      this.listeners.set(type, typeListeners)
-    }
-
-    typeListeners.add(listener)
+  override addEventListener(type: ScreenSpaceEventType, listener: EventCallback<ScreenEventPayload>): RemoveCallback {
+    // 先绑定底层事件，避免绑定失败后留下无效的业务监听。
     this.bindCesiumEvent(type)
-
-    return () => { this.removeEventListener(type, listener) }
+    return super.addEventListener(type, listener)
   }
 
-  removeEventListener(type: ScreenSpaceEventType, listener: EventCallback<ScreenEventPayload>): boolean {
-    const typeListeners = this.listeners.get(type)
+  override removeEventListener(type: ScreenSpaceEventType, listener: EventCallback<ScreenEventPayload>): boolean {
+    const removed = super.removeEventListener(type, listener)
 
-    if (!typeListeners) {
-      return false
-    }
-
-    const removed = typeListeners.delete(listener)
-
-    if (typeListeners.size === 0) {
-      this.listeners.delete(type)
+    if (!this.hasEventListener(type)) {
       this.unbindCesiumEvent(type)
     }
 
     return removed
   }
 
-  /**
-   * 手动触发屏幕事件。
-   *
-   * 正常鼠标操作由 Cesium 自动转发，
-   * 该方法主要用于内部模拟事件或者测试。
-   */
-  raiseEvent(type: ScreenSpaceEventType, payload: ScreenEventPayload): void {
-    const typeListeners = this.listeners.get(type)
+  override removeAllEventListeners(type?: ScreenSpaceEventType): void {
+    super.removeAllEventListeners(type)
 
-    if (!typeListeners) {
-      return
-    }
-
-    for (const listener of [...typeListeners]) {
-      listener(payload)
-    }
-  }
-
-  hasEventListener(type: ScreenSpaceEventType, listener?: EventCallback<ScreenEventPayload>): boolean {
-    const typeListeners = this.listeners.get(type)
-
-    if (!typeListeners) {
-      return false
-    }
-
-    return listener
-      ? typeListeners.has(listener)
-      : typeListeners.size > 0
-  }
-
-  removeAllEventListeners(type?: ScreenSpaceEventType): void {
     if (type !== undefined) {
-      this.listeners.delete(type)
       this.unbindCesiumEvent(type)
       return
     }
 
     for (const boundType of this.boundTypes) {
-      this.handler.removeInputAction(boundType)
+      this.unbindCesiumEvent(boundType)
     }
-
-    this.boundTypes.clear()
-    this.listeners.clear()
   }
 
   private bindCesiumEvent(type: ScreenSpaceEventType): void {

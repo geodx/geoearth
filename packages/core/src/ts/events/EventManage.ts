@@ -13,7 +13,7 @@ import { ViewerEvent } from './modules/ViewerEvent'
  * earth.event.viewer
  * earth.event.source
  */
-export class Event {
+export class EventManage {
     readonly screen: ScreenEvent
     readonly camera: CameraEvent
     readonly viewer: ViewerEvent
