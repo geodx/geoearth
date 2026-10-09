@@ -34,6 +34,7 @@ export class ResourceManage {
     }
 
     remove(type: SourceType, id: string): boolean {
+        // let sourceItem = this.getNodeByPid(pid);
         switch (type) {
             case SourceType.LAYER:
                 return this.imagery.remove(id)

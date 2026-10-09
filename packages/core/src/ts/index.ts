@@ -3,7 +3,8 @@ export type { Config } from './config/types';
 
 
 export { ScreenSpaceEventType } from 'cesium';
-export { ViewerEventType, CameraEventType } from './events/types';
+export { ViewerEventType, CameraEventType, SourceEventType, type SourceEventPayload } from './events/types';
+export { SourceType, ImageryProviderType } from './sources/types';
 export { flyTo, type FlyToOptions } from './camera/flyTo';
 export { MeasureCancelledError } from './tools/measure/types';
 

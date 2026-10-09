@@ -69,7 +69,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "events-resource-events",
         "title": "demos.events-resource-events",
-        "description": "demos.placeholderDescription",
+        "description": "demos.resourceEventsDescription",
         "path": "demos/events/resource-events.html"
       },
       {
