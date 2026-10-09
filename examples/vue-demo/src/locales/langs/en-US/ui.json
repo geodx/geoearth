@@ -43,6 +43,7 @@
     "events-mouse-events": "Mouse events",
     "mouseEventsDescription": "Listen for mouse button, click, double-click, move and wheel events, inspect their parameters, and unsubscribe.",
     "events-camera-events": "Camera events",
+    "cameraEventsDescription": "Listen for camera changes, movement and flight events, inspect the current view, and try flight cancellation and unsubscribing.",
     "events-resource-events": "Resource events",
     "events-picking-highlight": "Object picking and highlighting",
     "imagery-single-image": "Single image",

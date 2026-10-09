@@ -50,7 +50,7 @@
       const current = new GeoEarth("earth", undefined, {
         homeView,
         // 关闭开场动画，直接观察配置的初始视角。
-        startup: { animation: false, showFps: false },
+        startup: { animation: false },
       });
       earth = current;
       output.textContent = JSON.stringify(homeView, null, 2);

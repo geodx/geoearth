@@ -27,7 +27,6 @@ function createOverview(root: HTMLElement, options: OverviewMapOptions): CesiumW
 function configureWidget(cesiumWidget: CesiumWidget): void {
   cesiumWidget.scene.backgroundColor = Color.fromCssColorString('#08131d')
   cesiumWidget.scene.globe.baseColor = Color.fromCssColorString('#08131d')
-  cesiumWidget.resolutionScale = window.devicePixelRatio;
 
   cesiumWidget.scene.screenSpaceCameraController.enableInputs = false
 }

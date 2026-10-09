@@ -43,6 +43,7 @@
     "events-mouse-events": "鼠标事件",
     "mouseEventsDescription": "监听鼠标按下、抬起、单击、双击、移动和滚轮，展示事件参数及取消监听。",
     "events-camera-events": "相机事件",
+    "cameraEventsDescription": "监听相机视角变化、移动和飞行事件，查看当前视角，并演示飞行、取消飞行与取消监听。",
     "events-resource-events": "资源事件",
     "events-picking-highlight": "对象拾取与高亮",
     "imagery-single-image": "单张影像",

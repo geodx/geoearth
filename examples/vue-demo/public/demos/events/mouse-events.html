@@ -23,13 +23,13 @@
     // npm 中使用 import { ScreenSpaceEventType } from 'geoearth'。
     const { ScreenSpaceEventType } = GeoEarth;
     const earth = new GeoEarth("earth", undefined, {
-      startup: { animation: false, showFps: false },
+      startup: { animation: false },
     });
     const startButton = document.getElementById("start");
     const stopButton = document.getElementById("stop");
     const moveOutput = document.getElementById("move");
     const eventLog = document.getElementById("log");
-    const removeCallbacks = [];
+    let listening = false;
     const logLines = [];
 
     const positionedEvents = [
@@ -58,40 +58,40 @@
     }
 
     function startListening() {
-      if (removeCallbacks.length) return;
+      if (listening) return;
 
       for (const [type, name] of positionedEvents) {
-        removeCallbacks.push(
-          earth.event.screen.addEventListener(type, event => {
-            // 当场转成文字，避免保存 Cesium 会复用的事件参数对象。
-            log(`[${name}] ${formatPosition(event.position)}`);
-          }));
+        earth.event.screen.addEventListener(type, event => {
+          // 当场转成文字，避免保存 Cesium 会复用的事件参数对象。
+          log(`[${name}] ${formatPosition(event.position)}`);
+        });
       }
 
-      removeCallbacks.push(earth.event.screen.addEventListener(
+      earth.event.screen.addEventListener(
         ScreenSpaceEventType.MOUSE_MOVE,
         event => {
           const message = `[鼠标移动] ${formatPosition(event.startPosition)} → ${formatPosition(event.endPosition)}`;
           moveOutput.textContent = message;
           console.debug(message);
         }
-      ));
+      );
 
-      removeCallbacks.push(earth.event.screen.addEventListener(
+      earth.event.screen.addEventListener(
         ScreenSpaceEventType.WHEEL,
         delta => log(`[鼠标滚轮] delta = ${delta}`)
-      ));
+      );
 
+      listening = true;
       startButton.disabled = true;
       stopButton.disabled = false;
       log("已开启监听");
     }
 
     function stopListening() {
-      if (!removeCallbacks.length) return;
+      if (!listening) return;
 
-      // 只取消本示例注册的监听，不影响其他功能使用鼠标事件。
-      for (const remove of removeCallbacks.splice(0)) remove();
+      earth.event.screen.removeAllEventListeners();
+      listening = false;
 
       startButton.disabled = false;
       stopButton.disabled = true;

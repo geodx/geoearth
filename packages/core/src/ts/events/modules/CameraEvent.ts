@@ -13,7 +13,7 @@ export class CameraEvent extends BaseEvent<CameraEventType, CameraEventPayload> 
     private removeMoveEndListener?: () => void
 
     /**
-     * 限制 CHANGE 事件触发频率，避免相机移动时业务回调过于频繁。
+     * 限制 CHANGE 事件触发频率 80ms ，避免相机移动时业务回调过于频繁。
      */
     private readonly changeInterval = 80
     private lastChangeTime = 0
@@ -54,6 +54,12 @@ export class CameraEvent extends BaseEvent<CameraEventType, CameraEventPayload> 
 
         this.removeMoveEndListener =
             camera.moveEnd.addEventListener(() => {
+                // 移动结束时补发最终视角，不受 80ms 节流限制。
+                this.raiseEvent(CameraEventType.CHANGE, {
+                    type: CameraEventType.CHANGE,
+                    camera
+                })
+
                 this.raiseEvent(CameraEventType.MOVE_END, {
                     type: CameraEventType.MOVE_END,
                     camera
