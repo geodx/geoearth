@@ -1,7 +1,7 @@
 import type { Viewer } from 'cesium'
 
-import { Event } from '../events/Event'
-import { ResourceManager } from '../sources'
+import { EventManage } from '../events/EventManage'
+import { ResourceManage } from '../sources'
 import { ToolManager } from '../tools/ToolManager'
 
 /**
@@ -11,8 +11,8 @@ import { ToolManager } from '../tools/ToolManager'
  * 不同 Viewer 可以复用相同的管理器实现，但不会共享具体资源实例。
  */
 export class ViewContext {
-    public readonly event: Event
-    public readonly sources: ResourceManager
+    public readonly event: EventManage
+    public readonly sources: ResourceManage
     public readonly tools: ToolManager
 
     private destroyed = false
@@ -22,8 +22,8 @@ export class ViewContext {
             throw new Error('Cannot create ViewContext from a destroyed Viewer.')
         }
 
-        this.event = new Event(viewer)
-        this.sources = new ResourceManager(viewer, this.event.source)
+        this.event = new EventManage(viewer)
+        this.sources = new ResourceManage(viewer, this.event.source)
         this.tools = new ToolManager(viewer, this.event.screen)
     }
 

@@ -1,4 +1,4 @@
-export { ResourceManager } from './ResourceManager'
+export { ResourceManage } from './ResourceManage'
 
 export {
     loadBaseSources,

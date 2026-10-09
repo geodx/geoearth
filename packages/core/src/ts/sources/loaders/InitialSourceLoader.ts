@@ -1,5 +1,5 @@
 import { Config } from '../../config/types'
-import type { ResourceManager } from '../ResourceManager'
+import type { ResourceManage } from '../ResourceManage'
 import { InitialSourceItem, ResourceItem, SourceLoadFailure, SourceLoadResult, SourceLoadSuccess, SourceType } from '../types'
 
 /**
@@ -8,7 +8,7 @@ import { InitialSourceItem, ResourceItem, SourceLoadFailure, SourceLoadResult, S
  * 地形和影像决定地球的基础显示效果，
  * 应在模型、3D Tiles、POI 等资源之前加载。
  */
-export async function loadBaseSources(resourceManager: ResourceManager, config: Config): Promise<SourceLoadResult> {
+export async function loadBaseSources(resourceManage: ResourceManage, config: Config): Promise<SourceLoadResult> {
     const resources = config.resources
     const baseSources: InitialSourceItem[] = [
         ...getDefaultSources(
@@ -20,7 +20,7 @@ export async function loadBaseSources(resourceManager: ResourceManager, config: 
             resources.layers
         )
     ]
-    return loadSourceGroup(resourceManager, baseSources)
+    return loadSourceGroup(resourceManage, baseSources)
 }
 
 /**
@@ -28,7 +28,7 @@ export async function loadBaseSources(resourceManager: ResourceManager, config: 
  *
  * 这些资源互相之间没有强制顺序，因此并行创建。
  */
-export async function loadDefaultSources(resourceManager: ResourceManager, config: Config): Promise<SourceLoadResult> {
+export async function loadDefaultSources(resourceManage: ResourceManage, config: Config): Promise<SourceLoadResult> {
     const resources = config.resources
 
     const defaultSources: InitialSourceItem[] = [
@@ -51,7 +51,7 @@ export async function loadDefaultSources(resourceManager: ResourceManager, confi
     ]
 
     return loadSourceGroup(
-        resourceManager,
+        resourceManage,
         defaultSources
     )
 }
@@ -74,10 +74,10 @@ function getDefaultSources(type: SourceType, resources: ResourceItem[]): Initial
  * 使用 Promise.allSettled，确保一个资源失败时，
  * 不会阻止同一组中的其他资源继续加载。
  */
-async function loadSourceGroup(resourceManager: ResourceManager, sources: InitialSourceItem[]): Promise<SourceLoadResult> {
+async function loadSourceGroup(resourceManage: ResourceManage, sources: InitialSourceItem[]): Promise<SourceLoadResult> {
     const settledResults = await Promise.allSettled(
         sources.map(source =>
-            resourceManager.add(source.type, source.config)
+            resourceManage.add(source.type, source.config)
         )
     )
 
@@ -121,10 +121,10 @@ async function loadSourceGroup(resourceManager: ResourceManager, sources: Initia
  * 1. 基础地形和影像。
  * 2. 模型、3D Tiles、GeoJSON 和 POI。
  */
-export async function loadInitialSources(resourceManager: ResourceManager, config: Config): Promise<SourceLoadResult> {
-    const baseResult = await loadBaseSources(resourceManager, config)
+export async function loadInitialSources(resourceManage: ResourceManage, config: Config): Promise<SourceLoadResult> {
+    const baseResult = await loadBaseSources(resourceManage, config)
 
-    const defaultResult = await loadDefaultSources(resourceManager, config)
+    const defaultResult = await loadDefaultSources(resourceManage, config)
 
     return {
         successes: [

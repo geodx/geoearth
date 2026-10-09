@@ -64,16 +64,6 @@ export interface StartAnimationOptions {
     intermediateHeightThreshold?: number
 }
 
-interface ResolvedStartAnimationOptions {
-    center?: CameraView
-    initialView: CameraView
-    cruiseHeight: number
-    duration1: number
-    duration2: number
-    duration3: number
-    enableIntermediateFlight: boolean
-    intermediateHeightThreshold: number
-}
 
 /**
  * 开场相机飞入动画。
@@ -86,7 +76,7 @@ interface ResolvedStartAnimationOptions {
  */
 export class StartAnimation {
     private readonly viewer: Viewer
-    private readonly defaultOptions: ResolvedStartAnimationOptions
+    private readonly defaultOptions: StartAnimationOptions
 
     private playing = false
     private destroyed = false
@@ -375,10 +365,7 @@ export class StartAnimation {
         this.viewer.scene.requestRender()
     }
 
-    private shouldUseIntermediateFlight(
-        target: CameraView,
-        options: ResolvedStartAnimationOptions
-    ): boolean {
+    private shouldUseIntermediateFlight(target: CameraView, options: StartAnimationOptions): boolean {
         if (!options.enableIntermediateFlight) {
             return false
         }
@@ -419,9 +406,7 @@ export class StartAnimation {
         )
     }
 
-    private mergeOptions(
-        options: StartAnimationOptions
-    ): ResolvedStartAnimationOptions {
+    private mergeOptions(options: StartAnimationOptions): StartAnimationOptions {
         return this.resolveOptions({
             ...this.defaultOptions,
             ...options,
@@ -438,12 +423,9 @@ export class StartAnimation {
         })
     }
 
-    private resolveOptions(
-        options: StartAnimationOptions
-    ): ResolvedStartAnimationOptions {
+    private resolveOptions(options: StartAnimationOptions): StartAnimationOptions {
         return {
             center: options.center,
-
             initialView: options.initialView ?? {
                 longitude: -85.16,
                 latitude: 13.71,

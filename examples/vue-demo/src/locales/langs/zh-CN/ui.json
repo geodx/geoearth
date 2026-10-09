@@ -41,6 +41,7 @@
     "basic-start-animation": "开场动画",
     "startAnimationDescription": "通过选择框开启或关闭开场动画，切换时重新创建地球。",
     "events-mouse-events": "鼠标事件",
+    "mouseEventsDescription": "监听鼠标按下、抬起、单击、双击、移动和滚轮，展示事件参数及取消监听。",
     "events-camera-events": "相机事件",
     "events-resource-events": "资源事件",
     "events-picking-highlight": "对象拾取与高亮",

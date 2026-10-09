@@ -6,10 +6,10 @@ import { ResourceItem, SourceType, type ImageryResourceItem } from './types'
 /**
  * 资源统一入口。
  *
- * ResourceManager 只负责资源类型分发，
+ * ResourceManage 只负责资源类型分发，
  * 具体实现由对应的子管理器负责。
  */
-export class ResourceManager {
+export class ResourceManage {
     public readonly imagery: ImageryManager
 
     constructor(viewer: Viewer, sourceEvent: SourceEvent) {

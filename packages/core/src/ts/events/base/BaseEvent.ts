@@ -65,7 +65,11 @@ export class BaseEvent<TType, TPayload> {
         const currentListeners = [...typeListeners]
 
         for (const listener of currentListeners) {
-            listener(payload)
+            try {
+                listener(payload)
+            } catch (error) {
+                console.error(`Error in event listener for type "${type}":`, error)
+            }
         }
     }
 

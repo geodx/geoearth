@@ -1,1 +1,1 @@
-export { PerformanceManager } from './PerformanceManager'
+export { PerformanceManage } from './PerformanceManage'

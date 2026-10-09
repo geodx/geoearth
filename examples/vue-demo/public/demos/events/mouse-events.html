@@ -5,14 +5,104 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 鼠标事件</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
 </head>
 
 <body>
   <div id="earth"></div>
+  <aside class="demo-panel">
+    <button id="start" onclick="startListening()">开启监听</button>
+    <button id="stop" onclick="stopListening()" disabled>停止监听</button>
+    <p class="hint">在地球上点击、双击、移动或滚动鼠标。位置为画布内的屏幕像素坐标。</p>
+    <pre id="move">鼠标移动：等待操作</pre>
+    <pre id="log" class="log" role="log" aria-label="鼠标事件日志"></pre>
+  </aside>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“鼠标事件”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    // HTML 中从 GeoEarth 获取 API；
+    // npm 中使用 import { ScreenSpaceEventType } from 'geoearth'。
+    const { ScreenSpaceEventType } = GeoEarth;
+    const earth = new GeoEarth("earth", undefined, {
+      startup: { animation: false, showFps: false },
+    });
+    const startButton = document.getElementById("start");
+    const stopButton = document.getElementById("stop");
+    const moveOutput = document.getElementById("move");
+    const eventLog = document.getElementById("log");
+    const removeCallbacks = [];
+    const logLines = [];
+
+    const positionedEvents = [
+      [ScreenSpaceEventType.LEFT_DOWN, "左键按下"],
+      [ScreenSpaceEventType.LEFT_UP, "左键抬起"],
+      [ScreenSpaceEventType.LEFT_CLICK, "左键单击"],
+      [ScreenSpaceEventType.LEFT_DOUBLE_CLICK, "左键双击"],
+      [ScreenSpaceEventType.RIGHT_DOWN, "右键按下"],
+      [ScreenSpaceEventType.RIGHT_UP, "右键抬起"],
+      [ScreenSpaceEventType.RIGHT_CLICK, "右键单击"],
+      [ScreenSpaceEventType.MIDDLE_DOWN, "中键按下"],
+      [ScreenSpaceEventType.MIDDLE_UP, "中键抬起"],
+      [ScreenSpaceEventType.MIDDLE_CLICK, "中键单击"],
+    ];
+
+    function formatPosition(position) {
+      return `(${Math.round(position.x)}, ${Math.round(position.y)})`;
+    }
+
+    function log(message) {
+      console.log(message);
+      logLines.push(message);
+      if (logLines.length > 30) logLines.shift();
+      eventLog.textContent = logLines.join("\n");
+      eventLog.scrollTop = eventLog.scrollHeight;
+    }
+
+    function startListening() {
+      if (removeCallbacks.length) return;
+
+      for (const [type, name] of positionedEvents) {
+        removeCallbacks.push(
+          earth.event.screen.addEventListener(type, event => {
+            // 当场转成文字，避免保存 Cesium 会复用的事件参数对象。
+            log(`[${name}] ${formatPosition(event.position)}`);
+          }));
+      }
+
+      removeCallbacks.push(earth.event.screen.addEventListener(
+        ScreenSpaceEventType.MOUSE_MOVE,
+        event => {
+          const message = `[鼠标移动] ${formatPosition(event.startPosition)} → ${formatPosition(event.endPosition)}`;
+          moveOutput.textContent = message;
+          console.debug(message);
+        }
+      ));
+
+      removeCallbacks.push(earth.event.screen.addEventListener(
+        ScreenSpaceEventType.WHEEL,
+        delta => log(`[鼠标滚轮] delta = ${delta}`)
+      ));
+
+      startButton.disabled = true;
+      stopButton.disabled = false;
+      log("已开启监听");
+    }
+
+    function stopListening() {
+      if (!removeCallbacks.length) return;
+
+      // 只取消本示例注册的监听，不影响其他功能使用鼠标事件。
+      for (const remove of removeCallbacks.splice(0)) remove();
+
+      startButton.disabled = false;
+      stopButton.disabled = true;
+      log("已停止监听");
+    }
+
+    window.addEventListener("pagehide", event => {
+      if (!event.persisted) earth.destroy();
+    });
+
+    startListening();
   </script>
 </body>
 

@@ -30,9 +30,8 @@ function wrapIife(code: string) {
 
   ${code}
 
-  // 保留完整 SDK 导出，同时允许直接 new GeoEarth()。
-  window.GeoEarthSDK = GeoEarthCore;
-  window.GeoEarth = GeoEarthCore.GeoEarth;
+  const { GeoEarth: Constructor, ...api } = GeoEarth;
+  window.GeoEarth = Object.assign(Constructor, api);
 })();
 `;
 }
@@ -105,7 +104,7 @@ export default defineConfig({
 
         lib: {
             entry: path.join(root, "src/index.ts"),
-            name: "GeoEarthCore",
+            name: "GeoEarth",
             formats: ["iife"],
             fileName: () => "geoearth.js",
             cssFileName: "geoearth",

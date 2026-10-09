@@ -57,7 +57,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "events-mouse-events",
         "title": "demos.events-mouse-events",
-        "description": "demos.placeholderDescription",
+        "description": "demos.mouseEventsDescription",
         "path": "demos/events/mouse-events.html"
       },
       {
