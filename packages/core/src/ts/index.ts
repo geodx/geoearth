@@ -15,3 +15,4 @@ export { CoordinateType, DrawCancelledError, type DegreePosition } from './tools
 export { getCameraHeight, getCameraInfo, getViewCenter } from './utils';
 
 export * from './visualization/materials/lines';
+export * from './interaction';

@@ -75,7 +75,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "events-picking-highlight",
         "title": "demos.events-picking-highlight",
-        "description": "demos.placeholderDescription",
+        "description": "demos.pickingHighlightDescription",
         "path": "demos/events/picking-highlight.html"
       }
     ]

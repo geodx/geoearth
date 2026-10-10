@@ -47,6 +47,7 @@
     "events-resource-events": "Resource events",
     "resourceEventsDescription": "Listen for imagery addition, removal, visibility and property changes, adjust opacity, and stop listening.",
     "events-picking-highlight": "Object picking and highlighting",
+    "pickingHighlightDescription": "Pick objects, highlight hover and selection, inspect properties, restore styles, and pause interaction while drawing.",
     "imagery-single-image": "Single image",
     "imagery-xyz": "XYZ imagery",
     "imagery-wms": "WMS imagery",

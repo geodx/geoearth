@@ -5,14 +5,151 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 对象拾取与高亮</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
 </head>
 
 <body>
   <div id="earth"></div>
+  <aside class="demo-panel" style="left: 16px; right: auto">
+    <p><label><input id="enabled" type="checkbox" checked onchange="toggleInteraction(this.checked)" /> 悬停与点击选中</label></p>
+    <p><label for="target">操作对象</label>
+      <select id="target">
+        <option value="building-a">办公楼 A</option>
+        <option value="building-b">办公楼 B</option>
+        <option value="route">连线</option>
+        <option value="poi">服务点</option>
+      </select>
+    </p>
+    <button onclick="selectObject()">选中对象</button>
+    <button onclick="highlightObject()">手动高亮</button>
+    <button onclick="earth.interaction.clearSelection()">清除选中</button>
+    <button onclick="earth.interaction.clearHighlight()">清除高亮</button>
+    <button onclick="removeObject()">删除对象</button>
+    <button onclick="addObjects()">恢复对象</button>
+    <button onclick="drawPoint()">绘制点</button>
+    <button onclick="earth.tools.draw.cancel()">取消绘制</button>
+    <p class="hint">悬停为青色，选中为黄色，手动高亮为橙色。点击空白清除选中；属性使用 Cesium 原生属性框。绘制时显示预览点，完成后保留结果点，自动恢复拾取。</p>
+    <pre id="state" aria-label="交互状态"></pre>
+    <pre id="log" class="log" role="log" aria-label="对象交互日志"></pre>
+  </aside>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“对象拾取与高亮”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    // HTML 中从 GeoEarth 获取 API；npm 中从 'geoearth' 导入。
+    const { InteractionEventType, ScreenSpaceEventType, ImageryProviderType, DrawCancelledError } = GeoEarth;
+    const earth = new GeoEarth("earth", { infoBox: true, selectionIndicator: true }, {
+      startup: { animation: false },
+      homeView: { longitude: 116.391, latitude: 39.907, height: 12000 },
+      resources: {
+        layers: [{ id: "demo-base", name: "本地底图", defaultLoad: true, show: true,
+          properties: { providerType: ImageryProviderType.SINGLE_TILE,
+            url: "/demo-assets/resource-events-grid.png", baseLayer: true } }],
+      },
+    });
+    const state = document.getElementById("state");
+    const output = document.getElementById("log");
+    const lines = [];
+    let drawnPointCount = 0;
+
+    // 用原生 Entity 构造示例对象；不额外引入一份 Cesium，也不依赖在线建筑服务。
+    function position(longitude, latitude, height = 0) {
+      return earth.viewer.scene.globe.ellipsoid.cartographicToCartesian({
+        longitude: longitude * Math.PI / 180,
+        latitude: latitude * Math.PI / 180,
+        height,
+      });
+    }
+
+    function building(id, name, longitude, height) {
+      return {
+        id, name,
+        position: position(longitude, 39.907, height),
+        polygon: {
+          hierarchy: [position(longitude - .003, 39.904), position(longitude + .003, 39.904),
+            position(longitude + .003, 39.910), position(longitude - .003, 39.910)],
+          height: 0, extrudedHeight: height,
+        },
+        label: { text: name, font: "16px sans-serif", disableDepthTestDistance: Infinity },
+        properties: { 名称: name, 高度: `${height} 米`, 用途: "办公", 说明: "本地示例实体" },
+      };
+    }
+
+    function addObjects() {
+      const objects = [building("building-a", "办公楼 A", 116.386, 500),
+        building("building-b", "办公楼 B", 116.398, 850),
+        { id: "route", name: "连线", polyline: { width: 6,
+          positions: [position(116.382, 39.900, 50), position(116.404, 39.900, 50)] },
+          properties: { 用途: "示例连线" } },
+        { id: "poi", name: "服务点", position: position(116.392, 39.896, 20),
+          point: { pixelSize: 18, disableDepthTestDistance: Infinity }, properties: { 类型: "服务点" } },
+      ];
+      for (const object of objects) {
+        if (!earth.viewer.entities.getById(object.id)) earth.viewer.entities.add(object);
+      }
+      updateState();
+    }
+
+    function target() { return earth.viewer.entities.getById(document.getElementById("target").value); }
+    function selectObject() { const entity = target(); if (entity) earth.interaction.select(entity); }
+    function highlightObject() { const entity = target(); if (entity) earth.interaction.highlight(entity); }
+    function removeObject() { const entity = target(); if (entity) earth.viewer.entities.remove(entity); updateState(); }
+    function toggleInteraction(enabled) {
+      if (enabled) earth.interaction.enable();
+      else earth.interaction.disable();
+      updateState();
+    }
+
+    function log(message) {
+      console.log(message);
+      lines.push(message);
+      if (lines.length > 20) lines.shift();
+      output.textContent = lines.join("\n");
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function updateState() {
+      const name = result => result?.name ?? result?.id ?? "无";
+      state.textContent = `自动交互：${earth.interaction.isEnabled ? "开启" : "关闭"}\n悬停：${name(earth.interaction.hovered)}\n选中：${name(earth.interaction.selected)}\n手动高亮：${name(earth.interaction.highlighted)}\n对象数：${earth.viewer.entities.values.length}`;
+    }
+
+    for (const type of Object.values(InteractionEventType)) {
+      earth.event.interaction.addEventListener(type, event => {
+        updateState();
+        log(`[${type}] ${event.previous?.name ?? "无"} → ${event.current?.name ?? "无"}`);
+        if (event.current) console.log("拾取结果", event.current);
+      });
+    }
+    earth.event.screen.addEventListener(ScreenSpaceEventType.LEFT_CLICK, event => {
+      if (earth.tools.draw.isActive || !earth.interaction.isEnabled) return;
+      const objects = earth.interaction.drillPick(event.position);
+      log(`[drillPick] ${objects.map(item => item.name ?? item.type).join("、") || "空白"}`);
+    });
+
+    async function drawPoint() {
+      log("开始绘制：左键完成，右键取消");
+      try {
+        const point = await earth.tools.draw.drawPoint({});
+        // drawPoint 返回坐标，示例负责创建并保留可拾取的结果实体。
+        const name = `绘制点 ${++drawnPointCount}`;
+        earth.viewer.entities.add({ name, position: point,
+          point: { pixelSize: 14, outlineWidth: 2, disableDepthTestDistance: Infinity },
+          properties: { 类型: "绘制点", 序号: drawnPointCount },
+        });
+        updateState();
+        log(`绘制完成：${JSON.stringify(point)}`);
+      } catch (error) {
+        if (error instanceof DrawCancelledError) log("绘制已取消");
+        else console.error(error);
+      }
+    }
+
+    earth.onReady().then(async () => {
+      addObjects();
+      earth.interaction.enable();
+      await earth.viewer.zoomTo(earth.viewer.entities, { heading: 0, pitch: -Math.PI / 3, range: 5000 });
+      updateState();
+      log("示例已就绪");
+    }).catch(console.error);
+    window.addEventListener("pagehide", event => { if (!event.persisted) earth.destroy(); });
   </script>
 </body>
 

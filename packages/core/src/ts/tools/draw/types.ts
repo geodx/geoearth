@@ -21,6 +21,7 @@ export type DrawPosition<T extends CoordinateType> =
 
 export interface DrawPointOptions<T extends CoordinateType = CoordinateType.CARTESIAN3> {
     coordinateType?: T
+    /** 默认显示临时预览；完成或取消后清除。 */
     showPreview?: boolean
 
     pixelSize?: number

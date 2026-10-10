@@ -26,6 +26,7 @@
     "build:esm": "vite build --config vite.config.ts",
     "build:iife": "vite build --config vite.iife.config.ts",
     "typecheck": "tsc --noEmit",
+    "test:interaction": "npm run build:esm && node --test tests/interaction.test.mjs && tsc --noEmit --skipLibCheck --target ES2020 --module ESNext --moduleResolution bundler tests/interaction.types.ts",
     "pack:test": "npm pack --dry-run"
   },
   "peerDependencies": {
