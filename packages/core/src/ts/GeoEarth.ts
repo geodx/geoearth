@@ -11,6 +11,7 @@ import { Config } from './config/types';
 import { createConfig } from './config/createConfig';
 import { WidgetManager } from './widgets';
 import { ViewerEventType } from './events/types';
+import { InteractionManage } from './interaction';
 
 export class GeoEarth {
     public readonly viewer: Viewer
@@ -26,6 +27,7 @@ export class GeoEarth {
     public readonly tools: ToolManager
 
     public readonly widgets: WidgetManager
+    public readonly interaction: InteractionManage
 
     private readonly startAnimation: StartAnimation
     private readonly readyPromise: Promise<void>
@@ -56,6 +58,8 @@ export class GeoEarth {
         this.sources = new ResourceManage(this.viewer, this.event.source)
 
         this.tools = new ToolManager(this.viewer, this.event.screen)
+
+        this.interaction = new InteractionManage(this.viewer, this.event.screen, this.event.interaction, this.tools.draw)
 
         this.widgets = new WidgetManager(this.viewer)
 
@@ -118,6 +122,8 @@ export class GeoEarth {
         this.event.viewer.raiseEvent(ViewerEventType.BEFORE_DESTROY,
             { type: ViewerEventType.BEFORE_DESTROY }
         )
+        // 先恢复交互样式并解绑输入，再销毁被交互模块引用的资源。
+        this.interaction.destroy()
         this.tools.destroy()
         this.startAnimation.destroy()
         this.sources.destroy()
@@ -134,4 +140,3 @@ export class GeoEarth {
         this.event.destroy()
     }
 }
-

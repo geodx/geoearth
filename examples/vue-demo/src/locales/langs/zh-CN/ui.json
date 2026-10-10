@@ -47,6 +47,7 @@
     "events-resource-events": "资源事件",
     "resourceEventsDescription": "监听影像资源的添加、删除、显隐和属性变化，演示透明度调整与停止监听。",
     "events-picking-highlight": "对象拾取与高亮",
+    "pickingHighlightDescription": "演示对象拾取、悬停与选中高亮、属性展示、样式恢复和绘制期间暂停交互。",
     "imagery-single-image": "单张影像",
     "imagery-xyz": "XYZ 影像",
     "imagery-wms": "WMS 影像",

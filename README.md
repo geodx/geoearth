@@ -98,6 +98,8 @@ await earth.ready;
 
 页面或组件不再使用地球时，调用 `earth.destroy()` 释放资源。
 
+对象拾取、高亮与属性展示使用 `earth.interaction`，用法见 [对象交互 API](docs/interaction.md)。
+
 ## 常用命令
 
 | 命令                    | 说明                                  |

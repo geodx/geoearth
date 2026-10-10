@@ -1,7 +1,7 @@
 import {
-    CallbackProperty,
+    CallbackProperty, ConstantPositionProperty, Event, HeightReference,
     Cartesian3, Color, CustomDataSource, ScreenSpaceEventHandler, ScreenSpaceEventType,
-    type Viewer
+    type Entity, type Viewer
 } from 'cesium'
 import type { ScreenEvent } from '../../events/modules/ScreenEvent'
 import type { EventCallback, RemoveCallback, ScreenEventPayload } from '../../events/types'
@@ -12,10 +12,12 @@ import { EntityFactory } from '../../visualization'
 
 export class DrawTool {
 
+    /** 绘制占用鼠标期间，其他 SDK 交互据此暂停；量测复用同一绘制流程。 */
+    readonly activeChanged = new Event<(active: boolean) => void>()
+
     private readonly dataSource = new CustomDataSource('geoearth-draw-preview')
     private readonly removeCallbacks: RemoveCallback[] = []
-    // private previewPoint?: Entity
-    // private previewPosition?: ConstantPositionProperty
+    private previewPoint?: Entity
 
     private rejectDrawing?: (reason: unknown) => void
     private previousCursor = ''
@@ -34,9 +36,10 @@ export class DrawTool {
      * 
      * 左键完成，右键取消。
      * 
-     * 返回坐标
+     * 移动时显示临时预览点，完成后清除预览并返回坐标。
+     * 结果实体由调用方创建，量测等工具可以复用坐标而不留下多余的点。
      */
-    drawPoint<T extends CoordinateType = CoordinateType.CARTESIAN3>(options: DrawPointOptions<T>): Promise<DrawPosition<T>> {
+    drawPoint<T extends CoordinateType = CoordinateType.CARTESIAN3>(options: DrawPointOptions<T> = {}): Promise<DrawPosition<T>> {
         this.beginDrawing()
         return new Promise<DrawPosition<T>>((resolve, reject) => {
             this.rejectDrawing = reject
@@ -58,8 +61,15 @@ export class DrawTool {
                         const event = payload as ScreenSpaceEventHandler.MotionEvent
                         const position = pickPosition(this.viewer, event.endPosition)
 
-                        if (!position) return
+                        if (!position) {
+                            if (this.previewPoint) {
+                                this.previewPoint.show = false
+                                this.viewer.scene.requestRender()
+                            }
+                            return
+                        }
 
+                        if (options.showPreview !== false) this.updatePreviewPoint(position, options)
                         options.onMove?.(this.convertResult(position, options))
                     } catch (error) {
                         this.failDrawing(error)
@@ -194,12 +204,9 @@ export class DrawTool {
      */
     clearPreview(): void {
         this.dataSource.entities.removeAll()
-
-        // this.coordinates = []; 
-        // // 已经确定位置的几何形节点
-        // this.dynamicNodesPoint = [];
-        // // 绘制的实体
-        // this.drawEntities = undefined;
+        // 清除引用，下一次绘制才能创建新的预览实体。
+        this.previewPoint = undefined
+        this.viewer.scene.requestRender()
     }
 
     /**
@@ -233,6 +240,7 @@ export class DrawTool {
         // 改变鼠标样式
         this.setDrawingCursor()
         this.active = true
+        this.activeChanged.raiseEvent(true)
 
     }
     /**
@@ -270,6 +278,7 @@ export class DrawTool {
         }
         this.rejectDrawing = undefined
         this.active = false
+        if (wasActive) this.activeChanged.raiseEvent(false)
     }
     private setDrawingCursor(): void {
         const canvas = this.viewer.scene.canvas
@@ -303,25 +312,24 @@ export class DrawTool {
 
     //#region Preview Entity
     private updatePreviewPoint<T extends CoordinateType>(position: Cartesian3, options: DrawPointOptions<T>): void {
-        // if (!this.previewPoint) {
-        //     this.previewPosition = new ConstantPositionProperty(Cartesian3.clone(position))
-
-        //     this.previewPoint = this.dataSource.entities.add({
-        //         position: this.previewPosition,
-        //         point: {
-        //             pixelSize: options.pixelSize ?? 10,
-        //             color: options.color ?? Color.CYAN,
-        //             outlineColor: options.outlineColor ?? Color.WHITE,
-        //             outlineWidth: options.outlineWidth ?? 2,
-        //             heightReference: options.heightReference ?? HeightReference.NONE,
-        //             disableDepthTestDistance: options.disableDepthTestDistance ?? Number.POSITIVE_INFINITY
-        //         }
-        //     })
-
-        //     return
-        // }
-
-        // this.previewPosition?.setValue(Cartesian3.clone(position))
+        if (!this.previewPoint) {
+            const entity = EntityFactory.createPoint(position)
+            Object.assign(entity.point, {
+                pixelSize: options.pixelSize ?? 10,
+                color: options.color ?? Color.CYAN,
+                outlineColor: options.outlineColor ?? Color.WHITE,
+                outlineWidth: options.outlineWidth ?? 2,
+                heightReference: options.heightReference ?? HeightReference.NONE,
+                disableDepthTestDistance: options.disableDepthTestDistance ?? Number.POSITIVE_INFINITY
+            })
+            this.previewPoint = this.dataSource.entities.add(entity)
+        } else {
+            // 复用同一个实体和 PositionProperty，避免鼠标移动时不断创建对象。
+            const previewPosition = this.previewPoint.position as ConstantPositionProperty
+            previewPosition.setValue(position)
+            this.previewPoint.show = true
+        }
+        this.viewer.scene.requestRender()
     }
     //#endregion
 }
