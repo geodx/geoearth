@@ -23,7 +23,9 @@ export interface SourceLoadResult {
 }
 export interface ResourceItem<TProperties = unknown> {
     id?: string
-    name?: string
+    name: string
+    sourceType: SourceType
+    showInTree?: boolean,
     defaultLoad?: boolean
     show?: boolean,
     properties: TProperties
@@ -46,7 +48,7 @@ export enum SourceType {
 /**
  * 支持的影像服务类型。
  */
-export enum ImageryProviderType {
+export enum ImageryScheme {
     XYZ = 'xyz',
     WMS = 'wms',
     WMTS = 'wmts',
@@ -59,8 +61,8 @@ export enum ImageryProviderType {
 /**
  * 影像资源专属参数。
  */
-export interface ImageryResourceProperties {
-    providerType: ImageryProviderType
+export interface ImageryProperties {
+    scheme: ImageryScheme
 
     /**
      * 影像服务地址。
@@ -107,7 +109,7 @@ export interface ImageryResourceProperties {
  * 影像资源配置。
  *
  */
-export type ImageryResourceItem = ResourceItem<ImageryResourceProperties>
+export type ImageryResourceItem = ResourceItem<ImageryProperties>
 
 export interface InitialSourceItem {
     type: SourceType
@@ -129,19 +131,4 @@ export interface SourceLoadFailure {
 export interface SourceLoadResult {
     successes: SourceLoadSuccess[]
     failures: SourceLoadFailure[]
-}
-
-/**
- * 获取资源唯一标识。
- *
- * 新代码优先使用 id，继续兼容旧配置中的 pid。
- */
-export function getSourceId(config: { id?: string }): string {
-    const id = config.id
-
-    if (!id) {
-        throw new Error('Resource config requires an id.')
-    }
-
-    return id
 }

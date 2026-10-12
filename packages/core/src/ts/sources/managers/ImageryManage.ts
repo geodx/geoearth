@@ -13,12 +13,37 @@ import { getSourceId, ImageryProviderType, SourceType, type ImageryResourceItem 
  *
  * 负责影像图层的创建、查找、显示、隐藏、排序、删除和销毁。
  */
-export class ImageryManager {
+export class ImageryManage {
     private readonly layers = new Map<string, ImageryLayer>()
     private readonly configs = new Map<string, ImageryResourceItem>()
 
-    constructor(private readonly viewer: Viewer, private readonly sourceEvent: SourceEvent) { }
+    constructor(private readonly viewer: Viewer, private readonly sourceEvent: SourceEvent) {
 
+
+        this.bindLayersEvents();
+    }
+    // 监听 Cesium 数据变化
+    private bindLayersEvents(): void {
+        // 监听图层集合的变化，如果没有通过工作区的增删方法来操作地球，工作区也要进行状态同步
+        this.viewer.imageryLayers.layerRemoved.addEventListener((removedLayer) => {
+            for (const [id, layer] of this.layers) {
+                if (layer !== removedLayer) continue
+                // Cesium 已经删除图层，只清理包内记录。
+                this.layers.delete(id)
+                this.configs.delete(id)
+                this.sourceEvent.raiseEvent(
+                    SourceEventType.REMOVE,
+                    {
+                        type: SourceEventType.REMOVE,
+                        sourceType: SourceType.LAYER,
+                        source: layer,
+                        id
+                    }
+                )
+                break
+            }
+        })
+    }
     /**
      * 添加影像图层。
      *
@@ -28,7 +53,7 @@ export class ImageryManager {
         this.ensureAvailable()
         this.validateConfig(config)
 
-        const id = getSourceId(config)
+        const id = config.id
         const existingLayer = this.layers.get(id)
         if (existingLayer) return existingLayer
 
@@ -41,14 +66,15 @@ export class ImageryManager {
         const layer = new ImageryLayer(provider, config.properties.layerOptions)
 
         layer.show = config.show ?? true
-        //TODO 如果该图层是底图，则把该图层降到最底层
-        // if (config.properties.baseLayer) {
-        //     this.viewer.imageryLayers.lowerToBottom(layer)
-        // }
         if (config.properties.index === undefined) {
             this.viewer.imageryLayers.add(layer)
         } else {
             this.viewer.imageryLayers.add(layer, config.properties.index)
+        }
+
+        // 图层加入集合后，确保异步加载完成的底图也位于最底层。
+        if (config.properties.baseLayer === true) {
+            this.viewer.imageryLayers.lowerToBottom(layer)
         }
 
         this.layers.set(id, layer)
@@ -67,7 +93,7 @@ export class ImageryManager {
     /**
      * 删除指定影像图层。
      */
-    remove(id: string): boolean {
+    removeDataById(id: string): boolean {
         this.ensureAvailable()
 
         const layer = this.layers.get(id)
