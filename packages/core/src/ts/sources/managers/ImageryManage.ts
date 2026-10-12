@@ -6,7 +6,7 @@ import {
 } from 'cesium'
 import type { SourceEvent } from '../../events/modules/SourceEvent'
 import { SourceEventType } from '../../events/types'
-import { getSourceId, ImageryProviderType, SourceType, type ImageryResourceItem } from '../types'
+import {  SourceType, type ImageryResourceItem } from '../types'
 
 /**
  * 影像图层管理器。
