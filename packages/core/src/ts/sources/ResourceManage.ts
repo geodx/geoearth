@@ -91,13 +91,13 @@ export class ResourceManage {
      */
     flyToDataByPid(id: string): void {
         const config = this.getConfigById(id)
-        if (!config) return false
+        if (!config) return
 
         switch (config.sourceType) {
             case SourceType.LAYER:
                 return this.imageryManage.flyToById(id)
 
-            // 后续补充：
+            //todo 后续补充：
             // case SourceType.MODEL:
             //     return this.modelManage.flyToById(id)
             //

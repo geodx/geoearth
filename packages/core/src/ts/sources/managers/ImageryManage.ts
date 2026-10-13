@@ -6,31 +6,29 @@ import {
 } from 'cesium'
 import type { SourceEvent } from '../../events/modules/SourceEvent'
 import { SourceEventType } from '../../events/types'
-import {  SourceType, type ImageryResourceItem } from '../types'
+import { ImageryScheme, SourceType, type ImageryResourceItem } from '../types'
+import { CesiumData } from './data/CesiumData';
 
 /**
  * 影像图层管理器。
  *
  * 负责影像图层的创建、查找、显示、隐藏、排序、删除和销毁。
  */
-export class ImageryManage {
-    private readonly layers = new Map<string, ImageryLayer>()
-    private readonly configs = new Map<string, ImageryResourceItem>()
-
-    constructor(private readonly viewer: Viewer, private readonly sourceEvent: SourceEvent) {
-
-
+export class ImageryManage extends CesiumData<ImageryLayer> {
+    private sourceEvent: SourceEvent
+    constructor(viewer: Viewer, sourceEvent: SourceEvent) {
+        super(viewer);
+        this.sourceEvent = sourceEvent;
         this.bindLayersEvents();
     }
     // 监听 Cesium 数据变化
     private bindLayersEvents(): void {
         // 监听图层集合的变化，如果没有通过工作区的增删方法来操作地球，工作区也要进行状态同步
         this.viewer.imageryLayers.layerRemoved.addEventListener((removedLayer) => {
-            for (const [id, layer] of this.layers) {
+            for (const [id, layer] of this.instancesMap) {
                 if (layer !== removedLayer) continue
                 // Cesium 已经删除图层，只清理包内记录。
-                this.layers.delete(id)
-                this.configs.delete(id)
+                this.removeById(id)
                 this.sourceEvent.raiseEvent(
                     SourceEventType.REMOVE,
                     {
@@ -50,12 +48,10 @@ export class ImageryManage {
      * 当相同 ID 已存在时，直接返回已有实例。
      */
     async add(config: ImageryResourceItem): Promise<ImageryLayer> {
-        this.ensureAvailable()
-        this.validateConfig(config)
 
         const id = config.id
-        const existingLayer = this.layers.get(id)
-        if (existingLayer) return existingLayer
+        const url = config.properties.url
+        const scheme = config.properties.scheme
 
         const provider = await this.createProvider(config)
 
@@ -280,10 +276,10 @@ export class ImageryManage {
     }
 
     private async createProvider(config: ImageryResourceItem): Promise<ImageryProvider> {
-        const { providerType, providerOptions = {} } = config.properties
-
-        switch (providerType) {
-            case ImageryProviderType.XYZ:
+        const { scheme, providerOptions = {} } = config.properties 
+      
+        switch (scheme) {
+            case ImageryScheme.XYZ_3857:
                 return new UrlTemplateImageryProvider({
                     ...providerOptions,
                     url: this.createResource(config)

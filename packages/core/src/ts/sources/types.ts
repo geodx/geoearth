@@ -49,7 +49,8 @@ export enum SourceType {
  * 支持的影像服务类型。
  */
 export enum ImageryScheme {
-    XYZ = 'xyz',
+    XYZ_3857 = 'xyz-3857',
+    XYZ_4326 = 'xyz-4326',
     WMS = 'wms',
     WMTS = 'wmts',
     TMS = 'tms',
@@ -102,7 +103,11 @@ export interface ImageryProperties {
      *
      * 基础影像图层会被放置在最底层，并且不参与图层列表的显示。
      */
-    baseLayer?: boolean
+    baseLayer?: boolean,
+    minimumLevel?: number
+    maximumLevel?: number
+    tileWidth?: number
+    tileHeight?: number
 }
 
 /**
