@@ -2,6 +2,9 @@ export { GeoEarth } from './GeoEarth';
 export type { Config } from './config/types';
 
 
+
+export type { WorldDegree } from './viewer/types';
+
 export { ScreenSpaceEventType } from 'cesium';
 export { ViewerEventType, CameraEventType, SourceEventType, type SourceEventPayload } from './events/types';
 export { SourceType, ImageryScheme } from './sources/types';

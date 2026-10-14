@@ -1,9 +1,9 @@
-import type { Viewer } from 'cesium'
+import { Viewer } from 'cesium'
 import { SourceEvent } from '../events/modules/SourceEvent'
+import { SourceEventType } from '../events/types'
 import { ImageryManage } from './managers/ImageryManage'
 import { ResourceItem, SourceType, type ImageryResourceItem } from './types'
 import { SafeTool } from '../utils'
-import { SourceEventType } from '../events/types'
 
 /**
  * 资源统一入口。
@@ -12,22 +12,21 @@ import { SourceEventType } from '../events/types'
  * 具体实现由对应的子管理器负责。
  */
 export class ResourceManage {
-    private readonly viewer: Viewer;
     private readonly sourceEvent: SourceEvent;
 
     public readonly imageryManage: ImageryManage
 
     constructor(viewer: Viewer, sourceEvent: SourceEvent) {
-        this.viewer = viewer;
         this.sourceEvent = sourceEvent;
 
         this.imageryManage = new ImageryManage(viewer, sourceEvent)
 
     }
 
-    async add(config: ResourceItem): Promise<unknown> {
+    async add(item: ResourceItem): Promise<unknown> {
+        const config = normalizeResource(item)
 
-        const existing = this.getConfigById(id)
+        const existing = this.getConfigById(config.id)
         if (existing) {
             console.warn('工作区已加载该数据!不允许重复加载：', config.name);
             return this.getInstance(config.id);
@@ -69,8 +68,8 @@ export class ResourceManage {
         if (!sourceItem) return false
         const type = sourceItem.sourceType
         switch (type) {
-            case SourceType.LAYER:
-                removeRes = this.imageryManage.removeDataById(id)
+            case SourceType.IMAGERY:
+                removeRes = this.imageryManage.removeById(id)
                 break
             case SourceType.TERRAIN:
             case SourceType.MODEL:
@@ -103,8 +102,8 @@ export class ResourceManage {
 
         switch (config.sourceType) {
             case SourceType.IMAGERY:
-                return this.imageryManage.flyToById(id)
-
+                this.imageryManage.flyToById(id)
+                break
             //todo 后续补充：
             // case SourceType.MODEL:
             //     return this.modelManage.flyToById(id)
@@ -149,3 +148,30 @@ export class ResourceManage {
         this.imageryManage.destroy()
     }
 }
+
+
+/** 资源访问合法性   */
+function normalizeResource<T extends ResourceItem>(input: T): T {
+    if (!input || typeof input !== 'object') {
+        throw new Error('资源配置不能为空。');
+    }
+
+    if (!input.properties || typeof input.properties !== 'object'
+        || Array.isArray(input.properties)) {
+        throw new Error(`资源「${input.name}」的 properties 必须是对象。`);
+    }
+
+    // 复制资源及 properties 外层，保留内部 Cesium 对象和回调。
+    const item = { ...input };
+    item.properties = { ...input.properties };
+
+    item.id ||= SafeTool.uuid();
+    item.showInTree ??= true  // 默认在资源树中显示
+    item.defaultLoad ??= true // 默认自动加载
+    item.show ??= true        // 加载后默认显示
+
+    item.offlineCache ??= false;
+
+    return item;
+}
+

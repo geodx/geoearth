@@ -1,14 +1,6 @@
 export { ResourceManage } from './ResourceManage'
 
-export {
-    loadBaseSources,
-    loadDefaultSources,
-    loadInitialSources
-} from './loaders/InitialSourceLoader'
+export { loadSources } from './loaders/InitialSourceLoader'
 
-export type {
-    InitialSourceItem,
-    SourceLoadSuccess,
-    SourceLoadFailure,
-    SourceLoadResult
-} from './types'
+export type { ImageryRectangle, ImageryResourceItem, ImageryScheme, ResourceItem, SourceType } from './types'
+

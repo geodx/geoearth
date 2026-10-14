@@ -11,7 +11,6 @@ export const defaultConfig: Config = {
         heading: 0,
         pitch: -90,
         roll: 0,
-        unit: 'degree'
     },
     startup: {
         animation: true,

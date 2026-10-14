@@ -1,6 +1,7 @@
-import { Viewer } from 'cesium'
-import type { ResourceManage } from '../ResourceManage'
+import { Viewer } from 'cesium';
 import { ConfigManage } from '../../config/ConfigManage';
+import type { ResourceManage } from '../ResourceManage';
+import { SourceType } from '../types';
 
 /**
  * 加载基础显示资源。
@@ -32,131 +33,29 @@ export async function loadSources(viewer: Viewer, resourceManage: ResourceManage
     viewer.scene.skyAtmosphere.show = true;
     viewer.scene.globe.show = true;
 
-    const resources = config.resources
-    const baseSources: InitialSourceItem[] = [
-        ...getDefaultSources(
-            SourceType.TERRAIN,
-            resources.terrains
-        ),
-        ...getDefaultSources(
-            SourceType.LAYER,
-            resources.layers
-        )
-    ]
-    return loadSourceGroup(resourceManage, baseSources)
-}
+    const allSources = config.getAllSources();
 
-/**
- * 加载默认业务资源。
- *
- * 这些资源互相之间没有强制顺序，因此并行创建。
- */
-export async function loadDefaultSources(resourceManage: ResourceManage, config: Config): Promise<SourceLoadResult> {
-    const resources = config.resources
-
-    const defaultSources: InitialSourceItem[] = [
-        ...getDefaultSources(
-            SourceType.MODEL,
-            resources.models
-        ),
-        ...getDefaultSources(
-            SourceType.TILESET,
-            resources.tilesets
-        ),
-        ...getDefaultSources(
-            SourceType.GEOJSON,
-            resources.geojson
-        ),
-        ...getDefaultSources(
-            SourceType.POI,
-            resources.poi
-        )
-    ]
-
-    return loadSourceGroup(
-        resourceManage,
-        defaultSources
-    )
-}
-
-/**
- * 从资源列表中过滤需要自动加载的资源。
- */
-function getDefaultSources(type: SourceType, resources: ResourceItem[]): InitialSourceItem[] {
-    return resources
-        .filter(resource => resource.defaultLoad)
-        .map(config => ({
-            type,
-            config
-        }))
-}
-
-/**
- * 加载一组资源。
- *
- * 使用 Promise.allSettled，确保一个资源失败时，
- * 不会阻止同一组中的其他资源继续加载。
- */
-async function loadSourceGroup(resourceManage: ResourceManage, sources: InitialSourceItem[]): Promise<SourceLoadResult> {
-    const settledResults = await Promise.allSettled(
-        sources.map(source =>
-            resourceManage.add(source.type, source.config)
-        )
-    )
-
-    const successes: SourceLoadSuccess[] = []
-    const failures: SourceLoadFailure[] = []
-
-    settledResults.forEach((result, index) => {
-        const source = sources[index]
-        if (!source) {
-            return
+    for (let i = 0; i < allSources.length; i++) {
+        let item = allSources[i];
+        // 优先加载影像图层
+        if (item.defaultLoad && item.sourceType === SourceType.IMAGERY) {
+            if (baseImageryItem && item.id === baseImageryItem.id) {
+                continue;
+            }
+            await resourceManage.add(item);
         }
-
-        if (result.status === 'fulfilled') {
-            successes.push({
-                type: source.type,
-                config: source.config,
-                instance: result.value
-            })
-
-            return
-        }
-
-        failures.push({
-            type: source.type,
-            config: source.config,
-            error: result.reason
-        })
-    })
-
-    return {
-        successes,
-        failures
     }
-}
 
-
-/**
- * 加载配置中的全部默认资源。
- *
- * 加载顺序：
- * 1. 基础地形和影像。
- * 2. 模型、3D Tiles、GeoJSON 和 POI。
- */
-export async function loadInitialSources(resourceManage: ResourceManage, config: Config): Promise<SourceLoadResult> {
-    const baseResult = await loadBaseSources(resourceManage, config)
-
-    const defaultResult = await loadDefaultSources(resourceManage, config)
-
-    return {
-        successes: [
-            ...baseResult.successes,
-            ...defaultResult.successes
-        ],
-        failures: [
-            ...baseResult.failures,
-            ...defaultResult.failures
-        ]
+    for (let i = 0; i < allSources.length; i++) {
+        let item = allSources[i];
+        // 其次再加载非影像资源
+        if (item.defaultLoad && item.sourceType !== SourceType.IMAGERY) {
+            if (baseTerrainItem && item.id === baseTerrainItem.id) {
+                // 如果该地形已经预加载过了，就不再加载了
+                continue;
+            }
+            // 三维地图加载资源
+            await resourceManage.add(item);
+        }
     }
 }

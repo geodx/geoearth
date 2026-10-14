@@ -1,12 +1,17 @@
 import type { Viewer } from 'cesium'
 import { ImageryResourceItem, ResourceItem } from '../sources/types'
-import { Viewpoint } from '../viewer/types'
 
 export interface Config {
 
     ionAccessToken?: string
-    homeView?: Viewpoint
-
+    homeView?: {
+        longitude: number,
+        latitude: number,
+        height: number,
+        heading?: number,
+        pitch?: number,
+        roll?: number
+    }
     startup?: {
         animation?: boolean
         showFps?: boolean

@@ -1,17 +1,17 @@
-import type { Viewer } from 'cesium'
+import type { Viewer } from 'cesium';
 import { createViewer } from './viewer/createViewer';
 
-import { PerformanceManage } from './performance'
+import { PerformanceManage } from './performance';
 
-import { EventManage } from './events/EventManage'
 import { StartAnimation } from './camera/animations/StartAnimation';
-import { loadSources, ResourceManage } from './sources';
-import { ToolManager } from './tools/ToolManager';
-import { Config } from './config/types';
 import { ConfigManage } from './config/ConfigManage';
-import { WidgetManager } from './widgets';
+import { Config } from './config/types';
+import { EventManage } from './events/EventManage';
 import { ViewerEventType } from './events/types';
 import { InteractionManage } from './interaction';
+import { loadSources, ResourceManage } from './sources';
+import { ToolManager } from './tools/ToolManager';
+import { WidgetManager } from './widgets';
 
 export class GeoEarth {
     public readonly viewer: Viewer

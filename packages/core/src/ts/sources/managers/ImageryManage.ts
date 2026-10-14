@@ -33,7 +33,7 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
                     SourceEventType.REMOVE,
                     {
                         type: SourceEventType.REMOVE,
-                        sourceType: SourceType.LAYER,
+                        sourceType: SourceType.IMAGERY,
                         source: layer,
                         id
                     }
@@ -48,19 +48,15 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
      * 当相同 ID 已存在时，直接返回已有实例。
      */
     async add(config: ImageryResourceItem): Promise<ImageryLayer> {
-
         const id = config.id
-        const url = config.properties.url
-        const scheme = config.properties.scheme
 
         const provider = await this.createProvider(config)
 
         // 等待 provider 创建期间，其他 add() 可能已经添加了这个 ID。
-        const loadedLayer = this.layers.get(id)
+        const loadedLayer = this.instancesMap.get(id)
         if (loadedLayer) return loadedLayer
         const layer = new ImageryLayer(provider, config.properties.layerOptions)
 
-        layer.show = config.show ?? true
         if (config.properties.index === undefined) {
             this.viewer.imageryLayers.add(layer)
         } else {
@@ -72,8 +68,8 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
             this.viewer.imageryLayers.lowerToBottom(layer)
         }
 
-        this.layers.set(id, layer)
-        this.configs.set(id, this.cloneConfig(config))
+        this.instancesMap.set(id, layer)
+        this.sourcesItems.push(this.cloneConfig(config))
 
         this.sourceEvent.raiseEvent(SourceEventType.ADD, {
             type: SourceEventType.ADD,
@@ -84,7 +80,79 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
 
         return layer
     }
+    private async createProvider(config: ImageryResourceItem): Promise<ImageryProvider> {
+       
+        switch (scheme) {
+            case ImageryScheme.XYZ_3857:
 
+                return new UrlTemplateImageryProvider({
+                    ...providerOptions,
+                    url: this.createResource(config)
+                } as UrlTemplateImageryProvider.ConstructorOptions)
+            case ImageryScheme.XYZ_4326:
+                return new UrlTemplateImageryProvider({
+                    ...providerOptions,
+                    url: this.createResource(config)
+                } as UrlTemplateImageryProvider.ConstructorOptions)
+
+            case ImageryScheme.WMS:
+                return new WebMapServiceImageryProvider({
+                    ...providerOptions,
+                    url: this.createResource(config)
+                } as WebMapServiceImageryProvider.ConstructorOptions)
+
+            case ImageryScheme.WMTS:
+                return new WebMapTileServiceImageryProvider({
+                    ...providerOptions,
+                    url: this.createResource(config)
+                } as WebMapTileServiceImageryProvider.ConstructorOptions)
+
+            case ImageryScheme.TMS:
+                return TileMapServiceImageryProvider.fromUrl(
+                    this.createResource(config),
+                    providerOptions as TileMapServiceImageryProvider.ConstructorOptions
+                )
+
+            case ImageryScheme.SINGLE_TILE:
+                return SingleTileImageryProvider.fromUrl(
+                    this.createResource(config),
+                    providerOptions as SingleTileImageryProvider.fromUrlOptions
+                )
+
+            case ImageryScheme.ION:
+                return this.createIonProvider(config)
+
+            case ImageryScheme.ARCGIS:
+                // return ArcGisMapServerImageryProvider.fromUrl(
+                //     this.createResource(config),
+                //     providerOptions as ArcGisMapServerImageryProvider.ConstructorOptions
+                // )
+                return new ArcGisMapServerImageryProvider({
+                    ...providerOptions,
+                    url: this.createResource(config)
+                } as ArcGisMapServerImageryProvider.ConstructorOptions)
+
+            default:
+                throw new Error(`Unsupported imagery provider type: ${scheme}`)
+        }
+    }
+    addImageryProvider(provider: ImageryProvider, resourceItem: ResourceItem) {
+        const layer = this.viewer.imageryLayers.addImageryProvider(provider)
+        if (layer) {
+            // @ts-ignore
+            layer.pid = resourceItem.pid
+            // @ts-ignore
+            layer.param = resourceItem
+            // 如果该图层是底图，则把该图层降到最底层
+            if (resourceItem.properties.baseLayer) {
+                this.viewer.imageryLayers.lowerToBottom(layer)
+            }
+            this.instancesMap.set(resourceItem.pid, layer)
+            this.sourcesItems.push(resourceItem)
+        }
+
+        return layer
+    }
     /**
      * 删除指定影像图层。
      */
@@ -274,58 +342,7 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
         this.configs.clear()
     }
 
-    private async createProvider(config: ImageryResourceItem): Promise<ImageryProvider> {
-        const { scheme, providerOptions = {} } = config.properties
 
-        switch (scheme) {
-            case ImageryScheme.XYZ_3857:
-                return new UrlTemplateImageryProvider({
-                    ...providerOptions,
-                    url: this.createResource(config)
-                } as UrlTemplateImageryProvider.ConstructorOptions)
-            case ImageryScheme.XYZ_4326:
-                return new UrlTemplateImageryProvider({
-                    ...providerOptions,
-                    url: this.createResource(config)
-                } as UrlTemplateImageryProvider.ConstructorOptions)
-
-            case ImageryProviderType.WMS:
-                return new WebMapServiceImageryProvider({
-                    ...providerOptions,
-                    url: this.createResource(config)
-                } as WebMapServiceImageryProvider.ConstructorOptions)
-
-            case ImageryProviderType.WMTS:
-                return new WebMapTileServiceImageryProvider({
-                    ...providerOptions,
-                    url: this.createResource(config)
-                } as WebMapTileServiceImageryProvider.ConstructorOptions)
-
-            case ImageryProviderType.TMS:
-                return TileMapServiceImageryProvider.fromUrl(
-                    this.createResource(config),
-                    providerOptions as TileMapServiceImageryProvider.ConstructorOptions
-                )
-
-            case ImageryProviderType.SINGLE_TILE:
-                return SingleTileImageryProvider.fromUrl(
-                    this.createResource(config),
-                    providerOptions as SingleTileImageryProvider.fromUrlOptions
-                )
-
-            case ImageryProviderType.ION:
-                return this.createIonProvider(config)
-
-            case ImageryProviderType.ARCGIS:
-                return ArcGisMapServerImageryProvider.fromUrl(
-                    this.createResource(config),
-                    providerOptions as ArcGisMapServerImageryProvider.ConstructorOptions
-                )
-
-            default:
-                throw new Error(`Unsupported imagery provider type: ${String(providerType)}`)
-        }
-    }
 
     private createIonProvider(config: ImageryResourceItem): Promise<IonImageryProvider> {
         const assetId = config.properties.assetId

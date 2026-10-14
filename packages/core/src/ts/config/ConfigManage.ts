@@ -1,7 +1,6 @@
-import { ImageryResourceItem, ResourceItem, SourceType } from "../sources/types";
-import { SafeTool } from "../utils";
-import { defaultConfig } from "./defaultConfig"
-import { Config } from "./types"
+import { ImageryResourceItem, ResourceItem } from "../sources/types";
+import { defaultConfig } from "./defaultConfig";
+import { Config } from "./types";
 export class ConfigManage {
     private readonly config: Config;
 
@@ -29,26 +28,26 @@ export class ConfigManage {
             item => item.defaultLoad
         );
     }
-    getResourcesByPid(pid: string) {
+    getResourcesById(id: string) {
         return this.getAllSources().find(item => {
-            return item.pid === pid;
+            return item.id === id;
         });
-    },
+    }
     getAllSources() {
-        let s = this.config;
+        let s = this.config.resources;
         return [
-            ...s.layerList,
-            ...s.terrainList,
-            ...s.modelList,
-            ...s.cesium3DTileSetList,
-            ...s.geoJsonList,
-            ...s.poiList
+            ...s.imagery,
+            ...s.terrains,
+            ...s.models,
+            ...s.tilesets,
+            ...s.geojson,
+            ...s.poi
         ];
-    },
+    }
     private createConfig(input: Config = {}): Config {
         const resources = input.resources;
         const defaultResources = defaultConfig.resources;
-        const userImagery = (resources?.imagery ?? []).map(this.normalizeResource)
+        const userImagery = (resources?.imagery ?? [])
         // 用户配置了底图，就移除 SDK 的默认底图。
         const hasCustomBaseLayer = userImagery.some(
             layer => layer.properties.baseLayer === true
@@ -66,12 +65,12 @@ export class ConfigManage {
             startup: { ...defaultConfig.startup, ...input.startup },
 
             resources: {
-                imagery: [...defaultImagery.map(this.normalizeResource), ...userImagery],
-                terrains: [...(resources?.terrains ?? defaultResources.terrains ?? [])].map(this.normalizeResource),
-                models: [...(resources?.models ?? defaultResources.models ?? [])].map(this.normalizeResource),
-                tilesets: [...(resources?.tilesets ?? defaultResources.tilesets ?? [])].map(this.normalizeResource),
-                geojson: [...(resources?.geojson ?? defaultResources.geojson ?? [])].map(this.normalizeResource),
-                poi: [...(resources?.poi ?? defaultResources.poi ?? [])].map(this.normalizeResource)
+                imagery: [...defaultImagery, ...userImagery],
+                terrains: [...(resources?.terrains ?? defaultResources.terrains ?? [])],
+                models: [...(resources?.models ?? defaultResources.models ?? [])],
+                tilesets: [...(resources?.tilesets ?? defaultResources.tilesets ?? [])],
+                geojson: [...(resources?.geojson ?? defaultResources.geojson ?? [])],
+                poi: [...(resources?.poi ?? defaultResources.poi ?? [])]
             }
         }
         this.validateConfig(config);
@@ -98,30 +97,5 @@ export class ConfigManage {
             throw new Error('只能配置一个默认加载的地形。');
         }
     }
-    /** 资源访问合法性   */
-    private normalizeResource<T extends ResourceItem>(input: T): T {
-        if (!input || typeof input !== 'object') {
-            throw new Error('资源配置不能为空。');
-        }
 
-        if (!input.properties || typeof input.properties !== 'object'
-            || Array.isArray(input.properties)) {
-            throw new Error(`资源「${input.name}」的 properties 必须是对象。`);
-        }
-
-        // 复制资源及 properties 外层，保留内部 Cesium 对象和回调。
-        const item = { ...input };
-        item.properties = { ...input.properties };
-
-        item.id ||= SafeTool.uuid();
-        item.showInTree ??= true  // 默认在资源树中显示
-        item.defaultLoad ??= true // 默认自动加载
-        item.show ??= true        // 加载后默认显示
-
-        item.offlineCache ??= false;
-
-        return item;
-    }
 }
-
-
