@@ -1,9 +1,5 @@
-import { Camera, Cartesian3, Color, Math as CesiumMath, Rectangle, type Viewer } from 'cesium'
+import { Camera, Cartesian3, Math as CesiumMath, Color, Rectangle, type Viewer } from 'cesium'
 import type { Config } from '../config/types'
-
-function toRadians(value = 0, unit: 'degree' | 'radian' = 'degree') {
-    return unit === 'radian' ? value : CesiumMath.toRadians(value)
-}
 
 export function initViewerState(viewer: Viewer, config: Config) {
     const { homeView, startup } = config
@@ -12,7 +8,6 @@ export function initViewerState(viewer: Viewer, config: Config) {
     viewer.scene.postProcessStages.fxaa.enabled = startup.fxaa
     viewer.scene.debugShowFramesPerSecond = startup.showFps
     viewer.resolutionScale = startup.resolutionScale
-
 
     Camera.DEFAULT_VIEW_RECTANGLE = Rectangle.fromDegrees(
         homeView.longitude - 0.5,
@@ -27,9 +22,9 @@ export function initViewerState(viewer: Viewer, config: Config) {
             homeView.height
         ),
         orientation: {
-            heading: toRadians(homeView.heading, homeView.unit),
-            pitch: toRadians(homeView.pitch, homeView.unit),
-            roll: toRadians(homeView.roll, homeView.unit)
+            heading: CesiumMath.toRadians(homeView.heading),
+            pitch: CesiumMath.toRadians(homeView.pitch),
+            roll: CesiumMath.toRadians(homeView.roll)
         }
     })
 

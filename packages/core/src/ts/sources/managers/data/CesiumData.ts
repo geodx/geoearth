@@ -21,7 +21,7 @@ abstract class CesiumData<T> implements CesiumDataImpl<T> {
         return this.instancesMap.get(id) || null;
     }
 
-    getConfigById(id: string) {
+    getSourcesItemById(id: string) {
         return this.sourcesItems.find(item => item.id === id) || null;
     }
 

@@ -19,14 +19,14 @@ export async function loadSources(viewer: Viewer, resourceManage: ResourceManage
     const baseTerrainItem = config.getBaseTerrain();
     let baseTerrainPromise = null;
     if (baseTerrainItem) {
-        baseTerrainPromise = resourceManage.add(baseTerrainItem);
+        baseTerrainPromise = resourceManage.addData(baseTerrainItem);
     }
 
     // 加载地球的基础地图图层
     const baseImageryItem = config.getBaseImagery();
     let baseLayerPromise = null;
     if (baseImageryItem) {
-        baseLayerPromise = resourceManage.add(baseImageryItem);
+        baseLayerPromise = resourceManage.addData(baseImageryItem);
     }
     await Promise.all([baseTerrainPromise, baseLayerPromise]);
 
@@ -42,7 +42,7 @@ export async function loadSources(viewer: Viewer, resourceManage: ResourceManage
             if (baseImageryItem && item.id === baseImageryItem.id) {
                 continue;
             }
-            await resourceManage.add(item);
+            await resourceManage.addData(item);
         }
     }
 
@@ -55,7 +55,7 @@ export async function loadSources(viewer: Viewer, resourceManage: ResourceManage
                 continue;
             }
             // 三维地图加载资源
-            await resourceManage.add(item);
+            await resourceManage.addData(item);
         }
     }
 }

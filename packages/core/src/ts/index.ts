@@ -3,11 +3,25 @@ export type { Config } from './config/types';
 
 
 
-export type { WorldDegree } from './viewer/types';
+export type { WorldDegree, WorldRectangle } from './viewer/types';
 
 export { ScreenSpaceEventType } from 'cesium';
 export { ViewerEventType, CameraEventType, SourceEventType, type SourceEventPayload } from './events/types';
 export { SourceType, ImageryScheme } from './sources/types';
+export type {
+    ResourceItem,
+    ImageryProperties,
+    ImageryResourceItem,
+    XYZ3857ImageryProperties,
+    XYZ4326ImageryProperties,
+    WMSImageryProperties,
+    WMTSImageryProperties,
+    TMSImageryProperties,
+    SingleTileImageryProperties,
+    IonImageryProperties,
+    ArcGisImageryProperties,
+    TilesetProperties,
+} from './sources/types';
 export { flyTo, type FlyToOptions } from './camera/flyTo';
 export { MeasureCancelledError } from './tools/measure/types';
 

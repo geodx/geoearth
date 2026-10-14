@@ -109,9 +109,7 @@ export class StartAnimation {
      *
      * @returns true 表示完整播放结束，false 表示被取消。
      */
-    async play(
-        options: StartAnimationOptions = {}
-    ): Promise<boolean> {
+    async play(options: StartAnimationOptions = {}): Promise<boolean> {
         this.ensureAvailable()
 
         // 停止上一次尚未完成的动画。
@@ -124,9 +122,7 @@ export class StartAnimation {
          * 必须在修改相机位置前读取目标视角。
          * 未传 center 时，动画最终回到播放前的相机视角。
          */
-        const target =
-            resolvedOptions.center ??
-            this.getCameraView()
+        const target = resolvedOptions.center ?? this.getCameraView()
 
         this.playing = true
 

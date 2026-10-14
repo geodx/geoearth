@@ -1,4 +1,5 @@
-import type { Cesium3DTileset, Credit, Resource, TilingScheme } from 'cesium';
+import type { Cesium3DTileset, TilingScheme } from 'cesium';
+import type { WorldRectangle } from '../viewer/types';
 
 /**
  * GeoEarth 支持的资源类型。
@@ -52,89 +53,62 @@ export enum ImageryScheme {
     ION = 'ion',
     ARCGIS = 'arcgis',
 }
-
-
-/** 提供器覆盖范围，经纬度，单位：度；创建时转换为 Cesium.Rectangle。 */
-export interface ImageryRectangle {
-    west: number;
-    south: number;
-    east: number;
-    north: number;
-}
-
 // ==================== 影像参数 ==================== 
-/** XYZ 影像，两种切片规则共用参数，由 scheme 区分。 */
-export type XYZImageryProperties = {
-    scheme: ImageryScheme.XYZ_3857 | ImageryScheme.XYZ_4326;
+/** 影像公共属性，仅供本模块内的服务参数接口继承。 */
+interface ImageryCommonProperties {
     /** 插入位置，不传时添加到顶部。 */
     index?: number;
+    /** 是否作为底图。 */
     baseLayer?: boolean;
     /** 图层透明度，范围 0～1，默认 1。 */
     alpha?: number;
+}
 
+/** XYZ 3857 影像，使用 WebMercator 切片规则。 */
+export interface XYZ3857ImageryProperties extends ImageryCommonProperties {
+    scheme: ImageryScheme.XYZ_3857;
     /** 服务地址，支持 {z}、{x}、{y} 等模板。 */
-    url: string | Resource;
+    url: string;
     /** URL 查询参数，例如服务 token。 */
     queryParameters?: Record<string, string>;
     /** 数据覆盖范围，单位：度。 */
-    rectangle?: ImageryRectangle;
+    rectangle?: WorldRectangle;
     minimumLevel?: number;
     maximumLevel?: number;
-    tileWidth?: number;
-    tileHeight?: number;
-    /** 影像来源说明。 */
-    credit?: Credit | string;
+}
 
-    /** {s} 对应的子域名。 */
-    subdomains?: string | string[];
-};
+/** XYZ 4326 影像，使用 Geographic 切片规则。 */
+export interface XYZ4326ImageryProperties extends ImageryCommonProperties {
+    scheme: ImageryScheme.XYZ_4326;
+    /** 服务地址，支持 {z}、{x}、{y} 等模板。 */
+    url: string;
+    /** URL 查询参数，例如服务 token。 */
+    queryParameters?: Record<string, string>;
+    /** 数据覆盖范围，单位：度。 */
+    rectangle?: WorldRectangle;
+    minimumLevel?: number;
+    maximumLevel?: number;
+}
 
 /** WMS 影像。 */
-export type WMSImageryProperties = {
+export interface WMSImageryProperties extends ImageryCommonProperties {
     scheme: ImageryScheme.WMS;
-    index?: number;
-    baseLayer?: boolean;
-    /** 图层透明度，范围 0～1，默认 1。 */
-    alpha?: number;
-
-    url: string | Resource;
-    queryParameters?: Record<string, string>;
-    rectangle?: ImageryRectangle;
-    tilingScheme?: TilingScheme;
-    minimumLevel?: number;
-    maximumLevel?: number;
-    tileWidth?: number;
-    tileHeight?: number;
-    credit?: Credit | string;
-
+    url: string;
     /** 图层名称，多个名称以逗号分隔。 */
     layers: string;
-    /** GetMap 请求参数，例如 format、transparent。 */
-    parameters?: Record<string, unknown>;
-    /** WMS 1.3.0 使用的坐标参考系统。 */
-    crs?: string;
-    /** WMS 1.1.1 使用的坐标参考系统。 */
-    srs?: string;
-    enablePickFeatures?: boolean;
-};
+    queryParameters?: Record<string, string>;
+    rectangle?: WorldRectangle;
+    tilingScheme?: TilingScheme;
+}
 
 /** WMTS 影像。 */
-export type WMTSImageryProperties = {
+export interface WMTSImageryProperties extends ImageryCommonProperties {
     scheme: ImageryScheme.WMTS;
-    index?: number;
-    baseLayer?: boolean;
-    /** 图层透明度，范围 0～1，默认 1。 */
-    alpha?: number;
-
-    url: string | Resource;
+    url: string;
     queryParameters?: Record<string, string>;
-    rectangle?: ImageryRectangle;
+    rectangle?: WorldRectangle;
     tilingScheme?: TilingScheme;
-    minimumLevel?: number;
     maximumLevel?: number;
-    tileWidth?: number;
-    tileHeight?: number;
-    credit?: Credit | string;
 
     /** 图层名称。 */
     layer: string;
@@ -146,81 +120,48 @@ export type WMTSImageryProperties = {
     tileMatrixLabels?: string[];
     /** 图片格式，例如 image/png。 */
     format?: string;
-};
+}
 
 /** TMS 影像，通过 fromUrl 创建。 */
-export type TMSImageryProperties = {
+export interface TMSImageryProperties extends ImageryCommonProperties {
     scheme: ImageryScheme.TMS;
-    index?: number;
-    baseLayer?: boolean;
-    /** 图层透明度，范围 0～1，默认 1。 */
-    alpha?: number;
-
-    url: string | Resource;
+    url: string;
     queryParameters?: Record<string, string>;
-    rectangle?: ImageryRectangle;
+    rectangle?: WorldRectangle;
     minimumLevel?: number;
     maximumLevel?: number;
-    credit?: Credit | string;
-
-    /** 图片扩展名，例如 png。 */
-    fileExtension?: string;
-};
+}
 
 /** 单张影像，通过 fromUrl 自动读取图片尺寸。 */
-export type SingleTileImageryProperties = {
+export interface SingleTileImageryProperties extends ImageryCommonProperties {
     scheme: ImageryScheme.SINGLE_TILE;
-    index?: number;
-    baseLayer?: boolean;
-    /** 图层透明度，范围 0～1，默认 1。 */
-    alpha?: number;
-
-    url: string | Resource;
+    url: string;
     queryParameters?: Record<string, string>;
     /** 图片覆盖范围，单位：度；省略时使用全球范围。 */
-    rectangle?: ImageryRectangle;
-    credit?: Credit | string;
-};
+    rectangle?: WorldRectangle;
+}
 
 /** Cesium ion 影像，通过 fromAssetId 创建。 */
-export type IonImageryProperties = {
+export interface IonImageryProperties extends ImageryCommonProperties {
     scheme: ImageryScheme.ION;
-    index?: number;
-    baseLayer?: boolean;
-    /** 图层透明度，范围 0～1，默认 1。 */
-    alpha?: number;
-
     assetId: number;
     accessToken?: string;
-};
+}
 
 /** ArcGIS MapServer 影像，通过 fromUrl 创建。 */
-export type ArcGisImageryProperties = {
+export interface ArcGisImageryProperties extends ImageryCommonProperties {
     scheme: ImageryScheme.ARCGIS;
-    index?: number;
-    baseLayer?: boolean;
-    /** 图层透明度，范围 0～1，默认 1。 */
-    alpha?: number;
-
-    url: string | Resource;
+    url: string;
     queryParameters?: Record<string, string>;
-    rectangle?: ImageryRectangle;
-    maximumLevel?: number;
-    credit?: Credit | string;
-
-    /** 子图层编号，多个编号以逗号分隔。 */
-    layers?: string;
-    /** 是否优先使用服务端缓存切片。 */
-    usePreCachedTilesIfAvailable?: boolean;
-    enablePickFeatures?: boolean;
-};
+    rectangle?: WorldRectangle;
+}
 
 // ==================== 影像类型映射 ====================
 
 /** 通过 scheme 取得对应参数类型，保留各服务的必填字段检查。 */
 export interface ImageryPropertiesMap {
-    [ImageryScheme.XYZ_3857]: XYZImageryProperties & { scheme: ImageryScheme.XYZ_3857; };
-    [ImageryScheme.XYZ_4326]: XYZImageryProperties & { scheme: ImageryScheme.XYZ_4326; };
+    [ImageryScheme.XYZ_3857]: XYZ3857ImageryProperties;
+    [ImageryScheme.XYZ_4326]: XYZ4326ImageryProperties;
     [ImageryScheme.WMS]: WMSImageryProperties;
     [ImageryScheme.WMTS]: WMTSImageryProperties;
     [ImageryScheme.TMS]: TMSImageryProperties;
@@ -229,19 +170,17 @@ export interface ImageryPropertiesMap {
     [ImageryScheme.ARCGIS]: ArcGisImageryProperties;
 }
 
-/** 指定泛型代表某种服务；省略泛型代表全部影像服务的联合类型。 */
-export type ImageryProperties<T extends ImageryScheme = ImageryScheme> =
-    ImageryPropertiesMap[T];
+/** 指定泛型选择服务参数；省略泛型时支持全部影像服务。 */
+export type ImageryProperties<T extends ImageryScheme = ImageryScheme> = ImageryPropertiesMap[T];
 
 /** 供影像管理器及配置列表使用的资源别名。 */
-export type ImageryResourceItem<T extends ImageryScheme = ImageryScheme> =
-    ResourceItem<ImageryProperties<T>>;
+export type ImageryResourceItem<T extends ImageryScheme = ImageryScheme> = ResourceItem<ImageryProperties<T>>;
 
 // ==================== 3D Tiles 参数 ====================
 /** 3D Tiles 配置参数  */
 export type TilesetProperties = {
     /** tileset.json 地址 */
-    url: string | Resource;
+    url: string;
 
     /** 最大屏幕空间误差 */
     maximumScreenSpaceError?: number;
@@ -250,8 +189,6 @@ export type TilesetProperties = {
     tilesetOptions?: Partial<Cesium3DTileset.ConstructorOptions>;
 }
 
-/** 支持 ResourceItem<TileSet> 的简短别名。 */
-export type TileSet = TilesetProperties;
 
 
 export enum TerrainScheme {

@@ -6,7 +6,7 @@ interface CesiumDataImpl<T> {
 
     addData(sourceItem: ResourceItem): Promise<unknown>;
 
-    getConfigById(id: string): ResourceItem | null;
+    getSourcesItemById(id: string): ResourceItem | null;
 
     getInstancesById(id: string): T | null;
 

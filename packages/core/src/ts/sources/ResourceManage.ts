@@ -23,10 +23,10 @@ export class ResourceManage {
 
     }
 
-    async add(item: ResourceItem): Promise<unknown> {
+    async addData(item: ResourceItem): Promise<unknown> {
         const config = normalizeResource(item)
 
-        const existing = this.getConfigById(config.id)
+        const existing = this.getSourceItemById(config.id)
         if (existing) {
             console.warn('工作区已加载该数据!不允许重复加载：', config.name);
             return this.getInstance(config.id);
@@ -35,7 +35,7 @@ export class ResourceManage {
             let instance: unknown
             switch (config.sourceType) {
                 case SourceType.IMAGERY:
-                    instance = await this.imageryManage.add(config as ImageryResourceItem)
+                    instance = await this.imageryManage.addData(config as ImageryResourceItem)
                     break
                 case SourceType.TERRAIN:
                 case SourceType.MODEL:
@@ -63,7 +63,7 @@ export class ResourceManage {
      * @returns 
      */
     removeSourceById(id: string): boolean {
-        const sourceItem = this.getConfigById(id);
+        const sourceItem = this.getSourceItemById(id);
         let removeRes = false
         if (!sourceItem) return false
         const type = sourceItem.sourceType
@@ -97,7 +97,7 @@ export class ResourceManage {
      * @param id 
      */
     flyToSourceById(id: string): void {
-        const config = this.getConfigById(id)
+        const config = this.getSourceItemById(id)
         if (!config) return
 
         switch (config.sourceType) {
@@ -121,13 +121,13 @@ export class ResourceManage {
                 return
         }
     }
-    getConfigById(id: string): ResourceItem | undefined {
-        return this.getAllConfigs().find(config => config.id === id)
+    getSourceItemById(id: string): ResourceItem | undefined {
+        return this.getAllSourceItems().find(config => config.id === id)
     }
     /** 获取所有已登记资源的配置 */
-    getAllConfigs(): ResourceItem[] {
+    getAllSourceItems(): ResourceItem[] {
         return [
-            ...this.imageryManage.getAllConfigs(),
+            ...this.imageryManage.sourcesItems,
             // ... this.terrainManage.getAllConfigs(),
             // ... this.modelManage.getAllConfigs(),
             // ... this.tilesetManage.getAllConfigs(),

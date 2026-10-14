@@ -1,12 +1,12 @@
 import {
-    ArcGisMapServerImageryProvider, ImageryLayer, IonImageryProvider, Resource,
+    ArcGisMapServerImageryProvider, GeographicTilingScheme, ImageryLayer, IonImageryProvider, Rectangle, Resource,
     SingleTileImageryProvider, TileMapServiceImageryProvider,
     UrlTemplateImageryProvider, WebMapServiceImageryProvider,
-    WebMapTileServiceImageryProvider, type ImageryProvider, type Viewer
-} from 'cesium'
-import type { SourceEvent } from '../../events/modules/SourceEvent'
-import { SourceEventType } from '../../events/types'
-import { ImageryScheme, SourceType, type ImageryResourceItem } from '../types'
+    WebMapTileServiceImageryProvider, WebMercatorTilingScheme, type ImageryProvider, type Viewer
+} from 'cesium';
+import type { SourceEvent } from '../../events/modules/SourceEvent';
+import { SourceEventType } from '../../events/types';
+import { ImageryScheme, SourceType, type ImageryResourceItem } from '../types';
 import { CesiumData } from './data/CesiumData';
 
 /**
@@ -43,373 +43,139 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
         })
     }
     /**
-     * 添加影像图层。
-     *
-     * 当相同 ID 已存在时，直接返回已有实例。
+     * 添加影像图层。 
      */
-    async add(config: ImageryResourceItem): Promise<ImageryLayer> {
-        const id = config.id
-
+    async addData(config: ImageryResourceItem): Promise<ImageryLayer> {
         const provider = await this.createProvider(config)
-
-        // 等待 provider 创建期间，其他 add() 可能已经添加了这个 ID。
-        const loadedLayer = this.instancesMap.get(id)
-        if (loadedLayer) return loadedLayer
-        const layer = new ImageryLayer(provider, config.properties.layerOptions)
-
-        if (config.properties.index === undefined) {
-            this.viewer.imageryLayers.add(layer)
-        } else {
-            this.viewer.imageryLayers.add(layer, config.properties.index)
-        }
-
-        // 图层加入集合后，确保异步加载完成的底图也位于最底层。
-        if (config.properties.baseLayer === true) {
-            this.viewer.imageryLayers.lowerToBottom(layer)
-        }
-
-        this.instancesMap.set(id, layer)
-        this.sourcesItems.push(this.cloneConfig(config))
-
-        this.sourceEvent.raiseEvent(SourceEventType.ADD, {
-            type: SourceEventType.ADD,
-            sourceType: SourceType.LAYER,
-            source: config,
-            id
-        })
+        const layer = this.addImageryProvider(provider, config)
 
         return layer
     }
-    private async createProvider(config: ImageryResourceItem): Promise<ImageryProvider> {
-       
-        switch (scheme) {
-            case ImageryScheme.XYZ_3857:
 
-                return new UrlTemplateImageryProvider({
-                    ...providerOptions,
-                    url: this.createResource(config)
-                } as UrlTemplateImageryProvider.ConstructorOptions)
-            case ImageryScheme.XYZ_4326:
-                return new UrlTemplateImageryProvider({
-                    ...providerOptions,
-                    url: this.createResource(config)
-                } as UrlTemplateImageryProvider.ConstructorOptions)
-
-            case ImageryScheme.WMS:
-                return new WebMapServiceImageryProvider({
-                    ...providerOptions,
-                    url: this.createResource(config)
-                } as WebMapServiceImageryProvider.ConstructorOptions)
-
-            case ImageryScheme.WMTS:
-                return new WebMapTileServiceImageryProvider({
-                    ...providerOptions,
-                    url: this.createResource(config)
-                } as WebMapTileServiceImageryProvider.ConstructorOptions)
-
-            case ImageryScheme.TMS:
-                return TileMapServiceImageryProvider.fromUrl(
-                    this.createResource(config),
-                    providerOptions as TileMapServiceImageryProvider.ConstructorOptions
-                )
-
-            case ImageryScheme.SINGLE_TILE:
-                return SingleTileImageryProvider.fromUrl(
-                    this.createResource(config),
-                    providerOptions as SingleTileImageryProvider.fromUrlOptions
-                )
-
-            case ImageryScheme.ION:
-                return this.createIonProvider(config)
-
-            case ImageryScheme.ARCGIS:
-                // return ArcGisMapServerImageryProvider.fromUrl(
-                //     this.createResource(config),
-                //     providerOptions as ArcGisMapServerImageryProvider.ConstructorOptions
-                // )
-                return new ArcGisMapServerImageryProvider({
-                    ...providerOptions,
-                    url: this.createResource(config)
-                } as ArcGisMapServerImageryProvider.ConstructorOptions)
-
-            default:
-                throw new Error(`Unsupported imagery provider type: ${scheme}`)
-        }
-    }
-    addImageryProvider(provider: ImageryProvider, resourceItem: ResourceItem) {
-        const layer = this.viewer.imageryLayers.addImageryProvider(provider)
-        if (layer) {
-            // @ts-ignore
-            layer.pid = resourceItem.pid
-            // @ts-ignore
-            layer.param = resourceItem
-            // 如果该图层是底图，则把该图层降到最底层
-            if (resourceItem.properties.baseLayer) {
-                this.viewer.imageryLayers.lowerToBottom(layer)
-            }
-            this.instancesMap.set(resourceItem.pid, layer)
-            this.sourcesItems.push(resourceItem)
-        }
-
-        return layer
+    async flyToById(id: string): Promise<boolean> {
+        const layer = this.getInstancesById(id);
+        if (!layer) return false;
+        return this.viewer.flyTo(layer, {
+            duration: 2,
+        });
     }
     /**
      * 删除指定影像图层。
      */
     removeById(id: string): boolean {
-        this.ensureAvailable()
+        let removeRes = false
+        const instance = this.getInstancesById(id)
+        this.sourcesItems = this.sourcesItems.filter(item => item.id !== id)
 
-        const layer = this.layers.get(id)
+        if (instance) {
+            removeRes = this.viewer.imageryLayers.remove(instance)
+            if (!instance.isDestroyed()) {
+                instance.destroy()
+            }
+            this.instancesMap.delete(id)
 
-        if (!layer) {
-            return false
         }
-
-        this.layers.delete(id)
-        this.configs.delete(id)
-
-        const removed = this.viewer.imageryLayers.remove(layer, true)
-
-        if (removed) {
-            this.sourceEvent.raiseEvent(SourceEventType.REMOVE, {
-                type: SourceEventType.REMOVE,
-                sourceType: SourceType.LAYER,
-                source: layer,
-                id
-            })
-        }
-
-        return removed
-    }
-
-    get(id: string): ImageryLayer | undefined {
-        return this.layers.get(id)
-    }
-
-    getConfig(id: string): ImageryResourceItem | undefined {
-        const config = this.configs.get(id)
-        return config ? this.cloneConfig(config) : undefined
-    }
-
-    has(id: string): boolean {
-        return this.layers.has(id)
-    }
-
-    getAll(): ImageryLayer[] {
-        return [...this.layers.values()]
-    }
-
-    getAllConfigs(): ImageryResourceItem[] {
-        return [...this.configs.values()].map(config => this.cloneConfig(config))
-    }
-
-    setShow(id: string, show: boolean): boolean {
-        this.ensureAvailable()
-
-        const layer = this.layers.get(id)
-
-        if (!layer) {
-            return false
-        }
-
-        if (layer.show === show) {
-            return true
-        }
-
-        layer.show = show
-
-        const config = this.configs.get(id)
-
-        if (config) {
-            config.show = show
-        }
-
-        const eventType = show ? SourceEventType.SHOW : SourceEventType.HIDE
-
-        this.sourceEvent.raiseEvent(eventType, {
-            type: eventType,
-            sourceType: SourceType.LAYER,
-            source: layer,
-            id
-        })
-
-        this.viewer.scene.requestRender()
-
-        return true
-    }
-
-    setAlpha(id: string, alpha: number): boolean {
-        this.ensureAvailable()
-
-        const layer = this.layers.get(id)
-
-        if (!layer) {
-            return false
-        }
-
-        layer.alpha = Math.min(Math.max(alpha, 0), 1)
-
-        this.raiseChangeEvent(id, layer)
-        this.viewer.scene.requestRender()
-
-        return true
-    }
-
-    raise(id: string): boolean {
-        this.ensureAvailable()
-
-        const layer = this.layers.get(id)
-
-        if (!layer) {
-            return false
-        }
-
-        this.viewer.imageryLayers.raise(layer)
-        this.raiseChangeEvent(id, layer)
-
-        return true
-    }
-
-    lower(id: string): boolean {
-        this.ensureAvailable()
-
-        const layer = this.layers.get(id)
-
-        if (!layer) {
-            return false
-        }
-
-        this.viewer.imageryLayers.lower(layer)
-        this.raiseChangeEvent(id, layer)
-
-        return true
-    }
-
-    raiseToTop(id: string): boolean {
-        this.ensureAvailable()
-
-        const layer = this.layers.get(id)
-
-        if (!layer) {
-            return false
-        }
-
-        this.viewer.imageryLayers.raiseToTop(layer)
-        this.raiseChangeEvent(id, layer)
-
-        return true
-    }
-
-    lowerToBottom(id: string): boolean {
-        this.ensureAvailable()
-
-        const layer = this.layers.get(id)
-
-        if (!layer) {
-            return false
-        }
-
-        this.viewer.imageryLayers.lowerToBottom(layer)
-        this.raiseChangeEvent(id, layer)
-
-        return true
-    }
-
-    removeAll(): void {
-        this.ensureAvailable()
-
-        for (const id of [...this.layers.keys()]) {
-            this.remove(id)
-        }
+        return removeRes
     }
 
     /**
      * 销毁时不再发布 REMOVE 事件，
      * 因为整个 GeoEarth 正在结束生命周期。
      */
-    destroy(): void {
-        if (this.viewer.isDestroyed()) {
-            this.layers.clear()
-            this.configs.clear()
-            return
-        }
-
-        for (const layer of this.layers.values()) {
-            this.viewer.imageryLayers.remove(layer, true)
-        }
-
-        this.layers.clear()
-        this.configs.clear()
+    destroy(): boolean {
+        return this.removeAll()
     }
 
-
-
-    private createIonProvider(config: ImageryResourceItem): Promise<IonImageryProvider> {
-        const assetId = config.properties.assetId
-
-        if (assetId === undefined) {
-            throw new Error(`Imagery resource "${getSourceId(config)}" requires properties.assetId.`)
-        }
-
-        return IonImageryProvider.fromAssetId(
-            assetId,
-            config.properties.providerOptions as IonImageryProvider.ConstructorOptions
-        )
-    }
-
-    private createResource(config: ImageryResourceItem): Resource {
-
-        const url = config.properties.url
-
-        if (!url) {
-            throw new Error(`Imagery resource "${getSourceId(config)}" requires properties.url.`)
-        }
-
-        if (url instanceof Resource) {
-            return url
-        }
-
-        return new Resource({
-            url,
-            queryParameters: config.properties.queryParameters
-        })
-    }
-
-    private raiseChangeEvent(id: string, layer: ImageryLayer): void {
-        this.sourceEvent.raiseEvent(SourceEventType.CHANGE, {
-            type: SourceEventType.CHANGE,
-            sourceType: SourceType.LAYER,
-            source: layer,
-            id
-        })
-    }
-
-    private validateConfig(config: ImageryResourceItem): void {
-        const id = getSourceId(config)
-
-        if (!config.properties?.providerType) {
-            throw new Error(`Imagery resource "${id}" requires properties.providerType.`)
-        }
-
-        if (config.properties.providerType !== ImageryProviderType.ION && !config.properties.url) {
-            throw new Error(`Imagery resource "${id}" requires properties.url`)
-        }
-    }
-
-    /**
-     * Resource、回调函数以及部分 Cesium 对象不能使用 structuredClone，
-     * 因此这里只复制普通配置对象。
-     */
-    private cloneConfig(config: ImageryResourceItem): ImageryResourceItem {
-        return {
-            ...config,
-            properties: {
-                ...config.properties,
-                queryParameters: config.properties.queryParameters ? { ...config.properties.queryParameters } : undefined,
-                providerOptions: config.properties.providerOptions ? { ...config.properties.providerOptions } : undefined,
-                layerOptions: config.properties.layerOptions ? { ...config.properties.layerOptions } : undefined
+    private async createProvider(config: ImageryResourceItem): Promise<ImageryProvider> {
+        const prop = config.properties
+        const scheme = prop.scheme
+        switch (scheme) {
+            case ImageryScheme.XYZ_3857:
+            case ImageryScheme.XYZ_4326: {
+                const resource = new Resource({ url: prop.url, queryParameters: prop.queryParameters });
+                const rectangle = prop.rectangle ? Rectangle.fromDegrees(prop.rectangle.west, prop.rectangle.south, prop.rectangle.east, prop.rectangle.north) : undefined
+                return new UrlTemplateImageryProvider({
+                    url: resource,
+                    rectangle: rectangle,
+                    tilingScheme: prop.scheme === ImageryScheme.XYZ_3857 ? new WebMercatorTilingScheme() : new GeographicTilingScheme(),
+                    minimumLevel: prop.minimumLevel,
+                    maximumLevel: prop.maximumLevel,
+                });
             }
+            case ImageryScheme.WMS: {
+                const resource = new Resource({ url: prop.url, queryParameters: prop.queryParameters });
+                const rectangle = prop.rectangle ? Rectangle.fromDegrees(prop.rectangle.west, prop.rectangle.south, prop.rectangle.east, prop.rectangle.north) : undefined
+                return new WebMapServiceImageryProvider({
+                    url: resource,
+                    rectangle: rectangle,
+                    layers: prop.layers,
+                });
+            }
+            case ImageryScheme.WMTS: {
+                const resource = new Resource({ url: prop.url, queryParameters: prop.queryParameters });
+                const rectangle = prop.rectangle ? Rectangle.fromDegrees(prop.rectangle.west, prop.rectangle.south, prop.rectangle.east, prop.rectangle.north) : undefined
+                return new WebMapTileServiceImageryProvider({
+                    url: resource,
+                    rectangle: rectangle,
+                    layer: prop.layer,
+                    style: prop.style,
+                    format: prop.format || 'image/png',
+                    tileMatrixSetID: prop.tileMatrixSetID || 'default028mm',
+                    maximumLevel: prop.maximumLevel,
+                });
+            }
+
+            case ImageryScheme.TMS: {
+                const resource = new Resource({ url: prop.url, queryParameters: prop.queryParameters });
+                const rectangle = prop.rectangle ? Rectangle.fromDegrees(prop.rectangle.west, prop.rectangle.south, prop.rectangle.east, prop.rectangle.north) : undefined
+                return TileMapServiceImageryProvider.fromUrl(resource, {
+                    rectangle,
+                    minimumLevel: prop.minimumLevel,
+                    maximumLevel: prop.maximumLevel,
+                });
+            }
+
+            case ImageryScheme.SINGLE_TILE: {
+                const resource = new Resource({ url: prop.url, queryParameters: prop.queryParameters });
+                const rectangle = prop.rectangle ? Rectangle.fromDegrees(prop.rectangle.west, prop.rectangle.south, prop.rectangle.east, prop.rectangle.north) : undefined
+                return SingleTileImageryProvider.fromUrl(resource, {
+                    rectangle
+                })
+            }
+            case ImageryScheme.ION:
+                return IonImageryProvider.fromAssetId(prop.assetId, {
+                    accessToken: prop.accessToken,
+                });
+
+            case ImageryScheme.ARCGIS: {
+                const resource = new Resource({ url: prop.url, queryParameters: prop.queryParameters });
+                const rectangle = prop.rectangle ? Rectangle.fromDegrees(prop.rectangle.west, prop.rectangle.south, prop.rectangle.east, prop.rectangle.north) : undefined
+
+                return ArcGisMapServerImageryProvider.fromUrl(resource, {
+                    rectangle,
+                });
+            }
+            default:
+                throw new Error(`Unsupported imagery provider type: ${scheme}`)
         }
     }
+    private addImageryProvider(provider: ImageryProvider, resourceItem: ImageryResourceItem) {
+        const layer = new ImageryLayer(provider)
+        layer.id = resourceItem.id
+        layer.param = resourceItem
+        if (resourceItem.properties.index === undefined) {
+            this.viewer.imageryLayers.add(layer)
+        } else {
+            this.viewer.imageryLayers.add(layer, resourceItem.properties.index)
+        }
 
+        // 如果该图层是底图，则把该图层降到最底层
+        if (resourceItem.properties.baseLayer) {
+            this.viewer.imageryLayers.lowerToBottom(layer)
+        }
+        this.instancesMap.set(resourceItem.id, layer)
+        this.sourcesItems.push(resourceItem)
+
+        return layer
+    }
 }
