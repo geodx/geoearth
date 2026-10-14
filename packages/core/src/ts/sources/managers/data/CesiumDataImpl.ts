@@ -6,13 +6,13 @@ interface CesiumDataImpl<T> {
 
     addData(sourceItem: ResourceItem): Promise<unknown>;
 
-    getSourcesItemsByPid(pid: string): ResourceItem | null;
+    getConfigById(id: string): ResourceItem | null;
 
-    getInstancesByPid(pid: string): T | null;
+    getInstancesById(id: string): T | null;
 
-    flyToByPid(pid: string): void;
+    flyToById(id: string): void;
 
-    removeByPid(pid: string): boolean;
+    removeById(id: string): boolean;
 
     removeAll(): boolean;
 }

@@ -17,7 +17,7 @@ export interface Config {
         fxaa?: boolean
     }
     resources?: {
-        layers: ImageryResourceItem[]
+        imagery: ImageryResourceItem[]
         terrains: ResourceItem[]
         models: ResourceItem[]
         tilesets: ResourceItem[]

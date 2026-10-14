@@ -26,28 +26,36 @@ export class ResourceManage {
     }
 
     async add(config: ResourceItem): Promise<unknown> {
-        // TODO 资源访问合法性
 
-        config.id ||= SafeTool.uuid()
-        config.showInTree ??= true  // 默认在资源树中显示
-        config.defaultLoad ??= true // 默认自动加载
-        config.show ??= true        // 加载后默认显示
-
-        let old = this.getNodes().find(item => sourceItem.pid === item.pid);
-
-        switch (config.sourceType) {
-            case SourceType.LAYER:
-                return this.imagery.add(config as ImageryResourceItem)
-
-            case SourceType.TERRAIN:
-            case SourceType.MODEL:
-            case SourceType.TILESET:
-            case SourceType.GEOJSON:
-            case SourceType.POI:
-                throw new Error(`Resource type "${config.sourceType}" has not been implemented.`)
-
-            default:
-                throw new Error(`Unsupported resource type: ${String(config.sourceType)}`)
+        const existing = this.getConfigById(id)
+        if (existing) {
+            console.warn('工作区已加载该数据!不允许重复加载：', config.name);
+            return this.getInstance(config.id);
+        }
+        try {
+            let instance: unknown
+            switch (config.sourceType) {
+                case SourceType.IMAGERY:
+                    instance = await this.imageryManage.add(config as ImageryResourceItem)
+                    break
+                case SourceType.TERRAIN:
+                case SourceType.MODEL:
+                case SourceType.TILESET:
+                case SourceType.GEOJSON:
+                case SourceType.POI:
+                    throw new Error(`资源类型 "${config.sourceType}" 尚未实现。`)
+                default:
+                    throw new Error(`无效的资源类型：${String(config.sourceType)}`)
+            }
+            this.sourceEvent.raiseEvent(SourceEventType.ADD, {
+                type: SourceEventType.ADD,
+                sourceType: config.sourceType,
+                source: config,
+            });
+            return instance
+        } catch (error) {
+            console.error(`加载资源失败：${config.name}`, error)
+            throw error
         }
     }
     /**
@@ -55,7 +63,7 @@ export class ResourceManage {
      * @param id 
      * @returns 
      */
-    removeDataById(id: string): boolean {
+    removeSourceById(id: string): boolean {
         const sourceItem = this.getConfigById(id);
         let removeRes = false
         if (!sourceItem) return false
@@ -89,12 +97,12 @@ export class ResourceManage {
      * 飞向资源
      * @param id 
      */
-    flyToDataByPid(id: string): void {
+    flyToSourceById(id: string): void {
         const config = this.getConfigById(id)
         if (!config) return
 
         switch (config.sourceType) {
-            case SourceType.LAYER:
+            case SourceType.IMAGERY:
                 return this.imageryManage.flyToById(id)
 
             //todo 后续补充：
@@ -130,11 +138,12 @@ export class ResourceManage {
     }
 
 
-    /** 获取所有已加载资源的实例 */
-    getAllInstances(): unknown[] {
-        return [
-            ...this.imageryManage.getAll()
-        ]
+    getInstance(id: string): unknown {
+        return this.imageryManage.instancesMap.get(id)
+        // ?? this.terrainManage.instancesMap.get(id)
+        // ?? this._3DTileManage.instancesMap.get(id)
+        // ?? this.gltfManage.instancesMap.get(id)
+        // ?? this.poiManage.instancesMap.get(id)
     }
     destroy(): void {
         this.imageryManage.destroy()

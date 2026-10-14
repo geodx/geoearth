@@ -55,7 +55,6 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
 
         const provider = await this.createProvider(config)
 
-        this.ensureAvailable()
         // 等待 provider 创建期间，其他 add() 可能已经添加了这个 ID。
         const loadedLayer = this.layers.get(id)
         if (loadedLayer) return loadedLayer
@@ -89,7 +88,7 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
     /**
      * 删除指定影像图层。
      */
-    removeDataById(id: string): boolean {
+    removeById(id: string): boolean {
         this.ensureAvailable()
 
         const layer = this.layers.get(id)
@@ -276,10 +275,15 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
     }
 
     private async createProvider(config: ImageryResourceItem): Promise<ImageryProvider> {
-        const { scheme, providerOptions = {} } = config.properties 
-      
+        const { scheme, providerOptions = {} } = config.properties
+
         switch (scheme) {
             case ImageryScheme.XYZ_3857:
+                return new UrlTemplateImageryProvider({
+                    ...providerOptions,
+                    url: this.createResource(config)
+                } as UrlTemplateImageryProvider.ConstructorOptions)
+            case ImageryScheme.XYZ_4326:
                 return new UrlTemplateImageryProvider({
                     ...providerOptions,
                     url: this.createResource(config)
@@ -391,9 +395,4 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
         }
     }
 
-    private ensureAvailable(): void {
-        if (this.viewer.isDestroyed()) {
-            throw new Error('Cannot use ImageryManager because Viewer has been destroyed.')
-        }
-    }
 }

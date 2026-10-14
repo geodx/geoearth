@@ -5,10 +5,10 @@ import { PerformanceManage } from './performance'
 
 import { EventManage } from './events/EventManage'
 import { StartAnimation } from './camera/animations/StartAnimation';
-import { loadBaseSources, loadDefaultSources, ResourceManage } from './sources';
+import { loadSources, ResourceManage } from './sources';
 import { ToolManager } from './tools/ToolManager';
 import { Config } from './config/types';
-import { createConfig } from './config/createConfig';
+import { ConfigManage } from './config/ConfigManage';
 import { WidgetManager } from './widgets';
 import { ViewerEventType } from './events/types';
 import { InteractionManage } from './interaction';
@@ -16,7 +16,7 @@ import { InteractionManage } from './interaction';
 export class GeoEarth {
     public readonly viewer: Viewer
     // public readonly camera: CameraManage
-    public readonly config: Config
+    public readonly config: ConfigManage
 
     public readonly performance: PerformanceManage
 
@@ -42,9 +42,9 @@ export class GeoEarth {
      * @param option    viewer 的原参数，参照 new Cesium.Viewer(id,option)
      */
     constructor(container: string | HTMLElement, options?: Viewer.ConstructorOptions, config?: Config) {
-        this.config = createConfig(config)
+        this.config = new ConfigManage(config);
         // 初始化Viewer
-        this.viewer = createViewer(container, options, this.config)
+        this.viewer = createViewer(container, options, this.config.getConfig())
 
         // 初始化事件
         this.event = new EventManage(this.viewer)
@@ -70,17 +70,14 @@ export class GeoEarth {
     }
 
     private async initialize(): Promise<void> {
+        const config = this.config.getConfig();
         /*
         * 基础地形和影像优先加载，
         * 保证开场动画播放时地球已有基础内容。
         */
-        await loadBaseSources(this.sources, this.config)
-        /*
-        * 其他默认资源在开场动画期间并行加载。
-        */
-        const defaultSourcesPromise = loadDefaultSources(this.sources, this.config)
+        const defaultSourcesPromise = loadSources(this.viewer, this.sources, this.config)
 
-        if (this.config.startup.animation) await this.startAnimation.play()
+        if (config.startup.animation) await this.startAnimation.play()
 
         await defaultSourcesPromise
     }

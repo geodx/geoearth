@@ -1,5 +1,5 @@
 import { Assets } from "../../assets/urls";
-import { ImageryProviderType, ResourceItem } from "../sources/types";
+import { ImageryScheme, ResourceItem, SourceType } from "../sources/types";
 import { Config } from "./types";
 
 export const defaultConfig: Config = {
@@ -24,16 +24,20 @@ export const defaultConfig: Config = {
     },
 
     resources: {
-        layers: [
+        imagery: [
             {
                 id: 'geoearth-base-imagery',
                 name: '全球影像底图',
+                catalog: '基础影像',
+                sourceType: SourceType.IMAGERY,
+                showInTree: false,
                 defaultLoad: true,
                 show: true,
+                offlineCache: false,
                 properties: {
-                    providerType: ImageryProviderType.SINGLE_TILE,
+                    scheme: ImageryScheme.SINGLE_TILE,
                     url: Assets.earth[2],
-                    baseLayer: true
+                    baseLayer: true,
                 }
             }
         ],

@@ -9,8 +9,6 @@ export function createViewer(container: string | HTMLElement, viewerOptions: Vie
     // 初始化 Dom 节点
     prepareContainer(resolveContainer(container))
 
-
-    
     // 载入用户手动定义的 Viewer3D 属性
     const viewerConstructorOptions = {
         ...getDefaultViewerOptions(),

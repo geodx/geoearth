@@ -15,21 +15,21 @@ abstract class CesiumData<T> implements CesiumDataImpl<T> {
 
     abstract addData(sourceItem: ResourceItem): Promise<unknown>;
 
-    abstract flyToByPid(pid: string): Promise<boolean>;
+    abstract flyToById(id: string): Promise<boolean>;
 
-    getInstancesByPid(pid: string) {
-        return this.instancesMap.get(pid) || null;
+    getInstancesById(id: string) {
+        return this.instancesMap.get(id) || null;
     }
 
-    getSourcesItemsByPid(pid: string) {
-        return this.sourcesItems.find(item => item.id === pid) || null;
+    getConfigById(id: string) {
+        return this.sourcesItems.find(item => item.id === id) || null;
     }
 
-    abstract removeByPid(pid: string): boolean;
+    abstract removeById(id: string): boolean;
 
     removeAll(): boolean {
         this.sourcesItems.forEach(item => {
-            this.removeByPid(item.id);
+            this.removeById(item.id);
         });
         return true;
     }

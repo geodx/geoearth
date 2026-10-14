@@ -1,6 +1,6 @@
-import { Config } from '../../config/types'
+import { Viewer } from 'cesium'
 import type { ResourceManage } from '../ResourceManage'
-import { InitialSourceItem, ResourceItem, SourceLoadFailure, SourceLoadResult, SourceLoadSuccess, SourceType } from '../types'
+import { ConfigManage } from '../../config/ConfigManage';
 
 /**
  * 加载基础显示资源。
@@ -8,7 +8,30 @@ import { InitialSourceItem, ResourceItem, SourceLoadFailure, SourceLoadResult, S
  * 地形和影像决定地球的基础显示效果，
  * 应在模型、3D Tiles、POI 等资源之前加载。
  */
-export async function loadBaseSources(resourceManage: ResourceManage, config: Config): Promise<SourceLoadResult> {
+export async function loadSources(viewer: Viewer, resourceManage: ResourceManage, config: ConfigManage) {
+    viewer.imageryLayers.removeAll();
+
+    viewer.scene.skyAtmosphere.show = false;
+    viewer.scene.globe.show = false;
+
+    // 加载地球的初始默认地形
+    const baseTerrainItem = config.getBaseTerrain();
+    let baseTerrainPromise = null;
+    if (baseTerrainItem) {
+        baseTerrainPromise = resourceManage.add(baseTerrainItem);
+    }
+
+    // 加载地球的基础地图图层
+    const baseImageryItem = config.getBaseImagery();
+    let baseLayerPromise = null;
+    if (baseImageryItem) {
+        baseLayerPromise = resourceManage.add(baseImageryItem);
+    }
+    await Promise.all([baseTerrainPromise, baseLayerPromise]);
+
+    viewer.scene.skyAtmosphere.show = true;
+    viewer.scene.globe.show = true;
+
     const resources = config.resources
     const baseSources: InitialSourceItem[] = [
         ...getDefaultSources(
