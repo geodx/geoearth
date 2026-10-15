@@ -5,7 +5,8 @@ export function createIonWorldTerrain(defaultLoad = false): ResourceItem {
     return {
         id: 'geoearth-ion-world-terrain',
         name: 'Cesium World Terrain',
-        // dataType: SourceType.TERRAIN,
+        catalog: '基础地形',
+        sourceType: SourceType.TERRAIN,
         defaultLoad,
         show: defaultLoad,
         properties: {

@@ -5,14 +5,234 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 单张影像</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    .demo-panel h1 { margin: 0 0 12px; font-size: 16px; }
+    fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+    label { display: block; margin: 8px 0; }
+    input[type="text"], input[type="number"] {
+      width: 100%; box-sizing: border-box; margin-top: 4px; padding: 6px;
+      border: 1px solid #475569; border-radius: 4px; background: #1e293b; color: inherit;
+    }
+    .bounds { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    button { padding: 6px 10px; cursor: pointer; }
+    button:disabled { cursor: default; }
+    input[type="range"] { width: 100%; }
+  </style>
 </head>
 
 <body>
   <div id="earth"></div>
+  <aside class="demo-panel" aria-label="单张影像控制">
+    <h1>单张影像</h1>
+    <fieldset id="source-fields" disabled>
+      <label>图片地址
+        <input id="image-url" type="text" value="/demo-assets/resource-events-grid.png" />
+      </label>
+      <div class="bounds">
+        <label>西经度（°）<input id="west" type="number" min="-180" max="180" value="100" /></label>
+        <label>东经度（°）<input id="east" type="number" min="-180" max="180" value="120" /></label>
+        <label>南纬度（°）<input id="south" type="number" min="-90" max="90" value="20" /></label>
+        <label>北纬度（°）<input id="north" type="number" min="-90" max="90" value="40" /></label>
+      </div>
+    </fieldset>
+    <div class="buttons">
+      <button id="load" disabled>加载影像</button>
+      <button id="locate" disabled>定位影像</button>
+      <button id="remove" disabled>移除影像</button>
+    </div>
+    <label><input id="show" type="checkbox" checked disabled /> 显示影像</label>
+    <label for="alpha">透明度：<output id="alpha-value">0.65</output></label>
+    <input id="alpha" type="range" min="0" max="1" step="0.05" value="0.65" disabled />
+    <p class="hint">默认将本地网格图片铺在指定经纬度范围内。移除后可更换图片及范围；远程图片需允许跨域访问。</p>
+    <p id="status" class="status" role="status" aria-live="polite" data-state="loading">正在初始化地球…</p>
+    <pre id="image-state" aria-label="当前影像状态">等待初始化…</pre>
+  </aside>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“单张影像”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    // HTML 从 GeoEarth 获取枚举；npm 使用 import { GeoEarth, SourceType, ImageryScheme } from 'geoearth'。
+    const { SourceType, ImageryScheme, SourceEventType } = GeoEarth;
+    const layerId = "single-image-demo";
+    const sourceFields = document.getElementById("source-fields");
+    const urlInput = document.getElementById("image-url");
+    const loadButton = document.getElementById("load");
+    const locateButton = document.getElementById("locate");
+    const removeButton = document.getElementById("remove");
+    const showInput = document.getElementById("show");
+    const alphaInput = document.getElementById("alpha");
+    const alphaValue = document.getElementById("alpha-value");
+    const status = document.getElementById("status");
+    const imageState = document.getElementById("image-state");
+    let earth;
+    let ready = false;
+    let busy = false;
+    let pageActive = true;
+    let stopRemoveListener;
+
+    function setStatus(message, state = "ready") {
+      status.textContent = message;
+      status.dataset.state = state;
+    }
+
+    function getLayer() {
+      return ready && earth ? earth.sources.getInstance(layerId) : undefined;
+    }
+
+    function updateControls() {
+      const layer = getLayer();
+      sourceFields.disabled = !ready || busy || Boolean(layer);
+      loadButton.disabled = !ready || busy || Boolean(layer);
+      locateButton.disabled = !layer || !layer.show || busy;
+      removeButton.disabled = !layer || busy;
+      showInput.disabled = !layer || busy;
+      alphaInput.disabled = !layer || busy;
+      if (layer) {
+        showInput.checked = layer.show;
+        alphaInput.value = layer.alpha;
+        const provider = layer.imageryProvider;
+        imageState.textContent = `图片尺寸：${provider.tileWidth} × ${provider.tileHeight}\n显示：${layer.show ? "是" : "否"}\n透明度：${layer.alpha.toFixed(2)}`;
+      } else {
+        imageState.textContent = ready ? "示例影像尚未加载。" : "等待初始化…";
+      }
+      alphaValue.textContent = Number(alphaInput.value).toFixed(2);
+    }
+
+    function createSource() {
+      const url = urlInput.value.trim();
+      if (!url) throw new Error("请填写图片地址。");
+      const rectangle = {};
+      for (const key of ["west", "south", "east", "north"]) {
+        const value = document.getElementById(key).value;
+        if (!value.trim() || !Number.isFinite(Number(value))) {
+          throw new Error("请填写有效的经纬度范围。");
+        }
+        rectangle[key] = Number(value);
+      }
+      const { west, south, east, north } = rectangle;
+      if (west < -180 || east > 180 || west >= east ||
+          south < -90 || north > 90 || south >= north) {
+        throw new Error("经度需满足 -180 ≤ 西 < 东 ≤ 180，纬度需满足 -90 ≤ 南 < 北 ≤ 90。");
+      }
+      return {
+        id: layerId,
+        name: "单张影像示例",
+        catalog: "示例影像",
+        sourceType: SourceType.IMAGERY,
+        show: showInput.checked,
+        properties: {
+          scheme: ImageryScheme.SINGLE_TILE,
+          url,
+          rectangle, // 单位为度，SDK 内部转换为 Cesium.Rectangle。
+          alpha: Number(alphaInput.value),
+        },
+      };
+    }
+
+    async function loadImage() {
+      if (!ready || busy || getLayer()) return;
+      let source;
+      try {
+        source = createSource();
+      } catch (error) {
+        setStatus(error.message, "error");
+        return;
+      }
+      busy = true;
+      updateControls();
+      setStatus("正在加载图片…", "loading");
+      try {
+        await earth.sources.addData(source);
+        if (!pageActive) return;
+        setStatus("影像已加载，可调整显隐、透明度或定位查看。");
+      } catch (error) {
+        if (!pageActive) return;
+        setStatus(`加载失败：${error.message ?? String(error)}`, "error");
+        console.error("单张影像加载失败", error);
+      } finally {
+        busy = false;
+        if (pageActive) updateControls();
+      }
+    }
+
+    async function locateImage() {
+      if (!getLayer() || busy) return;
+      busy = true;
+      updateControls();
+      setStatus("正在定位影像…", "loading");
+      try {
+        const success = await earth.sources.flyToSourceById(layerId);
+        if (pageActive) setStatus(success ? "已定位到影像覆盖范围。" : "定位已取消或影像当前不可见。");
+      } catch (error) {
+        if (pageActive) setStatus(`定位失败：${error.message ?? String(error)}`, "error");
+      } finally {
+        busy = false;
+        if (pageActive) updateControls();
+      }
+    }
+
+    loadButton.addEventListener("click", () => void loadImage());
+    locateButton.addEventListener("click", () => void locateImage());
+    removeButton.addEventListener("click", () => {
+      if (!getLayer() || busy) return;
+      try {
+        const removed = earth.sources.removeSourceById(layerId);
+        setStatus(removed ? "影像已移除，可修改图片及范围后重新加载。" : "影像不存在。");
+      } catch (error) {
+        setStatus(`移除失败：${error.message ?? String(error)}`, "error");
+      }
+      updateControls();
+    });
+
+    // 显隐与透明度使用获取到的 Cesium ImageryLayer 实例属性。
+    showInput.addEventListener("change", () => {
+      const layer = getLayer();
+      if (!layer || busy) return;
+      layer.show = showInput.checked;
+      earth.viewer.scene.requestRender();
+      setStatus(layer.show ? "影像已显示。" : "影像已隐藏。");
+      updateControls();
+    });
+    alphaInput.addEventListener("input", () => {
+      const layer = getLayer();
+      if (!layer || busy) return;
+      layer.alpha = Number(alphaInput.value);
+      earth.viewer.scene.requestRender();
+      updateControls();
+    });
+
+    window.addEventListener("pagehide", () => {
+      pageActive = false;
+      ready = false;
+      stopRemoveListener?.();
+      const current = earth;
+      earth = undefined;
+      current?.destroy();
+    }, { once: true });
+
+    async function initialize() {
+      try {
+        earth = new GeoEarth("earth", undefined, {
+          startup: { animation: false },
+          homeView: { longitude: 110, latitude: 30, height: 4000000 },
+        });
+        await earth.onReady();
+        if (!pageActive) return;
+        ready = true;
+        stopRemoveListener = earth.event.source.addEventListener(SourceEventType.REMOVE, event => {
+          if (!pageActive || event.id !== layerId) return;
+          setStatus("影像已移除，可重新加载。");
+          updateControls();
+        });
+        await loadImage();
+      } catch (error) {
+        if (!pageActive) return;
+        setStatus(`初始化失败：${error.message ?? String(error)}`, "error");
+        console.error("GeoEarth 初始化失败", error);
+      }
+    }
+    void initialize();
   </script>
 </body>
 

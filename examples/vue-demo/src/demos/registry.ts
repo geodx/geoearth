@@ -87,7 +87,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "imagery-single-image",
         "title": "demos.imagery-single-image",
-        "description": "demos.placeholderDescription",
+        "description": "demos.singleImageDescription",
         "path": "demos/imagery/single-image.html"
       },
       {

@@ -16,25 +16,29 @@ import { CesiumData } from './data/CesiumData';
  */
 export class ImageryManage extends CesiumData<ImageryLayer> {
     private sourceEvent: SourceEvent
+    private readonly removeLayersListener: () => void
+    private destroyed = false
     constructor(viewer: Viewer, sourceEvent: SourceEvent) {
         super(viewer);
         this.sourceEvent = sourceEvent;
-        this.bindLayersEvents();
+        this.removeLayersListener = this.bindLayersEvents();
     }
     // 监听 Cesium 数据变化
-    private bindLayersEvents(): void {
+    private bindLayersEvents(): () => void {
         // 监听图层集合的变化，如果没有通过工作区的增删方法来操作地球，工作区也要进行状态同步
-        this.viewer.imageryLayers.layerRemoved.addEventListener((removedLayer) => {
+        return this.viewer.imageryLayers.layerRemoved.addEventListener((removedLayer) => {
             for (const [id, layer] of this.instancesMap) {
                 if (layer !== removedLayer) continue
-                // Cesium 已经删除图层，只清理包内记录。
-                this.removeById(id)
+                // 原生集合负责销毁，这里只同步记录，避免重复删除和销毁。
+                const sourceItem = this.getSourcesItemById(id)
+                this.instancesMap.delete(id)
+                this.sourcesItems = this.sourcesItems.filter(item => item.id !== id)
                 this.sourceEvent.raiseEvent(
                     SourceEventType.REMOVE,
                     {
                         type: SourceEventType.REMOVE,
                         sourceType: SourceType.IMAGERY,
-                        source: layer,
+                        source: sourceItem ?? layer,
                         id
                     }
                 )
@@ -46,7 +50,12 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
      * 添加影像图层。 
      */
     async addData(config: ImageryResourceItem): Promise<ImageryLayer> {
+        if (this.destroyed) throw new Error('影像管理器已销毁。')
         const provider = await this.createProvider(config)
+        // 图片加载期间可能已离开示例页面。
+        if (this.destroyed || this.viewer.isDestroyed()) {
+            throw new Error('影像管理器已销毁。')
+        }
         const layer = this.addImageryProvider(provider, config)
 
         return layer
@@ -63,18 +72,13 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
      * 删除指定影像图层。
      */
     removeById(id: string): boolean {
-        let removeRes = false
         const instance = this.getInstancesById(id)
+        // 先移除记录，集合的同步回调就不会再次处理本次主动删除。
+        this.instancesMap.delete(id)
         this.sourcesItems = this.sourcesItems.filter(item => item.id !== id)
-
-        if (instance) {
-            removeRes = this.viewer.imageryLayers.remove(instance)
-            if (!instance.isDestroyed()) {
-                instance.destroy()
-            }
-            this.instancesMap.delete(id)
-
-        }
+        if (!instance) return false
+        const removeRes = this.viewer.imageryLayers.remove(instance, true)
+        if (!removeRes && !instance.isDestroyed()) instance.destroy()
         return removeRes
     }
 
@@ -83,6 +87,9 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
      * 因为整个 GeoEarth 正在结束生命周期。
      */
     destroy(): boolean {
+        if (this.destroyed) return true
+        this.destroyed = true
+        this.removeLayersListener()
         return this.removeAll()
     }
 
@@ -160,7 +167,10 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
         }
     }
     private addImageryProvider(provider: ImageryProvider, resourceItem: ImageryResourceItem) {
-        const layer = new ImageryLayer(provider)
+        const layer = new ImageryLayer(provider, {
+            show: resourceItem.show ?? true,
+            alpha: resourceItem.properties.alpha ?? 1,
+        })
         layer.id = resourceItem.id
         layer.param = resourceItem
         if (resourceItem.properties.index === undefined) {

@@ -10,7 +10,7 @@ interface CesiumDataImpl<T> {
 
     getInstancesById(id: string): T | null;
 
-    flyToById(id: string): void;
+    flyToById(id: string): Promise<boolean>;
 
     removeById(id: string): boolean;
 

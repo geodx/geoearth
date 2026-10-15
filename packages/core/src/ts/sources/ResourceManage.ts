@@ -96,14 +96,13 @@ export class ResourceManage {
      * 飞向资源
      * @param id 
      */
-    flyToSourceById(id: string): void {
+    async flyToSourceById(id: string): Promise<boolean> {
         const config = this.getSourceItemById(id)
-        if (!config) return
+        if (!config) return false
 
         switch (config.sourceType) {
             case SourceType.IMAGERY:
-                this.imageryManage.flyToById(id)
-                break
+                return this.imageryManage.flyToById(id)
             //todo 后续补充：
             // case SourceType.MODEL:
             //     return this.modelManage.flyToById(id)
@@ -118,7 +117,7 @@ export class ResourceManage {
             //     return this.poiManage.flyToById(id)
 
             default:
-                return
+                return false
         }
     }
     getSourceItemById(id: string): ResourceItem | undefined {

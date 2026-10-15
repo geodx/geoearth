@@ -49,6 +49,7 @@
     "events-picking-highlight": "Object picking and highlighting",
     "pickingHighlightDescription": "Pick objects, highlight hover and selection, inspect properties, restore styles, and pause interaction while drawing.",
     "imagery-single-image": "Single image",
+    "singleImageDescription": "Place a single image within geographic bounds, then load, locate, show or hide it, adjust opacity, and remove it.",
     "imagery-xyz": "XYZ imagery",
     "imagery-wms": "WMS imagery",
     "imagery-wmts": "WMTS imagery",
