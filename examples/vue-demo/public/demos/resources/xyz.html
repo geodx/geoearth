@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · XYZ 影像</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    .demo-panel h1 { margin: 0 0 12px; font-size: 16px; }
+    .demo-panel label { display: block; margin: 10px 0; }
+    select, input[type="range"] { width: 100%; }
+    select { margin-top: 6px; padding: 6px; color: inherit; background: #1e293b; border: 1px solid #475569; border-radius: 4px; }
+    .buttons { display: flex; gap: 8px; margin: 12px 0; }
+    button { padding: 6px 10px; cursor: pointer; }
+    button:disabled { cursor: default; }
+    .attribution { position: absolute; bottom: 6px; right: 6px; z-index: 10; max-width: calc(100% - 12px); padding: 4px 8px; color: #e2e8f0; background: #0f172aeb; font: 11px/1.5 system-ui, sans-serif; }
+    .attribution a { color: #7dd3fc; }
+  </style>
+</head>
+
+<body>
+  <div id="earth"></div>
+  <aside class="demo-panel" aria-label="XYZ 影像控制">
+    <h1>XYZ 影像</h1>
+    <label>地图资源<select id="source" disabled></select></label>
+    <div class="buttons">
+      <button id="load" disabled>重新加载</button>
+      <button id="remove" disabled>移除影像</button>
+    </div>
+    <label><input id="show" type="checkbox" checked disabled /> 显示影像</label>
+    <label for="alpha">透明度：<output id="alpha-value">1.00</output></label>
+    <input id="alpha" type="range" min="0" max="1" step="0.05" value="1" disabled />
+     <p id="status" class="status" role="status" aria-live="polite" data-state="loading">正在初始化地球…</p>
+    <details><summary>当前资源配置</summary><pre id="source-config"></pre></details>
+  </aside>
+  <div class="attribution">
+    © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>
+    <span id="cyclosm-credit" hidden> · <a href="https://www.cyclosm.org/" target="_blank" rel="noopener noreferrer">CyclOSM</a> · Tiles: <a href="https://www.openstreetmap.fr/" target="_blank" rel="noopener noreferrer">OpenStreetMap France</a></span>
+  </div>
+  <script src="/sdk/geoearth.js"></script>
+  <script>
+    // npm 对应 import { GeoEarth, SourceType, ImageryScheme } from 'geoearth'。
+    const { SourceType, ImageryScheme } = GeoEarth;
+    const resourceItem = [
+      {
+        id: 'b4d62340-c25a-03b2-460f-4f5d74e31d1e',
+        name: 'OSM 标准地图',
+        catalog: '电子地图',
+        sourceType: SourceType.IMAGERY,
+        defaultLoad: false,
+        show: true,
+        properties: {
+          scheme: ImageryScheme.XYZ_3857,
+          url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          minimumLevel: 0,
+          maximumLevel: 19,
+          baseLayer: true,
+        },
+      },
+      {
+        id: '4f95a081-89d4-8bc4-3dd8-597a875f49b5',
+        name: 'CyclOSM 骑行地图',
+        catalog: '电子地图',
+        sourceType: SourceType.IMAGERY,
+        defaultLoad: false,
+        show: true,
+        properties: {
+          scheme: ImageryScheme.XYZ_3857,
+          url: 'https://a.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+          minimumLevel: 0,
+          maximumLevel: 19,
+          baseLayer: true,
+        },
+      },
+    ];
+    const sourceSelect = document.getElementById('source');
+    const loadButton = document.getElementById('load');
+    const removeButton = document.getElementById('remove');
+    const showInput = document.getElementById('show');
+    const alphaInput = document.getElementById('alpha');
+    const alphaValue = document.getElementById('alpha-value');
+    const status = document.getElementById('status');
+    const sourceConfig = document.getElementById('source-config');
+    const cyclosmCredit = document.getElementById('cyclosm-credit');
+    const errorListeners = new Map();
+    const tileErrors = new Set();
+    let earth;
+    let ready = false;
+    let busy = false;
+    let pageActive = true;
+    let activeId;
+    let stopTileProgress;
+
+    resourceItem.forEach(item => sourceSelect.add(new Option(item.name, item.id)));
+
+    function selectedSource() {
+      return resourceItem.find(item => item.id === sourceSelect.value);
+    }
+
+    function setStatus(message, state = 'ready') {
+      status.textContent = message;
+      status.dataset.state = state;
+    }
+
+    function updateControls() {
+      const source = selectedSource();
+      const layer = ready ? earth.sources.getInstance(source.id) : undefined;
+      sourceSelect.disabled = !ready || busy;
+      loadButton.disabled = !ready || busy;
+      removeButton.disabled = !layer || busy;
+      showInput.disabled = !layer || busy;
+      alphaInput.disabled = !layer || busy;
+      if (layer) {
+        showInput.checked = layer.show;
+        alphaInput.value = layer.alpha;
+      }
+      alphaValue.textContent = Number(alphaInput.value).toFixed(2);
+      sourceConfig.textContent = JSON.stringify(earth?.sources.getSourceItemById(source.id) ?? source, null, 2);
+      // 署名随正在显示的地图切换，不遮挡地图操作。
+      cyclosmCredit.hidden = activeId !== resourceItem[1].id;
+    }
+
+    async function loadSource(reload = false) {
+      if (!ready || busy) return;
+      const source = selectedSource();
+      busy = true;
+      updateControls();
+      setStatus(`正在创建 ${source.name} 图层…`, 'loading');
+      try {
+        if (reload) {
+          errorListeners.get(source.id)?.();
+          errorListeners.delete(source.id);
+          tileErrors.delete(source.id);
+          earth.sources.removeSourceById(source.id);
+        }
+        let layer = earth.sources.getInstance(source.id);
+        if (!layer) {
+          layer = await earth.sources.addData({
+            ...source,
+            properties: { ...source.properties, alpha: Number(alphaInput.value) },
+          });
+          if (!pageActive) return;
+          // XYZ 图层创建后才开始请求瓦片，网络错误需监听 provider。
+          errorListeners.set(source.id, layer.imageryProvider.errorEvent.addEventListener(error => {
+            if (!pageActive) return;
+            tileErrors.add(source.id);
+            if (activeId === source.id) {
+              setStatus(`${source.name} 瓦片加载失败：${error.message ?? '请检查网络、跨域设置及服务可用性。'}`, 'error');
+            }
+          }));
+        }
+        // 复用已加载的图层，同一时刻只显示一种地图。
+        for (const item of resourceItem) {
+          const instance = earth.sources.getInstance(item.id);
+          if (instance) instance.show = item.id === source.id;
+        }
+        activeId = source.id;
+        showInput.checked = true;
+        earth.viewer.scene.requestRender();
+        setStatus(tileErrors.has(source.id)
+          ? `${source.name} 曾出现瓦片请求失败，可点击重新加载重试。`
+          : `${source.name} 图层已创建，正在请求当前视野的瓦片…`, tileErrors.has(source.id) ? 'error' : 'loading');
+      } catch (error) {
+        if (pageActive) setStatus(`加载失败：${error.message ?? String(error)}`, 'error');
+      } finally {
+        busy = false;
+        if (pageActive) updateControls();
+      }
+    }
+
+    sourceSelect.addEventListener('change', () => void loadSource());
+    loadButton.addEventListener('click', () => void loadSource(true));
+    removeButton.addEventListener('click', () => {
+      const source = selectedSource();
+      errorListeners.get(source.id)?.();
+      errorListeners.delete(source.id);
+      tileErrors.delete(source.id);
+      earth.sources.removeSourceById(source.id);
+      activeId = undefined;
+      setStatus('影像已移除，可重新加载或选择其他地图。');
+      updateControls();
+    });
+    showInput.addEventListener('change', () => {
+      const layer = earth.sources.getInstance(sourceSelect.value);
+      if (!layer || busy) return;
+      layer.show = showInput.checked;
+      earth.viewer.scene.requestRender();
+      setStatus(layer.show ? '影像已显示。' : '影像已隐藏。');
+      updateControls();
+    });
+    alphaInput.addEventListener('input', () => {
+      const layer = earth.sources.getInstance(sourceSelect.value);
+      if (!layer || busy) return;
+      layer.alpha = Number(alphaInput.value);
+      earth.viewer.scene.requestRender();
+      updateControls();
+    });
+
+    window.addEventListener('pagehide', () => {
+      pageActive = false;
+      ready = false;
+      stopTileProgress?.();
+      errorListeners.forEach(stop => stop());
+      errorListeners.clear();
+      earth?.destroy();
+    }, { once: true });
+
+    async function initialize() {
+      try {
+        earth = new GeoEarth('earth', undefined, {
+          startup: { animation: false },
+          homeView: { longitude: 2.35, latitude: 48.86, height: 45000 },
+          // 注册为手动加载的底图，同时替换 SDK 默认底图，避免误把默认地图当成 XYZ 加载成功。
+          resources: { imagery: resourceItem },
+        });
+        await earth.onReady();
+        if (!pageActive) return;
+        ready = true;
+        stopTileProgress = earth.viewer.scene.globe.tileLoadProgressEvent.addEventListener(pending => {
+          if (!pageActive || busy || !activeId || tileErrors.has(activeId)) return;
+          const layer = earth.sources.getInstance(activeId);
+          if (!layer?.show) return;
+          setStatus(pending > 0 ? `当前视野正在加载，剩余 ${pending} 个地表瓦片…` : '当前视野瓦片加载已结束，可拖动、缩放查看地图。', pending > 0 ? 'loading' : 'ready');
+        });
+        await loadSource();
+      } catch (error) {
+        if (pageActive) setStatus(`初始化失败：${error.message ?? String(error)}`, 'error');
+      }
+    }
+    updateControls();
+    void initialize();
+  </script>
+</body>
+
+</html>

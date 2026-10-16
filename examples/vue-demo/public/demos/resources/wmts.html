@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · WMTS 影像</title>
+</head>
+
+<body>
+  <div id="earth"></div>
+  <script src="/sdk/geoearth.js"></script>
+  <script>
+    const { SourceType, ImageryScheme } = GeoEarth;
+    const resourceItem = {
+      id: 'nasa-wmts',
+      name: 'NASA 全球底图',
+      catalog: '示例影像',
+      sourceType: SourceType.IMAGERY,
+      show: true,
+      properties: {
+        scheme: ImageryScheme.WMTS,
+        // https://nasa-gibs.github.io/gibs-api-docs/
+        url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/wmts.cgi',
+        layer: 'BlueMarble_ShadedRelief_Bathymetry',
+        style: 'default',
+        tileMatrixSetID: 'GoogleMapsCompatible_Level8',
+        format: 'image/jpeg',
+        maximumLevel: 8,
+      },
+    };
+
+    const earth = new GeoEarth("earth");
+    earth.sources.addData(resourceItem);
+  </script>
+</body>
+
+</html>

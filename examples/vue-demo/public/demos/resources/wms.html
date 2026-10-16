@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · WMS 影像</title>
+</head>
+
+<body>
+  <div id="earth"></div>
+  <script src="/sdk/geoearth.js"></script>
+  <script>
+    const { SourceType, ImageryScheme } = GeoEarth;
+    const resourceItem = [{
+      id: 'osm-wms',
+      name: 'NASA 全球底图',
+      catalog: '示例影像',
+      sourceType: SourceType.IMAGERY,
+      defaultLoad: true,
+      show: true,
+      properties: {
+        scheme: ImageryScheme.WMS,
+        //https://nasa-gibs.github.io/gibs-api-docs/
+        url: 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi',
+        layers: 'BlueMarble_ShadedRelief_Bathymetry',
+      },
+    }];
+
+    const earth = new GeoEarth('earth', undefined, {
+      startup: { animation: false },
+      resources: { imagery: resourceItem },
+    });
+  </script>
+</body>
+
+</html>

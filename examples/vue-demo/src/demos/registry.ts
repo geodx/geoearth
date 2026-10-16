@@ -81,128 +81,92 @@ export const demoTree: DemoNode[] = [
     ]
   },
   {
-    "id": "group-imagery",
-    "title": "groups.imagery",
+    "id": "group-resources",
+    "title": "groups.resources",
     "children": [
+      {
+        "id": "resource-tree",
+        "title": "demos.resource-tree",
+        "description": "demos.placeholderDescription",
+        "path": "demos/resources/resource-tree.html"
+      },
       {
         "id": "imagery-single-image",
         "title": "demos.imagery-single-image",
         "description": "demos.singleImageDescription",
-        "path": "demos/imagery/single-image.html"
+        "path": "demos/resources/single-image.html"
       },
       {
         "id": "imagery-xyz",
         "title": "demos.imagery-xyz",
-        "description": "demos.placeholderDescription",
-        "path": "demos/imagery/xyz.html"
+        "description": "demos.xyzDescription",
+        "path": "demos/resources/xyz.html"
       },
       {
         "id": "imagery-wms",
         "title": "demos.imagery-wms",
         "description": "demos.placeholderDescription",
-        "path": "demos/imagery/wms.html"
+        "path": "demos/resources/wms.html"
       },
       {
         "id": "imagery-wmts",
         "title": "demos.imagery-wmts",
         "description": "demos.placeholderDescription",
-        "path": "demos/imagery/wmts.html"
+        "path": "demos/resources/wmts.html"
       },
       {
         "id": "imagery-tms",
         "title": "demos.imagery-tms",
         "description": "demos.placeholderDescription",
-        "path": "demos/imagery/tms.html"
+        "path": "demos/resources/tms.html"
       },
       {
         "id": "imagery-arcgis",
         "title": "demos.imagery-arcgis",
         "description": "demos.placeholderDescription",
-        "path": "demos/imagery/arcgis.html"
+        "path": "demos/resources/arcgis.html"
       },
       {
-        "id": "imagery-visibility-opacity",
-        "title": "demos.imagery-visibility-opacity",
+        "id": "terrain-online",
+        "title": "demos.terrain-online",
         "description": "demos.placeholderDescription",
-        "path": "demos/imagery/visibility-opacity.html"
+        "path": "demos/resources/online-terrain.html"
       },
       {
-        "id": "imagery-ordering",
-        "title": "demos.imagery-ordering",
+        "id": "terrain-custom",
+        "title": "demos.terrain-custom",
         "description": "demos.placeholderDescription",
-        "path": "demos/imagery/ordering.html"
+        "path": "demos/resources/custom-terrain.html"
       },
-      {
-        "id": "imagery-basemap-switch",
-        "title": "demos.imagery-basemap-switch",
-        "description": "demos.placeholderDescription",
-        "path": "demos/imagery/basemap-switch.html"
-      }
-    ]
-  },
-  {
-    "id": "group-terrain",
-    "title": "groups.terrain",
-    "children": [
-      {
-        "id": "terrain-load-switch",
-        "title": "demos.terrain-load-switch",
-        "description": "demos.placeholderDescription",
-        "path": "demos/terrain/load-switch.html"
-      },
-      {
-        "id": "terrain-visibility",
-        "title": "demos.terrain-visibility",
-        "description": "demos.placeholderDescription",
-        "path": "demos/terrain/visibility.html"
-      },
-      {
-        "id": "terrain-exaggeration",
-        "title": "demos.terrain-exaggeration",
-        "description": "demos.placeholderDescription",
-        "path": "demos/terrain/exaggeration.html"
-      },
-      {
-        "id": "terrain-sampling",
-        "title": "demos.terrain-sampling",
-        "description": "demos.placeholderDescription",
-        "path": "demos/terrain/sampling.html"
-      }
-    ]
-  },
-  {
-    "id": "group-data",
-    "title": "groups.data",
-    "children": [
       {
         "id": "data-geojson",
         "title": "demos.data-geojson",
         "description": "demos.placeholderDescription",
-        "path": "demos/data/geojson.html"
+        "path": "demos/resources/geojson.html"
       },
       {
         "id": "data-gltf-model",
         "title": "demos.data-gltf-model",
         "description": "demos.placeholderDescription",
-        "path": "demos/data/gltf-model.html"
+        "path": "demos/resources/gltf-model.html"
       },
       {
         "id": "data-tileset",
         "title": "demos.data-tileset",
         "description": "demos.placeholderDescription",
-        "path": "demos/data/tileset.html"
+        "path": "demos/resources/tileset.html"
       },
       {
         "id": "data-poi",
         "title": "demos.data-poi",
         "description": "demos.placeholderDescription",
-        "path": "demos/data/poi.html"
+        "path": "demos/resources/poi.html"
       },
       {
-        "id": "data-locate-unload",
-        "title": "demos.data-locate-unload",
+        "id": "data-pin",
+        "title": "demos.data-pin",
         "description": "demos.placeholderDescription",
-        "path": "demos/data/locate-unload.html"
+        "path": "demos/resources/pin.html"
       }
     ]
   },

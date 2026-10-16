@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · ArcGIS 影像</title>
+</head>
+
+<body>
+  <div id="earth"></div>
+  <script src="/sdk/geoearth.js"></script>
+  <script>
+    const { SourceType, ImageryScheme } = GeoEarth;
+    const resourceItem = {
+      id: 'arcgis-world-imagery',
+      name: 'Esri 全球卫星影像',
+      catalog: '示例影像',
+      sourceType: SourceType.IMAGERY,
+      show: true,
+      properties: {
+        scheme: ImageryScheme.ARCGIS,
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+      },
+    };
+
+    const earth = new GeoEarth("earth");
+    earth.sources.addData(resourceItem);
+  </script>
+</body>
+
+</html>
