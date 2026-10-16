@@ -1,7 +1,7 @@
 import { ImageryResourceItem, ResourceItem } from "../sources/types";
 import { defaultConfig } from "./defaultConfig";
 import { Config } from "./types";
-export class ConfigManage {
+export class ConfigManager {
     private readonly config: Config;
 
     constructor(input: Config = {}) {

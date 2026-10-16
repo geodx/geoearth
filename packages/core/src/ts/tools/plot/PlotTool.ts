@@ -45,7 +45,7 @@ class PlotTool {
 // import * as turf from "@turf/turf";
 // import type { FeatureCollection } from "geojson";
 // import { CoordinateType } from "../DrawShape/CoordinateType";
-// import { EventManage, ScopeType, ScreenSpaceEventType } from "../EventManage";
+// import { EventManager, ScopeType, ScreenSpaceEventType } from "../EventManager";
 // import { BOMTool, SafeTool } from "../Utils/Common";
 // import { PlotDataSource } from "./PlotDataSource";
 // function readFile({ errFunc, endFunc }: { errFunc: Function, endFunc: Function }) {
@@ -148,11 +148,11 @@ class PlotTool {
 //         this.initEvent();
 //     }
 //     private initEvent() {
-//         EventManage.screenEvent.addEventListener(
+//         EventManager.screenEvent.addEventListener(
 //             ScreenSpaceEventType.MOUSE_MOVE,
 //             ScopeType.Viewer3D,
 //             this.mouseMoveEvent);
-//         EventManage.screenEvent.addEventListener(
+//         EventManager.screenEvent.addEventListener(
 //             ScreenSpaceEventType.LEFT_CLICK,
 //             ScopeType.Viewer3D,
 //             this.leftClickEvent);
@@ -317,8 +317,8 @@ class PlotTool {
 //     destroy() {
 //         this.dataSourceTool.entities.removeAll();
 //         this.viewer.dataSources.remove(this.dataSourceTool);
-//         EventManage.screenEvent.removeEventListener(this.mouseMoveEvent);
-//         EventManage.screenEvent.removeEventListener(this.leftClickEvent);
+//         EventManager.screenEvent.removeEventListener(this.mouseMoveEvent);
+//         EventManager.screenEvent.removeEventListener(this.leftClickEvent);
 //         document.body.style.cursor = "default";
 //     }
 

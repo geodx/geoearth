@@ -8,7 +8,7 @@ import type { InteractionEvent } from '../events/modules/InteractionEvent'
 import type { RemoveCallback } from '../events/types'
 import type { DrawTool } from '../tools/draw/DrawTool'
 import { pickPosition } from '../tools/draw/pickPosition'
-import { HighlightManage, highlightColor } from './HighlightManage'
+import { HighlightManager, highlightColor } from './HighlightManager'
 import { isPickAlive, propertyDescription, samePick, toPickResult } from './pickObject'
 import {
     InteractionEventType, type HighlightAdapter, type HighlightColor, type InteractionOptions,
@@ -16,8 +16,8 @@ import {
 } from './types'
 
 /** 对象交互入口。自动交互按需开启；pick/select/highlight 也可独立使用。 */
-export class InteractionManage {
-    private readonly highlights: HighlightManage
+export class InteractionManager {
+    private readonly highlights: HighlightManager
     private readonly removeInputs: RemoveCallback[] = []
     private readonly removeObservers: RemoveCallback[] = []
     private readonly removeTargetObservers: RemoveCallback[] = []
@@ -44,7 +44,7 @@ export class InteractionManage {
         private readonly events: InteractionEvent,
         private readonly draw: DrawTool
     ) {
-        this.highlights = new HighlightManage(viewer.scene)
+        this.highlights = new HighlightManager(viewer.scene)
         this.removeObservers.push(
             viewer.selectedEntityChanged.addEventListener(entity => {
                 if (this.changingSelectedEntity) return

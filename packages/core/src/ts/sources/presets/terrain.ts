@@ -1,4 +1,4 @@
-import { ResourceItem, SourceType } from "../types";
+import { ResourceItem, SourceType, TerrainScheme } from "../types";
 
 
 export function createIonWorldTerrain(defaultLoad = false): ResourceItem {
@@ -10,7 +10,7 @@ export function createIonWorldTerrain(defaultLoad = false): ResourceItem {
         defaultLoad,
         show: defaultLoad,
         properties: {
-            // providerType: TerrainProviderType.ION,
+            scheme: TerrainScheme.ION,
             assetId: 1,
             requestVertexNormals: true,
             requestWaterMask: true

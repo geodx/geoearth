@@ -15,7 +15,7 @@ const bundle = await build({
         write: false,
         minify: false,
         lib: {
-            entry: fileURLToPath(new URL('../src/ts/sources/ResourceManage.ts', import.meta.url)),
+            entry: fileURLToPath(new URL('../src/ts/sources/ResourceManager.ts', import.meta.url)),
             formats: ['es'],
             fileName: 'imagery-test',
         },
@@ -26,7 +26,7 @@ const cesiumUrl = import.meta.resolve('cesium')
 const outputs = (Array.isArray(bundle) ? bundle : [bundle]).flatMap(result => result.output)
 const code = outputs.find(item => item.type === 'chunk' && item.isEntry).code
     .replace(/from (["'])cesium\1/g, `from ${JSON.stringify(cesiumUrl)}`)
-const { ResourceManage } = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
+const { ResourceManager } = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
 
 function source(id = 'single') {
     return {
@@ -53,7 +53,7 @@ function setup(t) {
         isDestroyed: () => false,
         async flyTo(layer, options) { flights.push({ layer, options }); return true },
     }
-    const manager = new ResourceManage(viewer, {
+    const manager = new ResourceManager(viewer, {
         raiseEvent(_type, payload) { events.push(payload) },
     })
     t.mock.method(SingleTileImageryProvider, 'fromUrl', async () => provider())

@@ -7,7 +7,7 @@ export type { WorldDegree, WorldRectangle } from './viewer/types';
 
 export { ScreenSpaceEventType } from 'cesium';
 export { ViewerEventType, CameraEventType, SourceEventType, type SourceEventPayload } from './events/types';
-export { SourceType, ImageryScheme } from './sources/types';
+export { SourceType, ImageryScheme, TerrainScheme, } from './sources/types';
 export type {
     ResourceItem,
     ImageryProperties,
@@ -21,6 +21,8 @@ export type {
     IonImageryProperties,
     ArcGisImageryProperties,
     TilesetProperties,
+    TerrainProperties,
+    TerrainResourceItem,
 } from './sources/types';
 export { flyTo, type FlyToOptions } from './camera/flyTo';
 export { MeasureCancelledError } from './tools/measure/types';

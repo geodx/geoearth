@@ -1,7 +1,7 @@
 import type { Viewer } from 'cesium'
 import { FPSMonitor } from './FPSMonitor'
 
-export class PerformanceManage {
+export class PerformanceManager {
     private readonly fpsMonitor: FPSMonitor
 
     constructor(viewer: Viewer) {

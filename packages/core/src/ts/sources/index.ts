@@ -1,4 +1,4 @@
-export { ResourceManage } from './ResourceManage'
+export { ResourceManager } from './ResourceManager'
 
 export { loadSources } from './loaders/InitialSourceLoader'
 
@@ -16,5 +16,7 @@ export type {
     IonImageryProperties,
     ArcGisImageryProperties,
     TilesetProperties,
+    TerrainProperties,
+    TerrainResourceItem,
 } from './types'
 

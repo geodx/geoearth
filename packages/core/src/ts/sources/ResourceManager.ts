@@ -1,26 +1,31 @@
 import { Viewer } from 'cesium'
 import { SourceEvent } from '../events/modules/SourceEvent'
 import { SourceEventType } from '../events/types'
-import { ImageryManage } from './managers/ImageryManage'
-import { ResourceItem, SourceType, type ImageryResourceItem } from './types'
 import { SafeTool } from '../utils'
+import { ImageryManager } from './managers/ImageryManager'
+import { TerrainManager } from './managers/TerrainManager'
+import { ResourceItem, SourceType, TerrainResourceItem, type ImageryResourceItem } from './types'
+import { ResourcePresets } from './presets/ResourcePresets'
 
 /**
  * 资源统一入口。
  *
- * ResourceManage 只负责资源类型分发，
+ * ResourceManager 只负责资源类型分发，
  * 具体实现由对应的子管理器负责。
  */
-export class ResourceManage {
+export class ResourceManager {
     private readonly sourceEvent: SourceEvent;
 
-    public readonly imageryManage: ImageryManage
+    public readonly imageryManager: ImageryManager
+    public readonly terrainManager: TerrainManager
 
+    public readonly presets: ResourcePresets;
     constructor(viewer: Viewer, sourceEvent: SourceEvent) {
         this.sourceEvent = sourceEvent;
 
-        this.imageryManage = new ImageryManage(viewer, sourceEvent)
-
+        this.imageryManager = new ImageryManager(viewer, sourceEvent)
+        this.terrainManager = new TerrainManager(viewer);
+        this.presets = new ResourcePresets(item => this.addData(item));
     }
 
     async addData(item: ResourceItem): Promise<unknown> {
@@ -35,9 +40,11 @@ export class ResourceManage {
             let instance: unknown
             switch (config.sourceType) {
                 case SourceType.IMAGERY:
-                    instance = await this.imageryManage.addData(config as ImageryResourceItem)
+                    instance = await this.imageryManager.addData(config as ImageryResourceItem)
                     break
                 case SourceType.TERRAIN:
+                    instance = await this.terrainManager.addData(config as TerrainResourceItem)
+                    break
                 case SourceType.MODEL:
                 case SourceType.TILESET:
                 case SourceType.GEOJSON:
@@ -69,9 +76,11 @@ export class ResourceManage {
         const type = sourceItem.sourceType
         switch (type) {
             case SourceType.IMAGERY:
-                removeRes = this.imageryManage.removeById(id)
+                removeRes = this.imageryManager.removeById(id)
                 break
             case SourceType.TERRAIN:
+                removeRes = this.terrainManager.removeById(id)
+                break
             case SourceType.MODEL:
             case SourceType.TILESET:
             case SourceType.GEOJSON:
@@ -102,19 +111,20 @@ export class ResourceManage {
 
         switch (config.sourceType) {
             case SourceType.IMAGERY:
-                return this.imageryManage.flyToById(id)
-            //todo 后续补充：
+                return this.imageryManager.flyToById(id)
+            case SourceType.TERRAIN:
+                return this.terrainManager.flyToById(id)
             // case SourceType.MODEL:
-            //     return this.modelManage.flyToById(id)
+            //     return this.modelManager.flyToById(id)
             //
             // case SourceType.TILESET:
-            //     return this.tilesetManage.flyToById(id)
+            //     return this.tilesetManager.flyToById(id)
             //
             // case SourceType.GEOJSON:
-            //     return this.geojsonManage.flyToById(id)
+            //     return this.geojsonManager.flyToById(id)
             //
             // case SourceType.POI:
-            //     return this.poiManage.flyToById(id)
+            //     return this.poiManager.flyToById(id)
 
             default:
                 return false
@@ -126,25 +136,27 @@ export class ResourceManage {
     /** 获取所有已登记资源的配置 */
     getAllSourceItems(): ResourceItem[] {
         return [
-            ...this.imageryManage.sourcesItems,
-            // ... this.terrainManage.getAllConfigs(),
-            // ... this.modelManage.getAllConfigs(),
-            // ... this.tilesetManage.getAllConfigs(),
-            // ... this.geojsonManage.getAllConfigs(),
-            // ... this.poiManage.getAllConfigs()
+            ...this.imageryManager.sourcesItems,
+            ... this.terrainManager.sourcesItems,
+            // ... this.modelManager.getAllConfigs(),
+            // ... this.tilesetManager.getAllConfigs(),
+            // ... this.geojsonManager.getAllConfigs(),
+            // ... this.poiManager.getAllConfigs()
         ]
     }
 
 
     getInstance(id: string): unknown {
-        return this.imageryManage.instancesMap.get(id)
-        // ?? this.terrainManage.instancesMap.get(id)
-        // ?? this._3DTileManage.instancesMap.get(id)
-        // ?? this.gltfManage.instancesMap.get(id)
-        // ?? this.poiManage.instancesMap.get(id)
+        return this.imageryManager.instancesMap.get(id)
+            ?? this.terrainManager.instancesMap.get(id)
+        // ?? this._3DTileManager.instancesMap.get(id)
+        // ?? this.gltfManager.instancesMap.get(id)
+        // ?? this.poiManager.instancesMap.get(id)
     }
+
     destroy(): void {
-        this.imageryManage.destroy()
+        this.imageryManager.destroy()
+        this.terrainManager.destroy()
     }
 }
 

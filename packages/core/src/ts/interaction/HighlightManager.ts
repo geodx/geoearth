@@ -13,7 +13,7 @@ export function highlightColor(value: HighlightColor): Color {
 }
 
 /** 统一管理多个高亮来源，避免悬停离开时错误恢复仍被选中的对象。 */
-export class HighlightManage {
+export class HighlightManager {
     private readonly adapters = [...defaultHighlightAdapters]
     private readonly applied: AppliedHighlight[] = []
 

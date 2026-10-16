@@ -17,11 +17,11 @@ abstract class CesiumData<T> implements CesiumDataImpl<T> {
 
     abstract flyToById(id: string): Promise<boolean>;
 
-    getInstancesById(id: string) {
+    getInstanceById(id: string) {
         return this.instancesMap.get(id) || null;
     }
 
-    getSourcesItemById(id: string) {
+    getSourceItemById(id: string) {
         return this.sourcesItems.find(item => item.id === id) || null;
     }
 

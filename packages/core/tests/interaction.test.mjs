@@ -5,7 +5,7 @@ import {
     DataSourceCollection, Entity, EntityCollection, Event, JulianDate, PointPrimitiveCollection,
     Primitive, PrimitiveCollection, ScreenSpaceEventType
 } from 'cesium'
-import { InteractionManage, InteractionEventType } from '../dist/index.js'
+import { InteractionManager, InteractionEventType } from '../dist/index.js'
 
 // 使用真实 Cesium Entity / Property / 集合 / Event；GPU 拾取由浏览器示例验证。
 let frameId = 0
@@ -53,7 +53,7 @@ function setup() {
     })
     const draw = { isActive: false, activeChanged: new Event() }
     const events = []
-    const interaction = new InteractionManage(viewer, screen, { raiseEvent: (_type, event) => events.push(event) }, draw)
+    const interaction = new InteractionManager(viewer, screen, { raiseEvent: (_type, event) => events.push(event) }, draw)
     const point = viewer.entities.add({ id: 'point', name: '测试点', point: { color: Color.WHITE },
         properties: { name: '<script>示例</script>', height: 10 } })
     const position = new Cartesian2(10, 20)

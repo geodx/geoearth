@@ -40,7 +40,7 @@ export interface ResourceItem<TProperties = unknown> {
     properties: TProperties;
 }
 
-// ==================== 影像类型与范围 ====================
+// ==================== 影像参数 ==================== 
 
 /** SDK 支持的影像服务类型。 */
 export enum ImageryScheme {
@@ -53,7 +53,6 @@ export enum ImageryScheme {
     ION = 'ion',
     ARCGIS = 'arcgis',
 }
-// ==================== 影像参数 ==================== 
 /** 影像公共属性，仅供本模块内的服务参数接口继承。 */
 interface ImageryCommonProperties {
     /** 插入位置，不传时添加到顶部。 */
@@ -156,7 +155,6 @@ export interface ArcGisImageryProperties extends ImageryCommonProperties {
     rectangle?: WorldRectangle;
 }
 
-// ==================== 影像类型映射 ====================
 
 /** 通过 scheme 取得对应参数类型，保留各服务的必填字段检查。 */
 export interface ImageryPropertiesMap {
@@ -190,11 +188,30 @@ export type TilesetProperties = {
 }
 
 
-
+// ==================== Terrain 参数 ====================
 export enum TerrainScheme {
     CESIUM = 'cesium',
     ION = 'ion',
     VR_THE_WORLD = 'vr-the-world',
 }
+/** 地形服务参数。 */
+export type TerrainProperties = {
+    /** 覆盖范围，单位为度，用于定位。 */
+    rectangle?: WorldRectangle;
+    requestVertexNormals?: boolean;
+    requestWaterMask?: boolean;
+} & (
+        {
+            scheme: TerrainScheme.CESIUM | TerrainScheme.VR_THE_WORLD;
+            url: string;
+            queryParameters?: Record<string, string>;
+        }
+        | {
+            scheme: TerrainScheme.ION;
+            /** 默认 1，即 Cesium World Terrain。 */
+            assetId?: number;
+            accessToken?: string;
+        }
+    );
 
-
+export type TerrainResourceItem = ResourceItem<TerrainProperties>;

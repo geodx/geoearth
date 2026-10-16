@@ -1,4 +1,4 @@
-export { InteractionManage } from './InteractionManage'
+export { InteractionManager } from './InteractionManager'
 export { InteractionEventType } from './types'
 export type {
     InteractionOptions, InteractionTarget, InteractionEventPayload, PickResult,

@@ -1,6 +1,6 @@
 import { Viewer } from 'cesium';
-import { ConfigManage } from '../../config/ConfigManage';
-import type { ResourceManage } from '../ResourceManage';
+import { ConfigManager } from '../../config/ConfigManager';
+import type { ResourceManager } from '../ResourceManager';
 import { SourceType } from '../types';
 
 /**
@@ -9,7 +9,7 @@ import { SourceType } from '../types';
  * 地形和影像决定地球的基础显示效果，
  * 应在模型、3D Tiles、POI 等资源之前加载。
  */
-export async function loadSources(viewer: Viewer, resourceManage: ResourceManage, config: ConfigManage) {
+export async function loadSources(viewer: Viewer, resourceManager: ResourceManager, config: ConfigManager) {
     viewer.imageryLayers.removeAll();
 
     viewer.scene.skyAtmosphere.show = false;
@@ -19,14 +19,14 @@ export async function loadSources(viewer: Viewer, resourceManage: ResourceManage
     const baseTerrainItem = config.getBaseTerrain();
     let baseTerrainPromise = null;
     if (baseTerrainItem) {
-        baseTerrainPromise = resourceManage.addData(baseTerrainItem);
+        baseTerrainPromise = resourceManager.addData(baseTerrainItem);
     }
 
     // 加载地球的基础地图图层
     const baseImageryItem = config.getBaseImagery();
     let baseLayerPromise = null;
     if (baseImageryItem) {
-        baseLayerPromise = resourceManage.addData(baseImageryItem);
+        baseLayerPromise = resourceManager.addData(baseImageryItem);
     }
     await Promise.all([baseTerrainPromise, baseLayerPromise]);
 
@@ -42,7 +42,7 @@ export async function loadSources(viewer: Viewer, resourceManage: ResourceManage
             if (baseImageryItem && item.id === baseImageryItem.id) {
                 continue;
             }
-            await resourceManage.addData(item);
+            await resourceManager.addData(item);
         }
     }
 
@@ -55,7 +55,7 @@ export async function loadSources(viewer: Viewer, resourceManage: ResourceManage
                 continue;
             }
             // 三维地图加载资源
-            await resourceManage.addData(item);
+            await resourceManager.addData(item);
         }
     }
 }

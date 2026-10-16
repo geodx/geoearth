@@ -11,8 +11,11 @@
   <div id="earth"></div>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：后续补充在线地形加载示例。当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const earth = new GeoEarth('earth', undefined, {
+      ionAccessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3MWZhMWUyNC04NDA4LTQxYmItYjI0OC0zOTY1ODJiMzBkM2MiLCJpZCI6MTEyMzA0LCJpYXQiOjE3NTI3MjE0MzR9.T9XI4g8l9VpJr9TK4eE33B-hO8JPwtfD8PFPk8MfXOg',
+      startup: { animation: false },
+    });
+    earth.sources.presets.addWorldTerrain();
   </script>
 </body>
 

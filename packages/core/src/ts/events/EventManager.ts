@@ -15,7 +15,7 @@ import { InteractionEvent } from './modules/InteractionEvent'
  * earth.event.source
  * earth.event.interaction
  */
-export class EventManage {
+export class EventManager {
     readonly screen: ScreenEvent
     readonly camera: CameraEvent
     readonly viewer: ViewerEvent

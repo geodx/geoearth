@@ -1,33 +1,33 @@
 import type { Viewer } from 'cesium';
 import { createViewer } from './viewer/createViewer';
 
-import { PerformanceManage } from './performance';
+import { PerformanceManager } from './performance';
 
 import { StartAnimation } from './camera/animations/StartAnimation';
-import { ConfigManage } from './config/ConfigManage';
+import { ConfigManager } from './config/ConfigManager';
 import { Config } from './config/types';
-import { EventManage } from './events/EventManage';
+import { EventManager } from './events/EventManager';
 import { ViewerEventType } from './events/types';
-import { InteractionManage } from './interaction';
-import { loadSources, ResourceManage } from './sources';
+import { InteractionManager } from './interaction';
+import { loadSources, ResourceManager } from './sources';
 import { ToolManager } from './tools/ToolManager';
 import { WidgetManager } from './widgets';
 
 export class GeoEarth {
     public readonly viewer: Viewer
-    // public readonly camera: CameraManage
-    public readonly config: ConfigManage
+    // public readonly camera: CameraManager
+    public readonly config: ConfigManager
 
-    public readonly performance: PerformanceManage
+    public readonly performance: PerformanceManager
 
-    public readonly event: EventManage
+    public readonly event: EventManager
 
-    public readonly sources: ResourceManage
+    public readonly sources: ResourceManager
 
     public readonly tools: ToolManager
 
     public readonly widgets: WidgetManager
-    public readonly interaction: InteractionManage
+    public readonly interaction: InteractionManager
 
     private readonly startAnimation: StartAnimation
     private readonly readyPromise: Promise<void>
@@ -42,24 +42,24 @@ export class GeoEarth {
      * @param option    viewer 的原参数，参照 new Cesium.Viewer(id,option)
      */
     constructor(container: string | HTMLElement, options?: Viewer.ConstructorOptions, config?: Config) {
-        this.config = new ConfigManage(config);
+        this.config = new ConfigManager(config);
         // 初始化Viewer
         this.viewer = createViewer(container, options, this.config.getConfig())
 
         // 初始化事件
-        this.event = new EventManage(this.viewer)
+        this.event = new EventManager(this.viewer)
 
-        // this.camera = new CameraManage(this.viewer)
+        // this.camera = new CameraManager(this.viewer)
 
-        this.performance = new PerformanceManage(this.viewer)
+        this.performance = new PerformanceManager(this.viewer)
 
         this.startAnimation = new StartAnimation(this.viewer)
 
-        this.sources = new ResourceManage(this.viewer, this.event.source)
+        this.sources = new ResourceManager(this.viewer, this.event.source)
 
         this.tools = new ToolManager(this.viewer, this.event.screen)
 
-        this.interaction = new InteractionManage(this.viewer, this.event.screen, this.event.interaction, this.tools.draw)
+        this.interaction = new InteractionManager(this.viewer, this.event.screen, this.event.interaction, this.tools.draw)
 
         this.widgets = new WidgetManager(this.viewer)
 

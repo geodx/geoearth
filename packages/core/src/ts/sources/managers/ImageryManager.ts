@@ -14,10 +14,9 @@ import { CesiumData } from './data/CesiumData';
  *
  * 负责影像图层的创建、查找、显示、隐藏、排序、删除和销毁。
  */
-export class ImageryManage extends CesiumData<ImageryLayer> {
+export class ImageryManager extends CesiumData<ImageryLayer> {
     private sourceEvent: SourceEvent
     private readonly removeLayersListener: () => void
-    private destroyed = false
     constructor(viewer: Viewer, sourceEvent: SourceEvent) {
         super(viewer);
         this.sourceEvent = sourceEvent;
@@ -30,7 +29,7 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
             for (const [id, layer] of this.instancesMap) {
                 if (layer !== removedLayer) continue
                 // 原生集合负责销毁，这里只同步记录，避免重复删除和销毁。
-                const sourceItem = this.getSourcesItemById(id)
+                const sourceItem = this.getSourceItemById(id)
                 this.instancesMap.delete(id)
                 this.sourcesItems = this.sourcesItems.filter(item => item.id !== id)
                 this.sourceEvent.raiseEvent(
@@ -50,19 +49,13 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
      * 添加影像图层。 
      */
     async addData(config: ImageryResourceItem): Promise<ImageryLayer> {
-        if (this.destroyed) throw new Error('影像管理器已销毁。')
         const provider = await this.createProvider(config)
-        // 图片加载期间可能已离开示例页面。
-        if (this.destroyed || this.viewer.isDestroyed()) {
-            throw new Error('影像管理器已销毁。')
-        }
         const layer = this.addImageryProvider(provider, config)
-
         return layer
     }
 
     async flyToById(id: string): Promise<boolean> {
-        const layer = this.getInstancesById(id);
+        const layer = this.getInstanceById(id);
         if (!layer) return false;
         return this.viewer.flyTo(layer, {
             duration: 2,
@@ -72,7 +65,7 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
      * 删除指定影像图层。
      */
     removeById(id: string): boolean {
-        const instance = this.getInstancesById(id)
+        const instance = this.getInstanceById(id)
         // 先移除记录，集合的同步回调就不会再次处理本次主动删除。
         this.instancesMap.delete(id)
         this.sourcesItems = this.sourcesItems.filter(item => item.id !== id)
@@ -87,8 +80,6 @@ export class ImageryManage extends CesiumData<ImageryLayer> {
      * 因为整个 GeoEarth 正在结束生命周期。
      */
     destroy(): boolean {
-        if (this.destroyed) return true
-        this.destroyed = true
         this.removeLayersListener()
         return this.removeAll()
     }
