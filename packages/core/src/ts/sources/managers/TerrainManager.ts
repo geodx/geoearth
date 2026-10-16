@@ -1,14 +1,11 @@
-import { TerrainProvider } from "cesium";
-import { CesiumData } from "./data/CesiumData";
-import { ResourceItem, TerrainScheme } from "..";
-import { Viewer } from "cesium";
-import { Rectangle } from "cesium";
-import { EllipsoidTerrainProvider } from "cesium";
+import {
+    CesiumTerrainProvider, EllipsoidTerrainProvider, IonResource,
+    Rectangle, Resource, TerrainProvider, Viewer,
+    VRTheWorldTerrainProvider
+} from "cesium";
+import { TerrainScheme } from "..";
 import { TerrainResourceItem } from "../types";
-import { IonResource } from "cesium";
-import { CesiumTerrainProvider } from "cesium";
-import { VRTheWorldTerrainProvider } from "cesium";
-import { Resource } from "cesium";
+import { CesiumData } from "./data/CesiumData";
 
 export class TerrainManager extends CesiumData<TerrainProvider> {
     constructor(viewer: Viewer) {

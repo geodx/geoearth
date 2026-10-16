@@ -11,19 +11,29 @@
   <div id="earth"></div>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    const { SourceType } = GeoEarth;
-    const earth = new GeoEarth("earth");
-    earth.viewer3DWorkSpace.addData({
-      id: 'c86ce275-5417-9c8d-f037-0d28ff378d6d',
-      name: 'Merged_DTM_GF7',
-      catalog: '滑坡-DEM',
-      dataType: 'terrain',
+    const { SourceType, TerrainScheme } = GeoEarth;
+    const earth = new GeoEarth('earth', undefined, {
+      startup: { animation: false },
+    });
+    earth.sources.presets.addBingImagery();
+    earth.sources.addData({
+      id: 'swiss-terrain',
+      name: '瑞士地形',
+      catalog: '在线地形',
+      sourceType: SourceType.TERRAIN,
       properties: {
-        scheme: 'CesiumTerrainProvider',
-        url: 'https://vge-webgl.oss-cn-beijing.aliyuncs.com/DEM-wordHeights'
-      }
+        scheme: TerrainScheme.CESIUM,
+        url: 'https://3d.geo.admin.ch/ch.swisstopo.terrain.3d/v1/',
+        // 演示定位范围：瑞士阿尔卑斯山区，单位为度
+        rectangle: {
+          west: 7.5,
+          south: 46.3,
+          east: 9.0,
+          north: 47.0,
+        },
+      },
     }).then(r => {
-      earth.viewer3DWorkSpace.flyToDataByPid('terrain-1');
+      earth.sources.flyToSourceById('swiss-terrain');
     });
   </script>
 </body>
