@@ -1,4 +1,5 @@
-import type { Cesium3DTileset, TilingScheme } from 'cesium';
+import type { TilingScheme } from 'cesium';
+import { Quaternion } from 'cesium';
 import type { WorldRectangle } from '../viewer/types';
 
 /**
@@ -174,19 +175,6 @@ export type ImageryProperties<T extends ImageryScheme = ImageryScheme> = Imagery
 /** 供影像管理器及配置列表使用的资源别名。 */
 export type ImageryResourceItem<T extends ImageryScheme = ImageryScheme> = ResourceItem<ImageryProperties<T>>;
 
-// ==================== 3D Tiles 参数 ====================
-/** 3D Tiles 配置参数  */
-export type TilesetProperties = {
-    /** tileset.json 地址 */
-    url: string;
-
-    /** 最大屏幕空间误差 */
-    maximumScreenSpaceError?: number;
-
-    /** Cesium3DTileset 的高级参数 */
-    tilesetOptions?: Partial<Cesium3DTileset.ConstructorOptions>;
-}
-
 
 // ==================== Terrain 参数 ====================
 export enum TerrainScheme {
@@ -215,3 +203,113 @@ export type TerrainProperties = {
     );
 
 export type TerrainResourceItem = ResourceItem<TerrainProperties>;
+
+// ==================== 3D Tiles  参数 ====================
+/** 3D Tiles 参数。 */
+export interface TilesetProperties {
+    /** tileset.json 地址。 */
+    url: string;
+
+    /** URL 查询参数，例如 token。 */
+    queryParameters?: Record<string, string>;
+
+    /** 最大屏幕空间误差，值越小通常越精细。 */
+    maximumScreenSpaceError?: number;
+
+    /** 位置修正参数。 */
+    offset?: {
+        lon?: number;
+        lat?: number;
+        height?: number;
+    };
+}
+/** 3D Tiles 资源配置。 */
+export type TilesetResourceItem = ResourceItem<TilesetProperties>;
+
+// ==================== GeoJSON 参数 ====================
+export interface GeoJsonProperties {
+    /** GeoJSON 文件地址。 */
+    url: string;
+
+    /** 图形样式。 */
+    symbol?: {
+        /** 是否将线显示为箭头。 */
+        lineArrow?: boolean;
+    };
+
+    /** 数据范围中心的标注。 */
+    label?: {
+        text: string;
+
+        /** 屏幕偏移，单位：像素。 */
+        pixelOffset?: {
+            x: number;
+            y: number;
+        };
+    };
+}
+
+/** GeoJSON 资源配置。 */
+export type GeoJsonResourceItem = ResourceItem<GeoJsonProperties>;
+
+// ==================== Model 参数 ====================
+export interface ModelProperties {
+    /** 模型地址。 */
+    url: string;
+
+    /** URL 查询参数，例如 token。 */
+    queryParameters?: Record<string, string>;
+
+    /** 模型位置，经纬度单位为度。 */
+    position: {
+        longitude: number;
+        latitude: number;
+        /** 高度，单位米；省略时为 0，null 表示贴地。 */
+        height?: number | null;
+    };
+
+    /** 缩放比例，默认 1。 */
+    scale?: number;
+
+    /** 模型姿态，使用 Cesium 四元数。 */
+    orientation?: Quaternion;
+
+    /** 模型显示的最小像素尺寸。 */
+    minimumPixelSize?: number;
+
+    /** 可见距离范围，单位米，沿用当前管理器的字段名。 */
+    DistanceDisplayCondition?: {
+        near: number;
+        far: number;
+    };
+
+    /** 沿路线运动。 */
+    motion?: {
+        /** 路线坐标，每项为 [经度, 纬度]。 */
+        path: [longitude: number, latitude: number][];
+        /** 速度，单位米/秒。 */
+        speed: number;
+    };
+}
+
+/** 模型资源配置。 */
+export type ModelResourceItem = ResourceItem<ModelProperties>;
+
+
+// ==================== Poi 参数 ====================
+export interface PoiProperties {
+    /** 位置，经纬度单位为度。 */
+    position: {
+        longitude: number;
+        latitude: number;
+    };
+
+    /** 标注文字。 */
+    text?: string;
+
+    /** 图标地址。 */
+    image?: string;
+}
+
+/** POI 资源配置。 */
+export type PoiResourceItem = ResourceItem<PoiProperties>;

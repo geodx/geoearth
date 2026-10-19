@@ -1,2 +1,1 @@
-
-export { EntityFactory } from './entities/EntityFactory'
+export { EntityFactory, MotionEntity } from './entities'

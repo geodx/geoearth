@@ -58,5 +58,8 @@
   "homepage": "https://www.geoearth.dev",
   "bugs": {
     "url": "https://github.com/geodx/geoearth/issues"
+  },
+  "dependencies": {
+    "@turf/turf": "^7.4.0"
   }
 }

@@ -2,10 +2,18 @@ import { Viewer } from 'cesium'
 import { SourceEvent } from '../events/modules/SourceEvent'
 import { SourceEventType } from '../events/types'
 import { SafeTool } from '../utils'
+import { GeoJsonManager } from './managers/GeoJsonManager'
 import { ImageryManager } from './managers/ImageryManager'
+import { ModelManager } from './managers/ModelManager'
+import { PoiManager } from './managers/PoiManager'
 import { TerrainManager } from './managers/TerrainManager'
-import { ResourceItem, SourceType, TerrainResourceItem, type ImageryResourceItem } from './types'
+import { TilesetManager } from './managers/TilesetManager'
 import { ResourcePresets } from './presets/ResourcePresets'
+import {
+    GeoJsonResourceItem, ModelResourceItem, PoiResourceItem, ResourceItem,
+    SourceType, TerrainResourceItem, TilesetResourceItem,
+    type ImageryResourceItem
+} from './types'
 
 /**
  * 资源统一入口。
@@ -18,6 +26,10 @@ export class ResourceManager {
 
     public readonly imageryManager: ImageryManager
     public readonly terrainManager: TerrainManager
+    public readonly modelManager: ModelManager
+    public readonly tilesetManager: TilesetManager
+    public readonly geoJsonManager: GeoJsonManager
+    public readonly poiManager: PoiManager
 
     public readonly presets: ResourcePresets;
     constructor(viewer: Viewer, sourceEvent: SourceEvent) {
@@ -25,6 +37,11 @@ export class ResourceManager {
 
         this.imageryManager = new ImageryManager(viewer, sourceEvent)
         this.terrainManager = new TerrainManager(viewer);
+        this.modelManager = new ModelManager(viewer);
+        this.tilesetManager = new TilesetManager(viewer);
+        this.geoJsonManager = new GeoJsonManager(viewer);
+        this.poiManager = new PoiManager(viewer);
+
         this.presets = new ResourcePresets(item => this.addData(item));
     }
 
@@ -46,10 +63,17 @@ export class ResourceManager {
                     instance = await this.terrainManager.addData(config as TerrainResourceItem)
                     break
                 case SourceType.MODEL:
+                    instance = await this.modelManager.addData(config as ModelResourceItem)
+                    break
                 case SourceType.TILESET:
+                    instance = await this.tilesetManager.addData(config as TilesetResourceItem)
+                    break
                 case SourceType.GEOJSON:
+                    instance = await this.geoJsonManager.addData(config as GeoJsonResourceItem)
+                    break
                 case SourceType.POI:
-                    throw new Error(`资源类型 "${config.sourceType}" 尚未实现。`)
+                    instance = await this.poiManager.addData(config as PoiResourceItem)
+                    break
                 default:
                     throw new Error(`无效的资源类型：${String(config.sourceType)}`)
             }
@@ -82,10 +106,17 @@ export class ResourceManager {
                 removeRes = this.terrainManager.removeById(id)
                 break
             case SourceType.MODEL:
+                removeRes = this.modelManager.removeById(id)
+                break
             case SourceType.TILESET:
+                removeRes = this.tilesetManager.removeById(id)
+                break
             case SourceType.GEOJSON:
+                removeRes = this.geoJsonManager.removeById(id)
+                break
             case SourceType.POI:
-                throw new Error(`Resource type "${type}" has not been implemented.`)
+                removeRes = this.poiManager.removeById(id)
+                break
 
             default:
                 return false
@@ -114,17 +145,14 @@ export class ResourceManager {
                 return this.imageryManager.flyToById(id)
             case SourceType.TERRAIN:
                 return this.terrainManager.flyToById(id)
-            // case SourceType.MODEL:
-            //     return this.modelManager.flyToById(id)
-            //
-            // case SourceType.TILESET:
-            //     return this.tilesetManager.flyToById(id)
-            //
-            // case SourceType.GEOJSON:
-            //     return this.geojsonManager.flyToById(id)
-            //
-            // case SourceType.POI:
-            //     return this.poiManager.flyToById(id)
+            case SourceType.MODEL:
+                return this.modelManager.flyToById(id)
+            case SourceType.TILESET:
+                return this.tilesetManager.flyToById(id)
+            case SourceType.GEOJSON:
+                return this.geoJsonManager.flyToById(id)
+            case SourceType.POI:
+                return this.poiManager.flyToById(id)
 
             default:
                 return false
@@ -137,11 +165,11 @@ export class ResourceManager {
     getAllSourceItems(): ResourceItem[] {
         return [
             ...this.imageryManager.sourcesItems,
-            ... this.terrainManager.sourcesItems,
-            // ... this.modelManager.getAllConfigs(),
-            // ... this.tilesetManager.getAllConfigs(),
-            // ... this.geojsonManager.getAllConfigs(),
-            // ... this.poiManager.getAllConfigs()
+            ...this.terrainManager.sourcesItems,
+            ...this.modelManager.sourcesItems,
+            ...this.tilesetManager.sourcesItems,
+            ...this.geoJsonManager.sourcesItems,
+            ...this.poiManager.sourcesItems,
         ]
     }
 
@@ -149,14 +177,19 @@ export class ResourceManager {
     getInstance(id: string): unknown {
         return this.imageryManager.instancesMap.get(id)
             ?? this.terrainManager.instancesMap.get(id)
-        // ?? this._3DTileManager.instancesMap.get(id)
-        // ?? this.gltfManager.instancesMap.get(id)
-        // ?? this.poiManager.instancesMap.get(id)
+            ?? this.modelManager.instancesMap.get(id)
+            ?? this.tilesetManager.instancesMap.get(id)
+            ?? this.geoJsonManager.instancesMap.get(id)
+            ?? this.poiManager.instancesMap.get(id)
     }
 
     destroy(): void {
         this.imageryManager.destroy()
         this.terrainManager.destroy()
+        this.modelManager.destroy()
+        this.tilesetManager.destroy()
+        this.geoJsonManager.destroy()
+        this.poiManager.destroy()
     }
 }
 

@@ -6,8 +6,9 @@ import {
     EllipsoidGeodesic,
     PolylineOutlineMaterialProperty,
     ArcType
-} from "cesium"; 
+} from "cesium";
 import { PolylineGlowMaterial } from "../materials/lines";
+import { WorldDegree } from "../../viewer/types";
 /**
  * 名称：Entity 快捷创建库
  * 封装着一些常用的 Entity 创建方法
@@ -175,6 +176,40 @@ const EntityFactory = {
 
         return new Entity(options);
     },
+
+    /**
+    * 绘制空间距离线
+    * @param position
+    * @param text
+    * @param pro
+    */
+    buildLabelByDegrees(position: WorldDegree, text: string, pro = {}): Entity {
+        let param = {
+            position: Cartesian3.fromDegrees(position.longitude, position.latitude),
+            label: {
+                text: text,
+                font: '12pt bold monospace',
+                fillColor: Color.WHITE,
+                outlineColor: Color.BLACK,
+                outlineWidth: 4,
+                style: LabelStyle.FILL_AND_OUTLINE,
+                horizontalOrigin: HorizontalOrigin.LEFT,
+                verticalOrigin: VerticalOrigin.BOTTOM,
+                disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                heightReference: HeightReference.CLAMP_TO_GROUND
+            }
+        };
+        for (const key in pro) {
+            if (key === 'id') {
+                param[key] = pro[key];
+            } else {
+                param.label[key] = pro[key];
+            }
+        }
+
+        return new Entity(param);
+    },
+
 };
 
 export { EntityFactory };
