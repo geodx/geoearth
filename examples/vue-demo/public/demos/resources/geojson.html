@@ -5,14 +5,192 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · GeoJSON</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html,
+    body,
+    #earth {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .actions button {
+      padding: 6px 12px;
+      border: 1px solid #475569;
+      border-radius: 5px;
+      color: #e2e8f0;
+      background: #334155;
+      cursor: pointer;
+    }
+
+    .actions button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .visibility {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
 </head>
 
 <body>
   <div id="earth"></div>
+  <section class="demo-panel" aria-label="GeoJSON 道路示例">
+    <h2>GeoJSON 道路线</h2>
+    <div class="actions">
+      <button id="load" type="button" disabled>加载道路</button>
+      <button id="locate" type="button" disabled>定位</button>
+      <button id="remove" type="button" disabled>移除</button>
+    </div>
+    <label class="visibility">
+      <input id="visible" type="checkbox" checked disabled />
+      显示道路
+    </label>
+    <dl class="info">
+      <dt>数据</dt>
+      <dd>合肥道路 · EPSG:4326</dd>
+      <dt>线实体数量</dt>
+      <dd id="count">0</dd>
+    </dl>
+    <p id="status" class="status" role="status" data-state="loading">正在初始化地球…</p>
+  </section>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“GeoJSON”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const { SourceType } = GeoEarth;
+    const resourceId = 'geojson-road';
+    const earth = new GeoEarth('earth', undefined, {
+      startup: { animation: false },
+    });
+    earth.sources.presets.addBingImagery();
+    
+    const loadButton = document.getElementById('load');
+    const locateButton = document.getElementById('locate');
+    const removeButton = document.getElementById('remove');
+    const visibleInput = document.getElementById('visible');
+    const countOutput = document.getElementById('count');
+    const statusOutput = document.getElementById('status');
+    let ready = false;
+    let busy = false;
+    let disposed = false;
+
+    function getDataSource() {
+      return earth.sources.getInstance(resourceId);
+    }
+
+    function setStatus(message, state = 'ready') {
+      if (disposed) return;
+      statusOutput.textContent = message;
+      statusOutput.dataset.state = state;
+    }
+
+    function updateControls() {
+      if (disposed) return;
+      const dataSource = getDataSource();
+      loadButton.disabled = !ready || busy || Boolean(dataSource);
+      locateButton.disabled = busy || !dataSource || !dataSource.show;
+      removeButton.disabled = busy || !dataSource;
+      visibleInput.disabled = busy || !dataSource;
+      visibleInput.checked = dataSource ? dataSource.show : true;
+      countOutput.textContent = dataSource
+        ? dataSource.entities.values.filter(entity => entity.polyline).length
+        : 0;
+    }
+
+    async function loadRoads() {
+      if (disposed || !ready || busy || getDataSource()) return;
+      busy = true;
+      updateControls();
+      setStatus('正在加载道路数据…', 'loading');
+
+      try {
+        // 使用统一资源入口；数据源由 SDK 创建和管理。
+        const dataSource = await earth.sources.addData({
+          id: resourceId,
+          name: '合肥道路',
+          catalog: 'GeoJSON',
+          sourceType: SourceType.GEOJSON,
+          properties: {
+            url: '/demo-assets/geojson/road.json',
+          },
+        });
+        if (disposed) return;
+
+        const count = dataSource.entities.values.filter(entity => entity.polyline).length;
+        countOutput.textContent = count;
+        setStatus(`已加载 ${count} 条线，正在定位…`, 'loading');
+
+        const located = await earth.sources.flyToSourceById(resourceId);
+        setStatus(located
+          ? `已加载 ${count} 条线，并定位到道路范围。`
+          : `已加载 ${count} 条线；定位未完成，可点击“定位”重试。`);
+      } catch (error) {
+        setStatus(`加载失败：${error.message || error}`, 'error');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    }
+
+    async function locateRoads() {
+      if (disposed || busy || !getDataSource()) return;
+      busy = true;
+      updateControls();
+      setStatus('正在定位道路…', 'loading');
+
+      try {
+        const located = await earth.sources.flyToSourceById(resourceId);
+        setStatus(located ? '已定位到道路范围。' : '定位未完成，可再次尝试。');
+      } catch (error) {
+        setStatus(`定位失败：${error.message || error}`, 'error');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    }
+
+    loadButton.addEventListener('click', loadRoads);
+    locateButton.addEventListener('click', locateRoads);
+    removeButton.addEventListener('click', () => {
+      if (disposed || busy || !getDataSource()) return;
+      const removed = earth.sources.removeSourceById(resourceId);
+      setStatus(removed ? '已移除道路，可重新加载。' : '移除失败。', removed ? 'ready' : 'error');
+      updateControls();
+    });
+    visibleInput.addEventListener('change', () => {
+      const dataSource = getDataSource();
+      if (disposed || busy || !dataSource) return;
+      dataSource.show = visibleInput.checked;
+      setStatus(dataSource.show ? '道路已显示。' : '道路已隐藏。');
+      updateControls();
+    });
+
+    function resize() {
+      if (!disposed) earth.viewer.resize();
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('pagehide', () => {
+      disposed = true;
+      window.removeEventListener('resize', resize);
+      earth.destroy();
+    }, { once: true });
+
+    earth.onReady().then(() => {
+      if (disposed) return;
+      ready = true;
+      return loadRoads();
+    }).catch(error => {
+      setStatus(`初始化失败：${error.message || error}`, 'error');
+    });
   </script>
 </body>
 

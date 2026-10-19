@@ -59,6 +59,7 @@
     "imagery-tms": "TMS imagery",
     "imagery-arcgis": "ArcGIS imagery",
     "data-geojson": "GeoJSON",
+    "geojsonDescription": "Load local Hefei road GeoJSON as ground-clamped lines, then locate, show or hide, remove, and reload the data.",
     "data-gltf-model": "GLB / glTF models",
     "data-tileset": "3D Tiles",
     "data-poi": "POI",

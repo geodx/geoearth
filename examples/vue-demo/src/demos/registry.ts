@@ -141,7 +141,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "data-geojson",
         "title": "demos.data-geojson",
-        "description": "demos.placeholderDescription",
+        "description": "demos.geojsonDescription",
         "path": "demos/resources/geojson.html"
       },
       {

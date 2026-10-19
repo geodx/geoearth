@@ -59,6 +59,7 @@
     "imagery-tms": "TMS 影像",
     "imagery-arcgis": "ArcGIS 影像",
     "data-geojson": "GeoJSON",
+    "geojsonDescription": "加载本地合肥道路 GeoJSON，演示贴地线显示、定位、显隐、移除与重新加载。",
     "data-gltf-model": "GLB / glTF 模型",
     "data-tileset": "3D Tiles",
     "data-poi": "POI",

@@ -407,53 +407,53 @@ function addPolylineEntity(ds: PlotDataSource, feature: any, coords: number[][],
     const materialType = props["stroke-material"] || "normal";
     const width = props["stroke-width"] || 12;
     //  自定义材质
-    // switch (materialType) {
-    //     case "PolylineArrowMaterial":
-    //         material = new Material.Polyline.PolylineArrowMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
-    //         break;
-    //     case "PolylineEnergyTransMaterial":
-    //         material = new Material.Polyline.PolylineEnergyTransMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
-    //         break;
-    //     case "PolylineLightingMaterial":
-    //         material = new Material.Polyline.PolylineLightingMaterial(Color.AQUA);
-    //         break;
-    //     case "PolylineLinkPulseMaterial":
-    //         material = new Material.Polyline.PolylineLinkPulseMaterial({ color: Color.AQUA, duration: 5000 });
-    //         break;
-    //     case "PolylineSpriteMaterial":
-    //         material = new Material.Polyline.PolylineSpriteMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
-    //         break;
-    //     case "PolylineSuperMaterial":
-    //         material = new Material.Polyline.PolylineSuperMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
-    //         break;
-    //     case "PolylineTrailMaterial":
-    //         material = new Material.Polyline.PolylineTrailMaterial({ speed: 5 * Math.random(), color: Color.CYAN, percent: 0.5, gradient: 0.01 });
-    //         break;
-    // default: {
-    //     const w = props["stroke-width"];
-    //     widthProp = defined(w) ? new ConstantProperty(w) : widthProp;
+    switch (materialType) {
+        // case "PolylineArrowMaterial":
+        //     material = new Material.Polyline.PolylineArrowMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
+        //     break;
+        // case "PolylineEnergyTransMaterial":
+        //     material = new Material.Polyline.PolylineEnergyTransMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
+        //     break;
+        // case "PolylineLightingMaterial":
+        //     material = new Material.Polyline.PolylineLightingMaterial(Color.AQUA);
+        //     break;
+        // case "PolylineLinkPulseMaterial":
+        //     material = new Material.Polyline.PolylineLinkPulseMaterial({ color: Color.AQUA, duration: 5000 });
+        //     break;
+        // case "PolylineSpriteMaterial":
+        //     material = new Material.Polyline.PolylineSpriteMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
+        //     break;
+        // case "PolylineSuperMaterial":
+        //     material = new Material.Polyline.PolylineSuperMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
+        //     break;
+        // case "PolylineTrailMaterial":
+        //     material = new Material.Polyline.PolylineTrailMaterial({ speed: 5 * Math.random(), color: Color.CYAN, percent: 0.5, gradient: 0.01 });
+        //     break;
+        default: {
+            const w = props["stroke-width"];
+            widthProp = defined(w) ? new ConstantProperty(w) : widthProp;
 
-    //     let c: Color | undefined;
-    //     if (defined(props.stroke)) c = Color.fromCssColorString(props.stroke);
+            let c: Color | undefined;
+            if (defined(props.stroke)) c = Color.fromCssColorString(props.stroke);
 
-    //     const op = props["stroke-opacity"];
-    //     if (defined(op) && op !== 1) {
-    //         if (!defined(c)) c = (material.getValue().color as Color).clone();
-    //         c.alpha = op;
-    //     }
-    //     if (defined(c)) material = new ColorMaterialProperty(c);
-    // }
-    // }
+            const op = props["stroke-opacity"];
+            if (defined(op) && op !== 1) {
+                if (!defined(c)) c = (material.getValue().color as Color).clone();
+                c.alpha = op;
+            }
+            if (defined(c)) material = new ColorMaterialProperty(c);
+        }
+    }
 
-    // const entity = getOrCreateEntityFromFeature(feature, ds._entityCollection, opts.describe);
-    // const poly = new PolylineGraphics();
-    // entity.polyline = poly;
+    const entity = getOrCreateEntityFromFeature(feature, ds._entityCollection, opts.describe);
+    const poly = new PolylineGraphics();
+    entity.polyline = poly;
 
-    // poly.clampToGround = opts.clampToGround;
-    // poly.material = material;
-    // poly.width = new ConstantProperty(width);
-    // poly.positions = new ConstantProperty(mapCoords(coords, opts.crs));
-    // poly.arcType = new ConstantProperty(ArcType.GEODESIC);
+    poly.clampToGround = opts.clampToGround;
+    poly.material = material;
+    poly.width = new ConstantProperty(width);
+    poly.positions = new ConstantProperty(mapCoords(coords, opts.crs));
+    poly.arcType = new ConstantProperty(ArcType.GEODESIC);
 }
 
 // polygon(对应YB/JB/eN)——按你贴的逻辑完整还原会很长，这里给核心框架
@@ -590,8 +590,7 @@ async function processGeoJson(ds: PlotDataSource, obj: any, opts: any, sourceUri
 
     await Promise.all(ds._promises);
     ds._promises.length = 0;
-    // DataSource.setLoading(ds as any, false);
-    ds.isLoading
+    ds._isLoading = false;
     ds._loading.raiseEvent(ds, false);
     return ds;
 }
