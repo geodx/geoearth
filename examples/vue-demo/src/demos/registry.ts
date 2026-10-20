@@ -171,7 +171,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "draw-point",
         "title": "demos.draw-point",
-        "description": "demos.placeholderDescription",
+        "description": "demos.drawPointDescription",
         "path": "demos/draw/point.html"
       },
       {

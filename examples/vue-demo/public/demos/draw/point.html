@@ -5,18 +5,249 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 绘制点</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    button { padding: 6px 10px; border: 1px solid #475569; border-radius: 5px; color: #e2e8f0; background: #334155; cursor: pointer; }
+    button:disabled { opacity: 0.45; cursor: default; }
+    .parameter { display: block; margin: 12px 0; }
+    select, input[type="range"] { display: block; width: 100%; margin-top: 6px; }
+    select { padding: 6px; color: inherit; background: #1e293b; border: 1px solid #475569; border-radius: 4px; }
+    .option { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+    input[type="color"] { width: 48px; height: 26px; padding: 0; border: 0; background: transparent; }
+    #result { white-space: pre-wrap; overflow-wrap: anywhere; }
+  </style>
 </head>
 
 <body>
   <div id="earth"></div>
+  <section class="demo-panel" aria-label="绘制点示例">
+    <h2>绘制点</h2>
+    <p class="hint">点击“开始绘制”，移动鼠标预览，左键单击完成一个点；右键或 Esc 取消。完成后可再次开始绘制。</p>
+    <div class="actions">
+      <button id="start" type="button" disabled>开始绘制</button>
+      <button id="cancel" type="button" disabled>取消绘制</button>
+      <button id="undo" type="button" disabled>删除上一个</button>
+      <button id="clear" type="button" disabled>清空点</button>
+    </div>
+    <label class="parameter" for="coordinate-type">返回坐标格式
+      <select id="coordinate-type" disabled>
+        <option value="degrees">经纬度（度）</option>
+        <option value="cartesian3">Cartesian3（米）</option>
+        <option value="cartographic">Cartographic（弧度）</option>
+      </select>
+    </label>
+    <label class="option"><input id="preview" type="checkbox" checked disabled />显示鼠标预览点</label>
+    <label class="option" for="color">点颜色<input id="color" type="color" value="#22d3ee" disabled /></label>
+    <label class="parameter" for="size">点大小：<output id="size-value">12</output> px
+      <input id="size" type="range" min="6" max="30" step="1" value="12" disabled />
+    </label>
+    <p class="hint">颜色、大小和预览设置用于下一次绘制。高度单位为米，表示拾取位置的椭球高。</p>
+    <dl class="info">
+      <dt>已绘制</dt><dd id="count">0</dd>
+      <dt>经度</dt><dd id="longitude">—</dd>
+      <dt>纬度</dt><dd id="latitude">—</dd>
+      <dt>椭球高</dt><dd id="height">—</dd>
+    </dl>
+    <p id="status" class="status" role="status" aria-live="polite" data-state="loading">正在初始化地球…</p>
+    <details open>
+      <summary>最近一个点的返回值</summary>
+      <pre id="result">尚未绘制</pre>
+    </details>
+  </section>
   <script>
     window.CESIUM_BASE_URL = '/sdk/cesium/';
   </script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“绘制点”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    // npm 对应 import { GeoEarth, CoordinateType, DrawCancelledError } from 'geoearth'。
+    const { CoordinateType, DrawCancelledError } = GeoEarth;
+    const earth = new GeoEarth('earth', undefined, {
+      startup: { animation: false },
+      homeView: { longitude: 108.387, latitude: 30.71, height: 4000000 },
+    });
+    const results = new Cesium.CustomDataSource('draw-point-results');
+    const startButton = document.getElementById('start');
+    const cancelButton = document.getElementById('cancel');
+    const undoButton = document.getElementById('undo');
+    const clearButton = document.getElementById('clear');
+    const coordinateSelect = document.getElementById('coordinate-type');
+    const previewInput = document.getElementById('preview');
+    const colorInput = document.getElementById('color');
+    const sizeInput = document.getElementById('size');
+    const sizeOutput = document.getElementById('size-value');
+    const countOutput = document.getElementById('count');
+    const longitudeOutput = document.getElementById('longitude');
+    const latitudeOutput = document.getElementById('latitude');
+    const heightOutput = document.getElementById('height');
+    const resultOutput = document.getElementById('result');
+    const statusOutput = document.getElementById('status');
+    const points = [];
+    let ready = false;
+    let drawing = false;
+    let disposed = false;
+    let sequence = 0;
+
+    function setStatus(message, state = 'ready') {
+      if (disposed) return;
+      statusOutput.textContent = message;
+      statusOutput.dataset.state = state;
+    }
+
+    function updateControls() {
+      if (disposed) return;
+      startButton.disabled = !ready || drawing;
+      cancelButton.disabled = !drawing;
+      undoButton.disabled = !ready || drawing || points.length === 0;
+      clearButton.disabled = !ready || drawing || points.length === 0;
+      for (const control of [coordinateSelect, previewInput, colorInput, sizeInput]) {
+        control.disabled = !ready || drawing;
+      }
+      countOutput.textContent = points.length;
+      sizeOutput.value = sizeInput.value;
+    }
+
+    function toCartesian(position, type) {
+      if (type === CoordinateType.DEGREES) {
+        return Cesium.Cartesian3.fromDegrees(position.longitude, position.latitude, position.height);
+      }
+      if (type === CoordinateType.CARTOGRAPHIC) {
+        return earth.viewer.scene.globe.ellipsoid.cartographicToCartesian(position);
+      }
+      return Cesium.Cartesian3.clone(position);
+    }
+
+    function showCoordinates(cartesian) {
+      if (!cartesian) {
+        longitudeOutput.textContent = '—';
+        latitudeOutput.textContent = '—';
+        heightOutput.textContent = '—';
+        return;
+      }
+      const position = earth.viewer.scene.globe.ellipsoid.cartesianToCartographic(cartesian);
+      longitudeOutput.textContent = `${Cesium.Math.toDegrees(position.longitude).toFixed(6)}°`;
+      latitudeOutput.textContent = `${Cesium.Math.toDegrees(position.latitude).toFixed(6)}°`;
+      heightOutput.textContent = `${position.height.toFixed(2)} 米`;
+    }
+
+    function showLastPoint() {
+      const last = points.at(-1);
+      showCoordinates(last?.cartesian);
+      resultOutput.textContent = last
+        ? JSON.stringify({ coordinateType: last.type, position: last.position }, null, 2)
+        : '尚未绘制';
+    }
+
+    async function drawPoint() {
+      if (disposed || !ready || drawing) return;
+      drawing = true;
+      updateControls();
+      const type = coordinateSelect.value;
+      const color = Cesium.Color.fromCssColorString(colorInput.value);
+      const pixelSize = Number(sizeInput.value);
+      setStatus('正在绘制：移动鼠标预览，左键完成，右键或 Esc 取消。', 'loading');
+
+      try {
+        // SDK 负责拾取、预览和取消；这里只负责保留完成后的结果实体。
+        const position = await earth.tools.draw.drawPoint({
+          coordinateType: type,
+          showPreview: previewInput.checked,
+          color,
+          pixelSize,
+          outlineColor: Cesium.Color.WHITE,
+          outlineWidth: 2,
+          onMove(position) {
+            if (!disposed) showCoordinates(toCartesian(position, type));
+          },
+        });
+        if (disposed) return;
+        const cartesian = toCartesian(position, type);
+        const number = ++sequence;
+        const entity = results.entities.add({
+          name: `绘制点 ${number}`,
+          position: cartesian,
+          point: {
+            pixelSize,
+            color,
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 2,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          },
+          label: {
+            text: `点 ${number}`,
+            font: '14px sans-serif',
+            fillColor: Cesium.Color.WHITE,
+            showBackground: true,
+            pixelOffset: new Cesium.Cartesian2(0, -24),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          },
+        });
+        points.push({ entity, position, cartesian, type });
+        showLastPoint();
+        earth.viewer.scene.requestRender();
+        setStatus(`已完成点 ${number}，当前共 ${points.length} 个点。可再次开始绘制。`);
+      } catch (error) {
+        if (disposed) return;
+        showLastPoint();
+        if (error instanceof DrawCancelledError) setStatus('已取消绘制，已有结果保留。');
+        else setStatus(`绘制失败：${error.message || error}`, 'error');
+      } finally {
+        drawing = false;
+        updateControls();
+      }
+    }
+
+    startButton.addEventListener('click', drawPoint);
+    cancelButton.addEventListener('click', () => earth.tools.draw.cancel());
+    undoButton.addEventListener('click', () => {
+      if (disposed || drawing || !points.length) return;
+      const last = points.pop();
+      results.entities.remove(last.entity);
+      showLastPoint();
+      updateControls();
+      earth.viewer.scene.requestRender();
+      setStatus('已删除上一个点。');
+    });
+    clearButton.addEventListener('click', () => {
+      if (disposed || drawing) return;
+      results.entities.removeAll();
+      points.length = 0;
+      sequence = 0;
+      showLastPoint();
+      updateControls();
+      earth.viewer.scene.requestRender();
+      setStatus('已清空绘制结果。');
+    });
+    sizeInput.addEventListener('input', updateControls);
+
+    function onKeyDown(event) {
+      if (event.key === 'Escape' && drawing) {
+        event.preventDefault();
+        earth.tools.draw.cancel();
+      }
+    }
+    function resize() {
+      if (!disposed) earth.viewer.resize();
+    }
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', resize);
+    const initializing = Promise.all([earth.onReady(), earth.viewer.dataSources.add(results)]);
+    window.addEventListener('pagehide', () => {
+      disposed = true;
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('resize', resize);
+      earth.tools.draw.cancel();
+      void initializing.catch(() => {}).then(() => earth.destroy());
+    }, { once: true });
+
+    initializing.then(() => {
+      if (disposed) return;
+      ready = true;
+      updateControls();
+      setStatus('准备就绪，点击“开始绘制”在地球上选取位置。');
+    }).catch(error => setStatus(`初始化失败：${error.message || error}`, 'error'));
   </script>
 </body>
 

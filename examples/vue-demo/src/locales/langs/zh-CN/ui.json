@@ -66,6 +66,7 @@
     "tilesetDescription": "加载自建服务中的大雁塔 3D Tiles，演示斜视定位、显隐、精细度、包围盒、瓦片加载状态、移除与重新加载。",
     "data-poi": "POI",
     "draw-point": "绘制点",
+    "drawPointDescription": "调用绘制点工具，演示鼠标预览、完成与取消、三种坐标格式、点样式、删除上一个及清空结果。",
     "draw-polyline": "绘制折线",
     "draw-polygon": "绘制多边形",
     "draw-rectangle": "绘制矩形",
