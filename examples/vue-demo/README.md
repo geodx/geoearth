@@ -32,7 +32,8 @@ Vue 负责示例目录、代码编辑器和页面布局；每个示例都是独�
 
 ```text
 public/demos/             独立 HTML 示例，构建时原样复制
-public/demo-assets/       示例使用的第三方脚本及许可证
+public/demo-assets/       示例模型、GeoJSON、图片、第三方脚本及来源说明
+public/demo-common/       示例共用的面板样式等页面资源
 src/
   App.vue                初始化共享状态和 Element Plus 语言
   layouts/
@@ -53,5 +54,13 @@ src/
 ```
 
 新增示例时，将 HTML 放到 `public/demos`，再在 `src/demos/registry.ts` 注册路径和翻译键。HTML 也可以通过开发服务器的 `/demos/...` 地址单独打开。
+
+### 示例资源约定
+
+- `demos` 按能力分组，页面名称使用小写短横线，例如 `resources/gltf-model.html`。
+- `demo-assets` 存放原样提供的静态数据，当前按 `geojson`、`glb` 等类型分组。现有 GLB 路径保持不变；以后若增加由 `.gltf`、`.bin` 和纹理组成的模型，建议使用 `models/<模型名>/` 目录，把依赖放在一起并保留相对路径。
+- 新增自有资源优先使用小写短横线命名；保留已有第三方文件名可以避免无意义的路径变更。模型来源和许可证与模型放在同一目录，参见 `public/demo-assets/glb/README.md`。
+- `demo-common` 放共用的 HTML/CSS/JS；只被一个示例使用的少量样式可留在页面中。当前第三方脚本数量少，可以保持位置，后续数量增加时再统一归入 `demo-assets/vendor/`。
+- `/sdk` 来自 SDK 构建目录的映射或复制，不在 `public` 中再维护一份，避免 SDK 文件版本不一致。`favicon.svg` 继续留在 `public` 根目录。
 
 切换目录和代码面板只改变可见内容。编辑源码后点击“运行”，预览才会执行新代码；“重置”恢复当前示例的原始源码并重新运行。

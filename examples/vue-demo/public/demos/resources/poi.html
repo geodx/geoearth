@@ -4,19 +4,227 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GeoEarth · POI</title>
+  <title>GeoEarth · POI 标注</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html,
+    body,
+    #earth {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .actions button {
+      padding: 6px 12px;
+      border: 1px solid #475569;
+      border-radius: 5px;
+      color: #e2e8f0;
+      background: #334155;
+      cursor: pointer;
+    }
+
+    .actions button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .parameter {
+      display: block;
+      margin: 12px 0;
+    }
+
+    .parameter input {
+      display: block;
+      width: 100%;
+      margin-top: 6px;
+    }
+  </style>
 </head>
 
 <body>
   <div id="earth"></div>
+  <section class="demo-panel" aria-label="POI 标注示例">
+    <h2>POI · Pin 标签</h2>
+    <p class="hint">使用士兵图标生成绿色图钉</p>
+    <div class="actions">
+      <button id="load" type="button" disabled>加载标签</button>
+      <button id="locate" type="button" disabled>定位</button>
+      <button id="remove" type="button" disabled>移除</button>
+    </div>
+    <label class="option"><input id="visible" type="checkbox" checked disabled />显示标签</label>
+    <label class="parameter" for="size">
+      图钉尺寸：<output id="size-value">48</output> 像素
+      <input id="size" type="range" min="24" max="80" step="1" value="48" disabled />
+    </label>
+    <dl class="info">
+      <dt>资源类型</dt>
+      <dd>POI</dd>
+      <dt>位置</dt>
+      <dd>费城 · 75.1699°W / 39.9220°N</dd>
+    </dl>
+    <p id="status" class="status" role="status" aria-live="polite" data-state="loading">正在初始化地球…</p>
+  </section>
   <script>
     window.CESIUM_BASE_URL = '/sdk/cesium/';
   </script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“POI”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const { SourceType } = GeoEarth;
+    const resourceId = 'pin-soldier';
+    const position = { longitude: -75.1698529, latitude: 39.9220071 };
+    const earth = new GeoEarth('earth', undefined, { startup: { animation: false } });
+    const pinBuilder = new Cesium.PinBuilder();
+    const loadButton = document.getElementById('load');
+    const locateButton = document.getElementById('locate');
+    const removeButton = document.getElementById('remove');
+    const visibleInput = document.getElementById('visible');
+    const sizeInput = document.getElementById('size');
+    const sizeOutput = document.getElementById('size-value');
+    const statusOutput = document.getElementById('status');
+    let ready = false;
+    let busy = false;
+    let disposed = false;
+
+    function getPin() {
+      return earth.sources.getInstance(resourceId);
+    }
+
+    function setStatus(message, state = 'ready') {
+      if (disposed) return;
+      statusOutput.textContent = message;
+      statusOutput.dataset.state = state;
+    }
+
+    function updateControls() {
+      if (disposed) return;
+      const entity = getPin();
+      loadButton.disabled = !ready || busy || !!entity;
+      locateButton.disabled = busy || !entity || !entity.show;
+      removeButton.disabled = busy || !entity;
+      visibleInput.disabled = busy || !entity;
+      sizeInput.disabled = busy || !entity;
+      sizeOutput.value = sizeInput.value;
+    }
+
+    function updateSize(entity) {
+      const size = Number(sizeInput.value);
+      // 当前 PoiManager 固定为 15×15，在示例中调整返回的 Entity 即可。
+      entity.billboard.width = size;
+      entity.billboard.height = size;
+      entity.billboard.scaleByDistance = undefined;
+    }
+
+    async function flyToPin(entity) {
+      // 为单个标签明确指定观察距离和角度。
+      return earth.viewer.flyTo(entity, {
+        duration: 1.5,
+        offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-60), 1500),
+      });
+    }
+
+    async function loadPin() {
+      if (!ready || disposed || busy || getPin()) return;
+      busy = true;
+      updateControls();
+      setStatus('正在生成并加载图钉…', 'loading');
+      try {
+        // fromUrl 可能返回 Canvas 或 Promise，await 兼容两种情况。
+        // 转为 data URL 后仍是 string，符合现有 PoiProperties.image 类型。
+        const canvas = await pinBuilder.fromUrl('/demo-assets/pins/soldier.png', Cesium.Color.GREEN, 80);
+        if (disposed) return;
+        const entity = await earth.sources.addData({
+          id: resourceId,
+          name: '士兵 Pin 标签',
+          catalog: '示例标注',
+          sourceType: SourceType.POI,
+          properties: {
+            position,
+            image: canvas.toDataURL('image/png'),
+          },
+        });
+        if (disposed) return;
+        updateSize(entity);
+        // 原例未贴地；当前示例使用椭球底面，无需等待地形高度采样。
+        entity.billboard.heightReference = Cesium.HeightReference.NONE;
+        entity.show = visibleInput.checked;
+        const located = await flyToPin(entity);
+        if (disposed) return;
+        setStatus(located ? 'Pin 已作为 POI 资源加载，并完成定位。' : 'Pin 已加载；定位未完成，可点击“定位”重试。');
+      } catch (error) {
+        setStatus(`加载失败：${error.message || error}`, 'error');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    }
+
+    loadButton.addEventListener('click', loadPin);
+    locateButton.addEventListener('click', async () => {
+      const entity = getPin();
+      if (disposed || busy || !entity || !entity.show) return;
+      busy = true;
+      updateControls();
+      setStatus('正在定位标签…', 'loading');
+      try {
+        const located = await flyToPin(entity);
+        setStatus(located ? '已定位到 Pin 标签。' : '定位未完成，可再次定位。');
+      } catch (error) {
+        setStatus(`定位失败：${error.message || error}`, 'error');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    });
+    removeButton.addEventListener('click', () => {
+      if (disposed || busy || !getPin()) return;
+      const removed = earth.sources.removeSourceById(resourceId);
+      setStatus(removed ? 'Pin 资源已移除，可重新加载。' : '移除失败。', removed ? 'ready' : 'error');
+      updateControls();
+    });
+    visibleInput.addEventListener('change', () => {
+      const entity = getPin();
+      if (disposed || busy || !entity) return;
+      entity.show = visibleInput.checked;
+      setStatus(entity.show ? 'Pin 已显示。' : 'Pin 已隐藏。');
+      updateControls();
+    });
+    sizeInput.addEventListener('input', () => {
+      const entity = getPin();
+      if (disposed || busy || !entity) return;
+      updateSize(entity);
+      updateControls();
+    });
+
+    function resize() {
+      if (!disposed) earth.viewer.resize();
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('pagehide', () => {
+      disposed = true;
+      window.removeEventListener('resize', resize);
+      earth.destroy();
+    }, { once: true });
+
+    earth.onReady().then(() => {
+      if (disposed) return;
+      ready = true;
+      return loadPin();
+    }).catch(error => setStatus(`初始化失败：${error.message || error}`, 'error'));
   </script>
 </body>
 

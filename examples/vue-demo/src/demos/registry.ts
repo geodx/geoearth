@@ -147,7 +147,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "data-gltf-model",
         "title": "demos.data-gltf-model",
-        "description": "demos.placeholderDescription",
+        "description": "demos.gltfModelDescription",
         "path": "demos/resources/gltf-model.html"
       },
       {
@@ -159,14 +159,8 @@ export const demoTree: DemoNode[] = [
       {
         "id": "data-poi",
         "title": "demos.data-poi",
-        "description": "demos.placeholderDescription",
+        "description": "demos.poiDescription",
         "path": "demos/resources/poi.html"
-      },
-      {
-        "id": "data-pin",
-        "title": "demos.data-pin",
-        "description": "demos.placeholderDescription",
-        "path": "demos/resources/pin.html"
       }
     ]
   },

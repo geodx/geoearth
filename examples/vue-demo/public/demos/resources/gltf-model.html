@@ -5,18 +5,293 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · GLB / glTF 模型</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html,
+    body,
+    #earth {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .actions button {
+      padding: 6px 12px;
+      border: 1px solid #475569;
+      border-radius: 5px;
+      color: #e2e8f0;
+      background: #334155;
+      cursor: pointer;
+    }
+
+    .actions button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .parameter {
+      display: block;
+      margin: 12px 0;
+    }
+
+    .parameter input {
+      display: block;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .demo-panel a {
+      color: #7dd3fc;
+    }
+  </style>
 </head>
 
 <body>
   <div id="earth"></div>
+  <section class="demo-panel" aria-label="GLB 模型示例">
+    <h2>GLB / glTF 模型</h2>
+    <p class="hint">加载本地 Huey 直升机，以斜视角观察模型，并调整缩放、方向和动画。</p>
+    <div class="actions">
+      <button id="load" type="button" disabled>加载模型</button>
+      <button id="locate" type="button" disabled>定位</button>
+      <button id="remove" type="button" disabled>移除</button>
+    </div>
+    <label class="option"><input id="visible" type="checkbox" checked disabled />显示模型</label>
+    <label class="option"><input id="animate" type="checkbox" checked disabled />播放模型动画</label>
+    <label class="parameter" for="scale">
+      缩放：<output id="scale-value">1.0</output> 倍
+      <input id="scale" type="range" min="0.5" max="5" step="0.1" value="1" disabled />
+    </label>
+    <label class="parameter" for="heading">
+      朝向：<output id="heading-value">0</output>°
+      <input id="heading" type="range" min="0" max="360" step="1" value="0" disabled />
+    </label>
+    <dl class="info">
+      <dt>模型</dt>
+      <dd>Bell Huey helicopter</dd>
+      <dt>格式</dt>
+      <dd>GLB · glTF 2.0</dd>
+      <dt>位置</dt>
+      <dd>117.22°E / 31.83°N</dd>
+      <dt>高度</dt>
+      <dd>120 米（椭球高度）</dd>
+    </dl>
+    <p id="status" class="status" role="status" aria-live="polite" data-state="loading">正在初始化地球…</p>
+    <p class="hint">
+      <a href="https://sketchfab.com/3d-models/bell-huey-helicopter-755d8518a06e41b19752c1b54c0da588" target="_blank"
+        rel="noopener noreferrer">Duane's Mind</a>
+      · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>
+    </p>
+  </section>
   <script>
     window.CESIUM_BASE_URL = '/sdk/cesium/';
   </script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“GLB / glTF 模型”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const { SourceType } = GeoEarth;
+    const resourceId = 'gltf-helicopter';
+    const modelUrl = '/demo-assets/glb/bell_huey_helicopter.glb';
+    const modelPosition = { longitude: 117.22, latitude: 31.83, height: 120 };
+    const earth = new GeoEarth('earth', undefined, {
+      startup: { animation: false },
+    });
+
+    // 观察灯跟随相机，避免模型在不同演示时间下过暗。
+    const modelLight = new Cesium.DirectionalLight({
+      direction: new Cesium.Cartesian3(1, 0, 0),
+      intensity: 2,
+    });
+    earth.viewer.scene.light = modelLight;
+    const stopLight = earth.viewer.scene.preRender.addEventListener(() => {
+      Cesium.Cartesian3.clone(earth.viewer.camera.directionWC, modelLight.direction);
+    });
+
+    const loadButton = document.getElementById('load');
+    const locateButton = document.getElementById('locate');
+    const removeButton = document.getElementById('remove');
+    const visibleInput = document.getElementById('visible');
+    const animateInput = document.getElementById('animate');
+    const scaleInput = document.getElementById('scale');
+    const headingInput = document.getElementById('heading');
+    const scaleOutput = document.getElementById('scale-value');
+    const headingOutput = document.getElementById('heading-value');
+    const statusOutput = document.getElementById('status');
+    let ready = false;
+    let busy = false;
+    let disposed = false;
+
+    function getModel() {
+      return earth.sources.getInstance(resourceId);
+    }
+
+    function setStatus(message, state = 'ready') {
+      if (disposed) return;
+      statusOutput.textContent = message;
+      statusOutput.dataset.state = state;
+    }
+
+    function updateControls() {
+      if (disposed) return;
+      const entity = getModel();
+      const disabled = busy || !entity;
+      loadButton.disabled = !ready || busy || Boolean(entity);
+      locateButton.disabled = disabled || !entity.show;
+      removeButton.disabled = disabled;
+      visibleInput.disabled = disabled;
+      animateInput.disabled = disabled;
+      scaleInput.disabled = disabled;
+      headingInput.disabled = disabled;
+      visibleInput.checked = entity ? entity.show : true;
+      scaleOutput.value = Number(scaleInput.value).toFixed(1);
+      headingOutput.value = headingInput.value;
+    }
+
+    function getOrientation() {
+      const position = Cesium.Cartesian3.fromDegrees(
+        modelPosition.longitude,
+        modelPosition.latitude,
+        modelPosition.height,
+      );
+      const hpr = new Cesium.HeadingPitchRoll(
+        Cesium.Math.toRadians(Number(headingInput.value)), 0, 0,
+      );
+      return Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
+    }
+
+    function flyToModel(entity) {
+      // 使用原生相机选项指定斜视角；资源仍由 ResourceManager 管理。
+      return earth.viewer.flyTo(entity, {
+        duration: 1.5,
+        offset: new Cesium.HeadingPitchRange(
+          Cesium.Math.toRadians(30),
+          Cesium.Math.toRadians(-25),
+          60 * Number(scaleInput.value),
+        ),
+      });
+    }
+
+    async function loadModel() {
+      if (disposed || !ready || busy || getModel()) return;
+      busy = true;
+      updateControls();
+      setStatus('正在加载模型与纹理…', 'loading');
+
+      try {
+        const entity = await earth.sources.addData({
+          id: resourceId,
+          name: 'Huey 直升机',
+          catalog: 'GLB / glTF',
+          sourceType: SourceType.MODEL,
+          properties: {
+            url: modelUrl,
+            position: modelPosition,
+            orientation: getOrientation(),
+            scale: Number(scaleInput.value),
+            minimumPixelSize: 64,
+          },
+        });
+        if (disposed) return;
+        entity.model.runAnimations = animateInput.checked;
+
+        // addData 返回 Entity 时，模型可能仍在加载；等待可定位后再报告成功。
+        const located = await flyToModel(entity);
+        setStatus(located
+          ? '模型已加载，并定位到模型。'
+          : '定位未完成；可重试定位。若模型未显示，请移除后重新加载。',
+          located ? 'ready' : 'error');
+      } catch (error) {
+        setStatus(`加载失败：${error.message || error}`, 'error');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    }
+
+    async function locateModel() {
+      const entity = getModel();
+      if (disposed || busy || !entity || !entity.show) return;
+      busy = true;
+      updateControls();
+      setStatus('正在定位模型…', 'loading');
+      try {
+        const located = await flyToModel(entity);
+        setStatus(located ? '已定位到模型。' : '定位未完成，可再次尝试。');
+      } catch (error) {
+        setStatus(`定位失败：${error.message || error}`, 'error');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    }
+
+    loadButton.addEventListener('click', loadModel);
+    locateButton.addEventListener('click', locateModel);
+    removeButton.addEventListener('click', () => {
+      if (disposed || busy || !getModel()) return;
+      const removed = earth.sources.removeSourceById(resourceId);
+      setStatus(removed ? '模型已移除，可重新加载。' : '移除失败。', removed ? 'ready' : 'error');
+      updateControls();
+    });
+    visibleInput.addEventListener('change', () => {
+      const entity = getModel();
+      if (disposed || busy || !entity) return;
+      entity.show = visibleInput.checked;
+      setStatus(entity.show ? '模型已显示。' : '模型已隐藏。');
+      updateControls();
+    });
+    animateInput.addEventListener('change', () => {
+      const entity = getModel();
+      if (disposed || busy || !entity) return;
+      entity.model.runAnimations = animateInput.checked;
+      setStatus(animateInput.checked ? '模型动画已开启。' : '模型动画已关闭。');
+    });
+    scaleInput.addEventListener('input', () => {
+      const entity = getModel();
+      if (disposed || busy || !entity) return;
+      entity.model.scale = Number(scaleInput.value);
+      updateControls();
+      setStatus('缩放已更新，可点击“定位”重新取景。');
+    });
+    headingInput.addEventListener('input', () => {
+      const entity = getModel();
+      if (disposed || busy || !entity) return;
+      entity.orientation = getOrientation();
+      updateControls();
+      setStatus(`模型朝向已更新为 ${headingInput.value}°。`);
+    });
+
+    function resize() {
+      if (!disposed) earth.viewer.resize();
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('pagehide', () => {
+      disposed = true;
+      window.removeEventListener('resize', resize);
+      stopLight();
+      earth.destroy();
+    }, { once: true });
+
+    earth.onReady().then(() => {
+      if (disposed) return;
+      ready = true;
+      return loadModel();
+    }).catch(error => {
+      setStatus(`初始化失败：${error.message || error}`, 'error');
+    });
   </script>
 </body>
 
