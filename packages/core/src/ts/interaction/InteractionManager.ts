@@ -1,10 +1,11 @@
 import {
-    BillboardCollection, Cartesian2, Cesium3DTileFeature, ConstantProperty, Entity, LabelCollection,
+    BillboardCollection, Cartesian2, Cesium3DTileFeature,
+    Entity, LabelCollection,
     PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, ScreenSpaceEventType,
     type Color, type ScreenSpaceEventHandler, type Viewer
 } from 'cesium'
-import type { ScreenEvent } from '../events/modules/ScreenEvent'
 import type { InteractionEvent } from '../events/modules/InteractionEvent'
+import type { ScreenEvent } from '../events/modules/ScreenEvent'
 import type { RemoveCallback } from '../events/types'
 import type { DrawTool } from '../tools/draw/DrawTool'
 import { pickPosition } from '../tools/draw/pickPosition'
