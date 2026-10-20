@@ -153,7 +153,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "data-tileset",
         "title": "demos.data-tileset",
-        "description": "demos.placeholderDescription",
+        "description": "demos.tilesetDescription",
         "path": "demos/resources/tileset.html"
       },
       {

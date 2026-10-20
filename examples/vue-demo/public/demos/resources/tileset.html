@@ -5,18 +5,295 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 3D Tiles</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html,
+    body,
+    #earth {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .actions button {
+      padding: 6px 12px;
+      border: 1px solid #475569;
+      border-radius: 5px;
+      color: #e2e8f0;
+      background: #334155;
+      cursor: pointer;
+    }
+
+    .actions button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .parameter {
+      display: block;
+      margin: 12px 0;
+    }
+
+    .parameter input {
+      display: block;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .demo-panel a {
+      color: #7dd3fc;
+      overflow-wrap: anywhere;
+    }
+  </style>
 </head>
 
 <body>
   <div id="earth"></div>
+  <section class="demo-panel" aria-label="3D Tiles 模型示例">
+    <h2>3D Tiles · 大雁塔</h2>
+    <p class="hint">加载自建瓦片服务中的大雁塔模型。拖动、缩放观察不同距离下的细节。</p>
+    <div class="actions">
+      <button id="load" type="button" disabled>加载模型</button>
+      <button id="locate" type="button" disabled>定位</button>
+      <button id="remove" type="button" disabled>移除</button>
+    </div>
+    <label class="option"><input id="visible" type="checkbox" checked disabled />显示模型</label>
+    <label class="option"><input id="bounds" type="checkbox" disabled />显示瓦片包围盒</label>
+    <label class="parameter" for="error">
+      最大屏幕空间误差：<output id="error-value">8</output> px
+      <input id="error" type="range" min="2" max="32" step="1" value="8" disabled />
+    </label>
+    <p class="hint">误差越小，通常越精细，同时需要加载更多数据。</p>
+    <dl class="info">
+      <dt>等待请求</dt>
+      <dd id="pending">0</dd>
+      <dt>处理中</dt>
+      <dd id="processing">0</dd>
+    </dl>
+    <p id="status" class="status" role="status" aria-live="polite" data-state="loading">正在初始化地球…</p>
+    <details>
+      <summary>模型入口</summary>
+      <p><a href="https://tiles.geoearth.dev/DaYanTa/tileset.json" target="_blank"
+          rel="noopener noreferrer">tiles.geoearth.dev/DaYanTa/tileset.json</a></p>
+    </details>
+  </section>
   <script>
     window.CESIUM_BASE_URL = '/sdk/cesium/';
   </script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“3D Tiles”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    // npm 对应 import { GeoEarth, SourceType } from 'geoearth'。
+    const { SourceType } = GeoEarth;
+    const resourceId = 'tileset-dayanta';
+    const tilesetUrl = 'https://tiles.geoearth.dev/DaYanTa/tileset.json';
+    const earth = new GeoEarth('earth', undefined, {
+      startup: { animation: false },
+    });
+    earth.sources.presets.addBingImagery();
+    earth.sources.presets.addWorldTerrain();
+    const loadButton = document.getElementById('load');
+    const locateButton = document.getElementById('locate');
+    const removeButton = document.getElementById('remove');
+    const visibleInput = document.getElementById('visible');
+    const boundsInput = document.getElementById('bounds');
+    const errorInput = document.getElementById('error');
+    const errorOutput = document.getElementById('error-value');
+    const pendingOutput = document.getElementById('pending');
+    const processingOutput = document.getElementById('processing');
+    const statusOutput = document.getElementById('status');
+    let ready = false;
+    let busy = false;
+    let disposed = false;
+    let tileError = false;
+    let stopListeners = [];
+    let pendingResource = earth.onReady();
+
+    function getTileset() {
+      return earth.sources.getInstance(resourceId);
+    }
+
+    function setStatus(message, state = 'ready') {
+      if (disposed) return;
+      statusOutput.textContent = message;
+      statusOutput.dataset.state = state;
+    }
+
+    function updateControls() {
+      if (disposed) return;
+      const tileset = getTileset();
+      loadButton.disabled = !ready || busy || Boolean(tileset);
+      locateButton.disabled = busy || !tileset || !tileset.show;
+      removeButton.disabled = busy || !tileset;
+      visibleInput.disabled = busy || !tileset;
+      boundsInput.disabled = busy || !tileset;
+      errorInput.disabled = busy || !tileset;
+      visibleInput.checked = tileset ? tileset.show : true;
+      errorOutput.value = errorInput.value;
+    }
+
+    function clearListeners() {
+      stopListeners.forEach(stop => stop());
+      stopListeners = [];
+    }
+
+    function watchTiles(tileset) {
+      clearListeners();
+      // 根 JSON 加载成功后，模型和纹理才开始请求，需单独监听瓦片错误。
+      stopListeners = [
+        tileset.loadProgress.addEventListener((pending, processing) => {
+          if (disposed) return;
+          pendingOutput.textContent = pending;
+          processingOutput.textContent = processing;
+          if (!tileError && tileset.show && pending + processing > 0) {
+            setStatus(`正在加载当前视野：等待 ${pending}，处理中 ${processing}…`, 'loading');
+          }
+        }),
+        tileset.allTilesLoaded.addEventListener(() => {
+          if (disposed || tileError || !tileset.show) return;
+          pendingOutput.textContent = 0;
+          processingOutput.textContent = 0;
+          setStatus('当前视野瓦片已加载，可拖动、缩放观察模型。');
+        }),
+        tileset.tileFailed.addEventListener(error => {
+          tileError = true;
+          setStatus(`瓦片加载失败：${error.message || error.url}。请检查网络或服务端跨域设置，可移除后重新加载。`, 'error');
+        }),
+      ];
+    }
+
+    function flyToTileset(tileset) {
+      // 资源由 SDK 管理，原生相机选项用于斜视取景，避免只看到模型顶部。
+      return earth.viewer.flyTo(tileset, {
+        duration: 1.5,
+        offset: new Cesium.HeadingPitchRange(
+          Cesium.Math.toRadians(25),
+          Cesium.Math.toRadians(-30),
+          tileset.boundingSphere.radius * 3,
+        ),
+      });
+    }
+
+    async function loadTileset() {
+      if (disposed || !ready || busy || getTileset()) return;
+      busy = true;
+      tileError = false;
+      updateControls();
+      setStatus('正在加载模型入口…', 'loading');
+      try {
+        pendingResource = earth.sources.addData({
+          id: resourceId,
+          name: '大雁塔',
+          catalog: '3D Tiles',
+          sourceType: SourceType.TILESET,
+          properties: {
+            url: tilesetUrl,
+            maximumScreenSpaceError: Number(errorInput.value),
+            offset: { height: -26 },
+          },
+        });
+        const tileset = await pendingResource;
+        if (disposed) return;
+        tileset.debugShowBoundingVolume = boundsInput.checked;
+        watchTiles(tileset);
+        setStatus('模型入口已加载，正在定位并请求瓦片…', 'loading');
+        const located = await flyToTileset(tileset);
+        if (!tileError && !located) {
+          setStatus('模型已添加，定位未完成，可点击“定位”重试。');
+        }
+      } catch (error) {
+        setStatus(`加载失败：${error.message || error}`, 'error');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    }
+
+    loadButton.addEventListener('click', loadTileset);
+    locateButton.addEventListener('click', async () => {
+      const tileset = getTileset();
+      if (disposed || busy || !tileset?.show) return;
+      busy = true;
+      updateControls();
+      try {
+        const located = await flyToTileset(tileset);
+        if (!located && !tileError) setStatus('定位未完成，可再次尝试。');
+      } catch (error) {
+        setStatus(`定位失败：${error.message || error}`, 'error');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    });
+    removeButton.addEventListener('click', () => {
+      if (disposed || busy || !getTileset()) return;
+      clearListeners();
+      const removed = earth.sources.removeSourceById(resourceId);
+      tileError = false;
+      pendingOutput.textContent = 0;
+      processingOutput.textContent = 0;
+      setStatus(removed ? '模型已移除，可重新加载。' : '移除失败。', removed ? 'ready' : 'error');
+      updateControls();
+      earth.viewer.scene.requestRender();
+    });
+    visibleInput.addEventListener('change', () => {
+      const tileset = getTileset();
+      if (disposed || busy || !tileset) return;
+      earth.sources.setResourceVisible(resourceId, visibleInput.checked);
+      if (!tileset.show) setStatus('模型已隐藏。');
+      else if (tileError) setStatus('模型曾出现瓦片加载失败，请移除后重新加载。', 'error');
+      else setStatus(tileset.tilesLoaded ? '模型已显示。' : '模型已显示，正在加载当前视野…', tileset.tilesLoaded ? 'ready' : 'loading');
+      updateControls();
+      earth.viewer.scene.requestRender();
+    });
+    boundsInput.addEventListener('change', () => {
+      const tileset = getTileset();
+      if (disposed || busy || !tileset) return;
+      tileset.debugShowBoundingVolume = boundsInput.checked;
+      earth.viewer.scene.requestRender();
+    });
+    errorInput.addEventListener('input', () => {
+      const tileset = getTileset();
+      if (disposed || busy || !tileset) return;
+      tileset.maximumScreenSpaceError = Number(errorInput.value);
+      updateControls();
+      earth.viewer.scene.requestRender();
+    });
+
+    function resize() {
+      if (!disposed) earth.viewer.resize();
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('pagehide', () => {
+      disposed = true;
+      clearListeners();
+      window.removeEventListener('resize', resize);
+      earth.viewer.camera.cancelFlight();
+      // 等待在途资源登记结束再销毁，避免页面切换后留下迟到的模型实例。
+      void pendingResource.catch(() => { }).then(() => earth.destroy());
+    }, { once: true });
+
+    pendingResource.then(() => {
+      if (disposed) return;
+      ready = true;
+      return loadTileset();
+    }).catch(error => {
+      setStatus(`初始化失败：${error.message || error}`, 'error');
+    });
   </script>
 </body>
 

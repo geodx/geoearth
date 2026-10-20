@@ -145,7 +145,8 @@ export class TilesetManager extends CesiumData<Cesium3DTileset> {
 
         if (tileSet && !tileSet.isDestroyed()) {
             this.viewer.scene.primitives.remove(tileSet);
-            tileSet.destroy();
+            // PrimitiveCollection 默认会在移除时销毁对象。
+            if (!tileSet.isDestroyed()) tileSet.destroy();
         }
         return true;
     };

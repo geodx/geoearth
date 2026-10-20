@@ -63,6 +63,7 @@
     "data-gltf-model": "GLB / glTF 模型",
     "gltfModelDescription": "加载本地直升机 GLB，演示斜视定位、显隐、缩放、朝向、模型动画、移除与重新加载。",
     "data-tileset": "3D Tiles",
+    "tilesetDescription": "加载自建服务中的大雁塔 3D Tiles，演示斜视定位、显隐、精细度、包围盒、瓦片加载状态、移除与重新加载。",
     "data-poi": "POI",
     "draw-point": "绘制点",
     "draw-polyline": "绘制折线",

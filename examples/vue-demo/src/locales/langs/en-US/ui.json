@@ -63,6 +63,7 @@
     "data-gltf-model": "GLB / glTF models",
     "gltfModelDescription": "Load a local helicopter GLB, locate it from an oblique view, toggle visibility and animations, adjust scale and heading, remove, and reload it.",
     "data-tileset": "3D Tiles",
+    "tilesetDescription": "Load the Giant Wild Goose Pagoda 3D Tiles from a self-hosted service; locate, toggle visibility and bounds, adjust detail, monitor tile loading, remove, and reload.",
     "data-poi": "POI",
     "draw-point": "Draw a point",
     "draw-polyline": "Draw a polyline",
