@@ -20,6 +20,7 @@ export class PoiManager extends CesiumData<Entity> {
         const mark = this.dataSourceTool.entities.add({
             id: id,
             name: sourceItem.name,
+            show: sourceItem.show ?? true,
             position: Cartesian3.fromDegrees(longitude, latitude),
             billboard: {
                 image: imagePath,

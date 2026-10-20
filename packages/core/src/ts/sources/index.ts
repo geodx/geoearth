@@ -1,7 +1,7 @@
 export { ResourceManager } from './ResourceManager'
 
 export { loadSources } from './loaders/InitialSourceLoader'
-
+export { normalizeResource } from './loaders/normalizeResource'
 export { ImageryScheme, SourceType, TerrainScheme } from './types'
 export type {
     ResourceItem,

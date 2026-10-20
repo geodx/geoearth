@@ -60,6 +60,7 @@
     "url": "https://github.com/geodx/geoearth/issues"
   },
   "dependencies": {
-    "@turf/turf": "^7.4.0"
+    "@turf/turf": "^7.4.0",
+    "wunderbaum": "^0.14.1"
   }
 }

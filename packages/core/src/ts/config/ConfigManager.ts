@@ -1,4 +1,4 @@
-import { ImageryResourceItem, ResourceItem } from "../sources/types";
+import { ImageryResourceItem, normalizeResource, ResourceItem } from "../sources";
 import { defaultConfig } from "./defaultConfig";
 import { Config } from "./types";
 export class ConfigManager {
@@ -28,12 +28,12 @@ export class ConfigManager {
             item => item.defaultLoad
         );
     }
-    getResourcesById(id: string) {
-        return this.getAllSources().find(item => {
+    getConfigById(id: string) {
+        return this.getAllConfig().find(item => {
             return item.id === id;
         });
     }
-    getAllSources() {
+    getAllConfig() {
         let s = this.config.resources;
         return [
             ...s.imagery,
@@ -44,6 +44,7 @@ export class ConfigManager {
             ...s.poi
         ];
     }
+
     private createConfig(input: Config = {}): Config {
         const resources = input.resources;
         const defaultResources = defaultConfig.resources;
@@ -65,12 +66,18 @@ export class ConfigManager {
             startup: { ...defaultConfig.startup, ...input.startup },
 
             resources: {
-                imagery: [...defaultImagery, ...userImagery],
-                terrains: [...(resources?.terrains ?? defaultResources.terrains ?? [])],
-                models: [...(resources?.models ?? defaultResources.models ?? [])],
-                tilesets: [...(resources?.tilesets ?? defaultResources.tilesets ?? [])],
-                geojson: [...(resources?.geojson ?? defaultResources.geojson ?? [])],
+                imagery: [...defaultImagery, ...userImagery]
+                    .map(item => normalizeResource(item)),
+                terrains: [...(resources?.terrains ?? defaultResources.terrains ?? [])]
+                    .map(item => normalizeResource(item)),
+                models: [...(resources?.models ?? defaultResources.models ?? [])]
+                    .map(item => normalizeResource(item)),
+                tilesets: [...(resources?.tilesets ?? defaultResources.tilesets ?? [])]
+                    .map(item => normalizeResource(item)),
+                geojson: [...(resources?.geojson ?? defaultResources.geojson ?? [])]
+                    .map(item => normalizeResource(item)),
                 poi: [...(resources?.poi ?? defaultResources.poi ?? [])]
+                    .map(item => normalizeResource(item)),
             }
         }
         this.validateConfig(config);
@@ -80,6 +87,14 @@ export class ConfigManager {
     /** 校验资源分类、全局 ID 和默认加载项 */
     private validateConfig(config: Config): void {
         const resources = config.resources;
+        const ids = new Set<string>();
+
+        for (const item of Object.values(resources).flat()) {
+            if (ids.has(item.id)) {
+                throw new Error(`资源 ID 重复：${item.id}`);
+            }
+            ids.add(item.id);
+        }
 
         const baseImagery = resources.imagery.filter(
             item => item.defaultLoad && item.properties.baseLayer === true

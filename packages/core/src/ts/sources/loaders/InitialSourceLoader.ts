@@ -33,7 +33,7 @@ export async function loadSources(viewer: Viewer, resourceManager: ResourceManag
     viewer.scene.skyAtmosphere.show = true;
     viewer.scene.globe.show = true;
 
-    const allSources = config.getAllSources();
+    const allSources = config.getAllConfig();
 
     for (let i = 0; i < allSources.length; i++) {
         let item = allSources[i];

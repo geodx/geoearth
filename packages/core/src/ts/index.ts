@@ -35,3 +35,10 @@ export { getCameraHeight, getCameraInfo, getViewCenter } from './utils';
 
 export * from './visualization/materials/lines';
 export * from './interaction';
+
+export { ResourceTree } from './widgets/resource-tree';
+export type {
+    ResourceTreeHost,
+    ResourceTreeOptions,
+    ResourceTreeState,
+} from './widgets/resource-tree';

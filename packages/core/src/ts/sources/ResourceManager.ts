@@ -1,7 +1,6 @@
 import { Viewer } from 'cesium'
 import { SourceEvent } from '../events/modules/SourceEvent'
 import { SourceEventType } from '../events/types'
-import { SafeTool } from '../utils'
 import { GeoJsonManager } from './managers/GeoJsonManager'
 import { ImageryManager } from './managers/ImageryManager'
 import { ModelManager } from './managers/ModelManager'
@@ -14,6 +13,7 @@ import {
     SourceType, TerrainResourceItem, TilesetResourceItem,
     type ImageryResourceItem
 } from './types'
+import { normalizeResource } from './loaders/normalizeResource'
 
 /**
  * 资源统一入口。
@@ -50,8 +50,14 @@ export class ResourceManager {
 
         const existing = this.getSourceItemById(config.id)
         if (existing) {
-            console.warn('工作区已加载该数据!不允许重复加载：', config.name);
-            return this.getInstance(config.id);
+            if (existing.sourceType !== config.sourceType) {
+                throw new Error(`资源「${config.id}」不允许更换资源类型。`);
+            }
+
+            // 不覆盖正在使用的资源配置。
+            if (this.getSourceItemById(config.id)) {
+                return existing;
+            }
         }
         try {
             let instance: unknown
@@ -132,6 +138,45 @@ export class ResourceManager {
 
         return removeRes
     }
+    /** 修改已加载资源的显隐，不执行加载或卸载。 */
+    setResourceVisible(id: string, visible: boolean): boolean {
+        const resource = this.getSourceItemById(id);
+        if (!resource) return false;
+
+        if (resource.sourceType === SourceType.TERRAIN) {
+            throw new Error('地形不支持普通显隐操作，请使用地形切换或卸载。');
+        }
+
+        const instance = this.getInstance(id) as
+            { show: boolean } | undefined;
+
+        if (!instance) return false;
+
+        const changed = instance.show !== visible;
+
+        instance.show = visible;
+        resource.show = visible;
+
+        if (changed) {
+            const type = visible
+                ? SourceEventType.SHOW
+                : SourceEventType.HIDE;
+
+            this.sourceEvent.raiseEvent(type, {
+                type,
+                sourceType: resource.sourceType,
+                source: resource,
+                id,
+            });
+        }
+
+        return true;
+    }
+    /** 判断是否已经加载。 */
+    isLoaded(id: string): boolean {
+        return this.getInstance(id) !== undefined;
+    }
+
     /**
      * 飞向资源
      * @param id 
@@ -191,31 +236,5 @@ export class ResourceManager {
         this.geoJsonManager.destroy()
         this.poiManager.destroy()
     }
-}
-
-
-/** 资源访问合法性   */
-function normalizeResource<T extends ResourceItem>(input: T): T {
-    if (!input || typeof input !== 'object') {
-        throw new Error('资源配置不能为空。');
-    }
-
-    if (!input.properties || typeof input.properties !== 'object'
-        || Array.isArray(input.properties)) {
-        throw new Error(`资源「${input.name}」的 properties 必须是对象。`);
-    }
-
-    // 复制资源及 properties 外层，保留内部 Cesium 对象和回调。
-    const item = { ...input };
-    item.properties = { ...input.properties };
-
-    item.id ||= SafeTool.uuid();
-    item.showInTree ??= true  // 默认在资源树中显示
-    item.defaultLoad ??= true // 默认自动加载
-    item.show ??= true        // 加载后默认显示
-
-    item.offlineCache ??= false;
-
-    return item;
 }
 

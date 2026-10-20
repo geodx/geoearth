@@ -1,23 +1,178 @@
 <!doctype html>
 <html lang="zh-CN">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 资源树</title>
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { font: 13px/1.5 system-ui, sans-serif; color: #e2e8f0; background: #0b1220; }
+    #tree-panel { position: absolute; z-index: 2; top: 16px; left: 16px; width: 340px; height: calc(100% - 32px); }
+    .demo-tools { position: absolute; z-index: 2; right: 16px; top: 16px; width: 290px; max-height: calc(100% - 32px);
+      overflow: auto; padding: 16px; box-sizing: border-box; color: #e2e8f0; border: 1px solid #304158; border-radius: 10px; background: #111c2ef2; }
+    h1 { font-size: 16px; margin: 0 0 8px; }
+    p { margin: 8px 0; } .hint { color: #94a3b8; font-size: 12px; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    button { font: inherit; border: 1px solid #405773; border-radius: 5px; background: #1c2a40; color: inherit; padding: 5px 8px; cursor: pointer; }
+    button:disabled { opacity: .4; cursor: default; }
+    button:hover:not(:disabled) { background: #294360; }
+    :focus-visible { outline: 2px solid #7dd3fc; }
+    #status[data-error=true] { color: #fda4af; }
+    #log { max-height: 160px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; color: #94a3b8; }
+    #layout { width: 100%; height: 140px; box-sizing: border-box; color: #e2e8f0; background: #0b1220; border: 1px solid #405773; font: 11px monospace; }
+    #state { font-size: 11px; white-space: pre-wrap; color: #94a3b8; }
+    @media (max-width: 780px) { #tree-panel { width: min(340px, calc(100% - 32px)); height: 62%; }
+      .demo-tools { top: auto; bottom: 12px; left: 16px; width: calc(100% - 32px); max-height: 30%; } }
+  </style>
 </head>
-
 <body>
   <div id="earth"></div>
-  <script>
-    window.CESIUM_BASE_URL = '/sdk/cesium/';
-  </script>
+  <aside id="tree-panel" aria-label="资源树面板"></aside>
+  <aside class="demo-tools" aria-label="资源树示例操作">
+    <h1>资源树</h1>
+    <p class="hint">复选框控制加载；眼睛控制显隐。底图、地形单选。拖动业务资源可排序或移动分类，影像越靠上叠加越靠上。</p>
+    <p class="hint">底图为本地生成的示意图。网格 A 启动时已加载但隐藏；“异常重试”目录使用不存在的本地地址，用于观察失败恢复。</p>
+    <fieldset id="controls" disabled style="border:0;padding:0;margin:0;">
+      <div class="buttons">
+        <button id="hide">隐藏树</button><button id="show">显示树</button>
+        <button id="close">关闭树</button><button id="open">打开树</button>
+      </div>
+      <p class="hint">以下操作通过 earth.sources 执行，用于验证树外变化同步。</p>
+      <div class="buttons">
+        <button id="external-add">外部添加 POI</button>
+        <button id="external-remove">外部卸载 POI</button>
+        <button id="external-eye">外部切换显隐</button>
+      </div>
+      <div class="buttons">
+        <button id="export">导出布局</button><button id="import">导入布局</button><button id="reset">重置布局</button>
+      </div>
+      <textarea id="layout" aria-label="资源树布局 JSON" placeholder="导出后显示布局 JSON；可粘贴布局后点击导入。"></textarea>
+    </fieldset>
+    <p id="status" role="status" aria-live="polite">正在初始化地球…</p>
+    <pre id="state" aria-label="当前加载资源"></pre>
+    <details><summary>资源事件</summary><pre id="log"></pre></details>
+  </aside>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
-  <script>
-    // TODO：后续在此统一演示资源树、加载、定位、卸载、底图切换、图层排序、显隐与透明度。当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+  <script type="module">
+    const status = document.getElementById('status');
+    const state = document.getElementById('state');
+    const log = document.getElementById('log');
+    const layout = document.getElementById('layout');
+    const controls = document.getElementById('controls');
+    const { SourceType, ImageryScheme, TerrainScheme, SourceEventType } = GeoEarth;
+    let earth, tree, pageActive = true, outsideBusy = false;
+    const stops = [];
+    const messages = [];
+    function report(message, error = false) {
+      if (!pageActive) return;
+      status.textContent = message; status.dataset.error = String(error);
+    }
+    function record(message) {
+      if (!pageActive) return;
+      messages.push(message); if (messages.length > 35) messages.shift();
+      log.textContent = messages.join('\n');
+    }
+    function updateState() {
+      if (!pageActive || !earth) return;
+      state.textContent = earth.sources.getAllSourceItems().map(item => {
+        const instance = earth.sources.getInstance(item.id);
+        return item.name + '：已加载' + (item.sourceType === SourceType.TERRAIN ? '' : instance?.show ? ' / 显示' : ' / 隐藏');
+      }).join('\n');
+    }
+    // 本地生成示意图，避免演示依赖外部瓦片服务和访问令牌。
+    function image(background, line, title, grid = false) {
+      const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+      if (background) { ctx.fillStyle = background; ctx.fillRect(0, 0, 1024, 512); }
+      ctx.strokeStyle = line; ctx.lineWidth = grid ? 7 : 1;
+      for (let x = 0; x <= 1024; x += 128) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 512); ctx.stroke(); }
+      for (let y = 0; y <= 512; y += 64) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1024, y); ctx.stroke(); }
+      ctx.fillStyle = line; ctx.font = 'bold 30px sans-serif'; ctx.fillText(title, 42, 65);
+      return canvas.toDataURL('image/png');
+    }
+    const rectangle = { west: 116.9, south: 31.5, east: 117.7, north: 32.1 };
+    const imagery = (id, name, catalog, url, defaultLoad, show, properties = {}) => ({
+      id, name, catalog, sourceType: SourceType.IMAGERY, showInTree: true, defaultLoad, show,
+      properties: { scheme: ImageryScheme.SINGLE_TILE, url, ...properties },
+    });
+    const dynamic = {
+      id: 'tree-dynamic-poi', name: '动态加入的 POI', catalog: '动态资源',
+      sourceType: SourceType.POI, defaultLoad: false, show: true, showInTree: true,
+      properties: { position: { longitude: 117.31, latitude: 31.83 }, text: '动态资源', image: '/demo-assets/pins/soldier.png' },
+    };
+    const config = {
+      startup: { animation: false },
+      homeView: { longitude: 117.28, latitude: 31.82, height: 130000, heading: 0, pitch: -90 },
+      resources: {
+        imagery: [
+          imagery('tree-base-dark', '深色示意底图', '底图', image('#132a40', '#3f6c8b', 'GeoEarth'), true, true, { baseLayer: true }),
+          imagery('tree-base-light', '浅色示意底图', '底图', image('#c5dce5', '#4b7185', 'GeoEarth'), false, true, { baseLayer: true }),
+          imagery('tree-grid-a', '网格 A · 已加载但隐藏', '业务影像', image(null, '#ff6a5a', 'A', true), true, false, { rectangle, alpha: .8 }),
+          imagery('tree-grid-b', '网格 B · 手动加载', '业务影像', image(null, '#4bd3ff', 'B', true), false, true, { rectangle, alpha: .8 }),
+          imagery('tree-grid-move', '网格 C · 可跨分类拖动', '其他影像', image(null, '#e1b954', 'C', true), false, true, { rectangle, alpha: .65 }),
+          imagery('tree-failure', '无效图片 · 失败后可重试', '异常重试', '/demo-assets/resource-tree-missing.png', false, true, { rectangle }),
+        ],
+        terrains: [{ id: 'tree-terrain-failure', name: '无效地形 · 失败演示', catalog: '地形', sourceType: SourceType.TERRAIN,
+          defaultLoad: false, showInTree: true, properties: { scheme: TerrainScheme.CESIUM, url: '/demo-assets/resource-tree-missing-terrain/' } }],
+        geojson: [{ id: 'tree-roads', name: '合肥道路', catalog: '本地数据', sourceType: SourceType.GEOJSON,
+          defaultLoad: false, show: true, showInTree: true, properties: { url: '/demo-assets/geojson/road.json' } }],
+        models: [{ id: 'tree-helicopter', name: '直升机模型', catalog: '本地数据', sourceType: SourceType.MODEL,
+          defaultLoad: false, show: true, showInTree: true, properties: { url: '/demo-assets/glb/bell_huey_helicopter.glb',
+            position: { longitude: 117.28, latitude: 31.82, height: 200 }, scale: 100, minimumPixelSize: 80 } }],
+        tilesets: [],
+        poi: [{ id: 'tree-poi', name: '合肥标注', catalog: '本地数据', sourceType: SourceType.POI,
+          defaultLoad: false, show: true, showInTree: true, properties: { position: { longitude: 117.25, latitude: 31.8 },
+            text: '合肥', image: '/demo-assets/pins/soldier.png' } }],
+      },
+    };
+    const treeOptions = {
+      container: 'tree-panel', storageKey: 'geoearth-demo-resource-tree-v1',
+      catalogOrder: ['业务影像', '其他影像', '本地数据', '动态资源', '异常重试'],
+      draggable: true, allowCrossCatalog: true,
+      onError: error => { report(error.message, true); record('错误：' + error.message); },
+    };
+    async function action(task) {
+      try { await task(); if (pageActive) { updateState(); report('操作完成。'); } }
+      catch (error) { report(error.message ?? String(error), true); }
+    }
+    function click(id, task) { document.getElementById(id).addEventListener('click', () => void action(task)); }
+    try {
+      earth = new GeoEarth('earth', undefined, config);
+      await earth.onReady();
+      if (pageActive) {
+        // npm 和 HTML 均通过 earth.widgets.resourceTree 使用资源树。
+        if (pageActive) {
+          tree = earth.widgets.resourceTree;
+          await tree.open(treeOptions);
+          if (pageActive) {
+            for (const type of Object.values(SourceEventType)) stops.push(earth.event.source.addEventListener(type, event => {
+              record(type + '：' + (event.source?.name ?? event.id ?? '')); updateState();
+            }));
+            click('hide', () => tree.hide()); click('show', () => tree.show());
+            click('close', () => tree.close()); click('open', () => tree.open(treeOptions));
+            click('export', () => { layout.value = JSON.stringify(tree.exportState(), null, 2); });
+            click('import', () => tree.importState(JSON.parse(layout.value)));
+            click('reset', () => tree.resetState());
+            click('external-add', async () => {
+              if (outsideBusy) return; outsideBusy = true;
+              try { await earth.sources.addData(dynamic); } finally { outsideBusy = false; }
+            });
+            click('external-remove', () => earth.sources.removeSourceById(dynamic.id));
+            click('external-eye', () => {
+              const instance = earth.sources.getInstance(dynamic.id);
+              if (!instance) throw new Error('请先通过外部按钮添加 POI。');
+              earth.sources.setResourceVisible(dynamic.id, !instance.show);
+            });
+            controls.disabled = false; updateState(); report('资源树已就绪。布局会在本浏览器中保存。');
+          }
+        }
+      }
+    } catch (error) { report('初始化失败：' + (error.message ?? String(error)), true); }
+    window.addEventListener('pagehide', () => {
+      pageActive = false; stops.splice(0).forEach(stop => stop()); tree?.destroy(); earth?.destroy();
+    }, { once: true });
   </script>
 </body>
-
 </html>
