@@ -249,17 +249,21 @@ export class InteractionManager {
         if (result.type === 'entity') {
             const entity = result.object
             if (!entity.description) {
-                const description = new ConstantProperty(propertyDescription(result.properties))
-                entity.description = description
-                this.restoreDescription = () => { if (entity.description === description) entity.description = undefined }
+                entity.description = propertyDescription(result.properties);
+                const description = entity.description;
+                this.restoreDescription = () => {
+                    if (entity.description === description) entity.description = undefined
+                }
             }
             return entity
         }
         // 模型/feature 没有 Entity，借用原生 InfoBox，不另建弹窗组件。
-        return new Entity({ name: result.name ?? String(result.id ?? result.type),
+        return new Entity({
+            name: result.name ?? String(result.id ?? result.type),
             // 复用绘制的空间位置拾取，让 feature 也能使用原生选中标记和定位按钮。
             position: result.position ? pickPosition(this.viewer, result.position) : undefined,
-            description: propertyDescription(result.properties) })
+            description: propertyDescription(result.properties)
+        })
     }
 
     private refreshHighlights(): void {

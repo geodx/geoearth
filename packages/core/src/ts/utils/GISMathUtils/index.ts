@@ -1,6 +1,6 @@
 import { Cartesian3, Plane, ClippingPlane, Cartographic, Math as CesiumMath } from 'cesium';
 import { CartographicTool } from '../CoordinateTool/CartographicTool';
-// import * as turf from "@turf/turf";
+import * as turf from "@turf/turf";
 
 
 /**
@@ -10,16 +10,16 @@ import { CartographicTool } from '../CoordinateTool/CartographicTool';
  */
 
 //判断笛卡尔坐标串是否为顺时针
-// function booleanClockwise(positions: Cartesian3[]) {
-//     let degreesArray: number[][] = [];
-//     positions.map(position => {
-//         degreesArray.push(cartesian3ToDegrees(position));
-//     });
-//     //首尾闭合
-//     degreesArray.push(degreesArray[0]!);
-//     let lineString = turf.lineString(degreesArray);
-//     return turf.booleanClockwise(lineString);
-// }
+function booleanClockwise(positions: Cartesian3[]) {
+    let degreesArray: number[][] = [];
+    positions.map(position => {
+        degreesArray.push(cartesian3ToDegrees(position));
+    });
+    //首尾闭合
+    degreesArray.push(degreesArray[0]!);
+    let lineString = turf.lineString(degreesArray);
+    return turf.booleanClockwise(lineString);
+}
 
 
 //根据坐标串获取 ClippingPlanes 传入的坐标必须为逆时针顺序
@@ -415,56 +415,56 @@ const GISMathUtils = {
 
 
     // 空间三点，计算平面角度
-    // calculateTriangle: function (positions: Cartesian3[]) {
-    //     // 空间 三点 求角度，先转为二维
+    calculateTriangle: function (positions: Cartesian3[]) {
+        // 空间 三点 求角度，先转为二维
 
-    //     let c = CartographicTool.formCartesian3S(positions);
-    //     if (!c[0] || !c[1] || !c[2]) return
-    //     let point1 = turf.point([c[0].longitude, c[0].latitude]);
-    //     let point2 = turf.point([c[1].longitude, c[1].latitude]);
-    //     let point3 = turf.point([c[2].longitude, c[2].latitude]);
+        let c = CartographicTool.formCartesian3S(positions);
+        if (!c[0] || !c[1] || !c[2]) return
+        let point1 = turf.point([c[0].longitude, c[0].latitude]);
+        let point2 = turf.point([c[1].longitude, c[1].latitude]);
+        let point3 = turf.point([c[2].longitude, c[2].latitude]);
 
-    //     let bearing1 = turf.bearing(point1, point2);
-    //     let bearing2 = turf.bearing(point2, point3);
+        let bearing1 = turf.bearing(point1, point2);
+        let bearing2 = turf.bearing(point2, point3);
 
-    //     bearing1 = bearing1 < 0 ? bearing1 + 360 : bearing1;
-    //     bearing2 = bearing2 < 0 ? bearing2 + 360 : bearing2;
+        bearing1 = bearing1 < 0 ? bearing1 + 360 : bearing1;
+        bearing2 = bearing2 < 0 ? bearing2 + 360 : bearing2;
 
-    //     // let AB = {
-    //     //     x: positions[0].x - positions[1].x,
-    //     //     y: positions[0].y - positions[1].y,
-    //     //     z: positions[0].z - positions[1].z
-    //     // };
-    //     //
-    //     // let BC = {
-    //     //     x: positions[1].x - positions[2].x,
-    //     //     y: positions[1].y - positions[2].y,
-    //     //     z: positions[1].z - positions[2].z
-    //     // };
-    //     //
-    //     // let AC = {
-    //     //     x: positions[0].x - positions[2].x,
-    //     //     y: positions[0].y - positions[2].y,
-    //     //     z: positions[0].z - positions[2].z
-    //     // };
-    //     //
-    //     // let ABLength = Math.sqrt((Math.pow(AB.x, 2) + Math.pow(AB.y, 2) + Math.pow(AB.z, 2)));
-    //     // let BCLength = Math.sqrt((Math.pow(BC.x, 2) + Math.pow(BC.y, 2) + Math.pow(BC.z, 2)));
-    //     // let ACLength = Math.sqrt((Math.pow(AC.x, 2) + Math.pow(AC.y, 2) + Math.pow(AC.z, 2)));
-    //     //
-    //     // let d = Math.acos(
-    //     //     (ABLength ** 2 + BCLength ** 2 - ACLength ** 2) /
-    //     //     (2 * BCLength * ACLength)
-    //     // );
+        // let AB = {
+        //     x: positions[0].x - positions[1].x,
+        //     y: positions[0].y - positions[1].y,
+        //     z: positions[0].z - positions[1].z
+        // };
+        //
+        // let BC = {
+        //     x: positions[1].x - positions[2].x,
+        //     y: positions[1].y - positions[2].y,
+        //     z: positions[1].z - positions[2].z
+        // };
+        //
+        // let AC = {
+        //     x: positions[0].x - positions[2].x,
+        //     y: positions[0].y - positions[2].y,
+        //     z: positions[0].z - positions[2].z
+        // };
+        //
+        // let ABLength = Math.sqrt((Math.pow(AB.x, 2) + Math.pow(AB.y, 2) + Math.pow(AB.z, 2)));
+        // let BCLength = Math.sqrt((Math.pow(BC.x, 2) + Math.pow(BC.y, 2) + Math.pow(BC.z, 2)));
+        // let ACLength = Math.sqrt((Math.pow(AC.x, 2) + Math.pow(AC.y, 2) + Math.pow(AC.z, 2)));
+        //
+        // let d = Math.acos(
+        //     (ABLength ** 2 + BCLength ** 2 - ACLength ** 2) /
+        //     (2 * BCLength * ACLength)
+        // );
 
-    //     let triangle = (180 - bearing1) + bearing2;
-    //     triangle = triangle > 360 ? triangle - 360 : triangle;
-    //     triangle = Math.abs(triangle);
+        let triangle = (180 - bearing1) + bearing2;
+        triangle = triangle > 360 ? triangle - 360 : triangle;
+        triangle = Math.abs(triangle);
 
-    //     return triangle;
-    // },
+        return triangle;
+    },
 
-    // booleanClockwise,
+    booleanClockwise,
     getClippingPlanes,
     cartesian3ToDegrees,
     getCirclePoint,

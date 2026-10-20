@@ -50,6 +50,10 @@
     <p id="status" class="status" role="status" aria-live="polite" data-state="loading">正在初始化地球…</p>
     <pre id="image-state" aria-label="当前影像状态">等待初始化…</pre>
   </aside>
+  <script>
+    window.CESIUM_BASE_URL = '/sdk/cesium/';
+  </script>
+  <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
     // HTML 从 GeoEarth 获取枚举；npm 使用 import { GeoEarth, SourceType, ImageryScheme } from 'geoearth'。

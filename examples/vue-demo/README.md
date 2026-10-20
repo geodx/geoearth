@@ -1,6 +1,6 @@
 # GeoEarth 示例工作台
 
-Vue 负责示例目录、代码编辑器和页面布局；每个示例都是独立 HTML，通过 `/sdk/geoearth.js` 使用 SDK。
+Vue 负责示例目录、代码编辑器和页面布局；每个示例都是独立 HTML，依次加载 `/sdk/cesium/Cesium.js` 和 `/sdk/geoearth.js`，SDK 和页面共享同一份 Cesium。
 
 ## 开发与构建
 
@@ -10,7 +10,19 @@ Vue 负责示例目录、代码编辑器和页面布局；每个示例都是独�
 - `npm run build:iife`：修改 SDK 后重新生成浏览器产物，随后在工作台点击运行或刷新独立示例。
 - `npm run build:example`：构建 SDK 和示例网站，输出到 `examples/vue-demo/dist`。
 
-开发服务器将 `/sdk` 映射到 `packages/core/dist`；生产构建会将 SDK 复制到示例网站的 `dist/sdk`。部署时需保证 `/sdk/geoearth.js` 及其配套资源可从站点根路径访问。
+开发服务器将 `/sdk` 映射到 `packages/core/dist`；生产构建会将 SDK 复制到示例网站的 `dist/sdk`。部署时需保证 `/sdk/cesium/Cesium.js`、`/sdk/geoearth.js` 及其配套资源可从站点根路径访问。
+
+每个 HTML 在加载 Cesium 前设置资源路径，并按以下顺序引入脚本：
+
+```html
+<script>
+  window.CESIUM_BASE_URL = '/sdk/cesium/';
+</script>
+<script src="/sdk/cesium/Cesium.js"></script>
+<script src="/sdk/geoearth.js"></script>
+```
+
+不要给这两个脚本添加 `async`。示例中可直接使用全局 `Cesium`，无需通过 GeoEarth 再导出 Cesium 命名空间。
 
 示例网站自身的 Vue 代码支持 Vite 热更新；SDK 当前使用构建产物，不直接连接源码热更新。
 

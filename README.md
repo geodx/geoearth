@@ -41,7 +41,7 @@ npm run dev
 
 该命令先构建 SDK，再启动示例工作台，访问终端输出的地址即可。
 
-示例页面使用 `/sdk/geoearth.js`，开发服务器会将 `/sdk` 映射到 SDK 的构建目录。修改 SDK 源码后，执行 `npm run build:iife`，再在工作台点击运行或刷新示例。工作台自身的 Vue 代码支持热更新。
+示例页面依次加载 `/sdk/cesium/Cesium.js` 和 `/sdk/geoearth.js`，开发服务器会将 `/sdk` 映射到 SDK 的构建目录。修改 SDK 源码后，执行 `npm run build:iife`，再在工作台点击运行或刷新示例。工作台自身的 Vue 代码支持热更新。
 
 ## 接入方式
 
@@ -67,7 +67,7 @@ import { GeoEarth } from "geoearth";
 import "geoearth/style.css";
 
 const earth = new GeoEarth("container");
-await earth.ready;
+await earth.onReady();
 ```
 
 插件负责 Cesium 静态资源路径、资源复制和控件样式加载。
@@ -85,16 +85,20 @@ await earth.ready;
   </head>
   <body>
     <div id="container"></div>
+    <script>
+      window.CESIUM_BASE_URL = "/sdk/cesium/";
+    </script>
+    <script src="/sdk/cesium/Cesium.js"></script>
     <script src="/sdk/geoearth.js"></script>
     <script>
       const earth = new GeoEarth("container");
-      earth.ready.catch(console.error);
+      earth.onReady().catch(console.error);
     </script>
   </body>
 </html>
 ```
 
-`geoearth.js` 包含 Cesium 主代码，并自动加载配套样式。部署时需保留同目录的 `geoearth.css`、`assets` 和 `cesium` 资源目录。
+`geoearth.js` 不包含 Cesium 主代码，使用先加载的全局 `Cesium`，并自动加载配套样式。构建会将当前安装版本的 `Cesium.js` 和静态资源复制到 `dist/cesium`；部署时需保留同目录的 `geoearth.css`、`assets` 和 `cesium` 资源目录。两个脚本按顺序加载，不要使用 `async`。HTML 可以直接调用 `Cesium.Cartesian3` 等原生 API，SDK 和页面共享同一份 Cesium。
 
 页面或组件不再使用地球时，调用 `earth.destroy()` 释放资源。
 

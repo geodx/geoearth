@@ -18,8 +18,12 @@ function wrapIife(code: string) {
   const __geoearthScriptUrl = document.currentScript.src;
   const baseUrl = new URL(".", __geoearthScriptUrl);
 
-  // 必须在 Cesium 代码执行前设置资源目录。
-  window.CESIUM_BASE_URL = new URL("cesium/", baseUrl).href;
+  // 保留页面在加载 Cesium.js 前配置的资源路径。
+  window.CESIUM_BASE_URL ??= new URL("cesium/", baseUrl).href;
+
+  if (!window.Cesium) {
+    throw new Error("[GeoEarth] 请先加载 Cesium.js，再加载 geoearth.js。");
+  }
 
   for (const file of ["cesium/Widgets/widgets.css", "geoearth.css"]) {
     const link = document.createElement("link");
@@ -59,6 +63,7 @@ function iifeResources(): Plugin {
             await mkdir(destination, { recursive: true });
 
             const resources = [
+                "Cesium.js",
                 "Assets",
                 "Workers",
                 "Widgets",
@@ -111,6 +116,12 @@ export default defineConfig({
         },
 
         rolldownOptions: {
+            external: ["cesium"],
+            output: {
+                globals: {
+                    cesium: "Cesium",
+                },
+            },
             // IIFE 中使用入口脚本地址解析资源 URL。
             transform: {
                 define: {
