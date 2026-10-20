@@ -177,7 +177,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "draw-polyline",
         "title": "demos.draw-polyline",
-        "description": "demos.placeholderDescription",
+        "description": "demos.drawPolylineDescription",
         "path": "demos/draw/polyline.html"
       },
       {

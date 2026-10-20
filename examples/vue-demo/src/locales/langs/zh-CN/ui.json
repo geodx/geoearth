@@ -68,6 +68,7 @@
     "draw-point": "绘制点",
     "drawPointDescription": "调用绘制点工具，演示鼠标预览、完成与取消、三种坐标格式、点样式、删除上一个及清空结果。",
     "draw-polyline": "绘制折线",
+    "drawPolylineDescription": "调用折线绘制工具，演示节点与动态预览、右键完成、取消、三种坐标格式、线样式、贴地及结果清理。",
     "draw-polygon": "绘制多边形",
     "draw-rectangle": "绘制矩形",
     "draw-circle": "绘制圆",

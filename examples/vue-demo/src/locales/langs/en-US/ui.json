@@ -68,6 +68,7 @@
     "draw-point": "Draw a point",
     "drawPointDescription": "Draw points with cursor previews, complete or cancel, choose coordinate formats and point styles, remove the last point, and clear results.",
     "draw-polyline": "Draw a polyline",
+    "drawPolylineDescription": "Draw polylines with vertex and segment previews, right-click completion, cancellation, coordinate formats, line styles, ground clamping, and result cleanup.",
     "draw-polygon": "Draw a polygon",
     "draw-rectangle": "Draw a rectangle",
     "draw-circle": "Draw a circle",
