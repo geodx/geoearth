@@ -15,8 +15,19 @@
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“视角定位”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const earth = new GeoEarth("earth", undefined, {
+      startup: { animation: false },
+    });
+    earth.sources.presets.addBingImagery();
+    // 立即定位到重庆：经纬度和姿态角使用度，高度使用米。
+    earth.camera.setView({
+      longitude: 106.55,
+      latitude: 29.56,
+      height: 3000,
+      heading: 0,
+      pitch: -45,
+      roll: 0,
+    });
   </script>
 </body>
 

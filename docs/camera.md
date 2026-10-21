@@ -47,3 +47,23 @@ const remove = earth.event.camera.addEventListener(CameraEventType.FLY_CANCEL, (
 移除了独立 `flyTo({ viewer, cameraEvent, ... })`，改用 `earth.camera.flyTo(...)`。移除了旧工具函数 getCameraInfo、getCameraHeight、getViewCenter、getCameraRectangle、getCameraRectanglePoint 和 CameraViewType，分别使用 getView、getHeight、getCenter、getExtent 与 CameraView。旧 getCameraRectanglePoint 是屏幕边缘采样多边形；getExtent 为近似矩形，并非相同几何结果。
 
 键盘漫游、环绕和路径巡航留作后续独立控制器，不塞进基础管理器。初始化与鹰眼内部仍直接使用各自 Viewer 的 Cesium 接口。
+
+## 视角书签
+
+入口为 `earth.camera.bookmarks`，实现位于 `camera/bookmark/BookmarkManager.ts`。书签只保存视角和可选缩略图，不保存整个场景或图层配置；默认保存在内存，刷新页面后需重新导入。
+
+```ts
+const bookmarks = earth.camera.bookmarks
+const bookmark = await bookmarks.create('重庆')
+await bookmarks.flyTo(bookmark.id)
+bookmarks.save('views.json')
+await bookmarks.load() // 从按钮点击事件调用；取消选择返回 undefined
+```
+
+`create(name, { thumbnail: false })` 跳过截图。默认缩略图为 320 × 180，支持 width、height 和 description。截图等待下一次 postRender，读取同一帧的图像和视角，不要求 preserveDrawingBuffer；图层未加载完成时截图反映当时画面。跨域污染导致的截图失败会拒绝 Promise；销毁会清理待处理的截图和文件选择。
+
+`get(id)`、`getAll()` 返回副本；`remove(id)`、`clear()` 管理内存列表。`toJSON()` 和 `importJSON(json, replace = true)` 可对接 localStorage 或后端。`save()`、`load(file?, replace = true)` 负责浏览器文件下载和导入；默认整体替换，传 false 则追加，重复 ID 报错。导入失败保持原列表不变。
+
+JSON 格式为 `{ version: 1, bookmarks: [...] }`，每项包含 id、name、view，可选 image、description。导入兼容旧 VGE 的数组格式，将 cameraView 的笛卡尔位置与弧度姿态转换成新的 CameraView。
+
+通用文件功能放在 `utils/browser/files.ts`，直接导出 `saveShareContent(content, fileName, mimeType?)` 和 `readFile({ file?, accept?, signal? })`。前者下载字符串或 Blob，不生成分享链接；后者读取 UTF-8 文本，返回 fileName、fileType（MIME）、fileData。取消选择返回 undefined，读取失败或 AbortSignal 取消则拒绝 Promise。浏览器不提供真实本地路径。

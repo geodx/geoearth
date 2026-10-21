@@ -1,14 +1,10 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { readFileSync } from 'node:fs'
-import ts from 'typescript'
+import { loadTS } from './load-ts.mjs'
 import { Ellipsoid, Math as CesiumMath } from 'cesium'
 
 // Transpile the isolated manager without needing a DOM or WebGL context.
-const source = readFileSync(new URL('../src/ts/camera/CameraManager.ts', import.meta.url), 'utf8')
-const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText
-const code = js.replace(/from 'cesium'/g, `from '${import.meta.resolve('cesium')}'`)
-const { CameraManager } = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
+const { CameraManager } = await import(loadTS(new URL('../src/ts/camera/CameraManager.ts', import.meta.url)))
 const view = { longitude: 106, latitude: 29, height: 3000, heading: 20, pitch: -45, roll: 0 }
 
 function fixture() {

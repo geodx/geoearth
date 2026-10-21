@@ -9,14 +9,55 @@
 
 <body>
   <div id="earth"></div>
+  <div style="position:absolute;top:16px;left:16px;z-index:1;background:white;padding:12px;max-width:340px">
+    <input id="name" placeholder="书签名称" value="我的视角" />
+    <button id="create">保存视角</button>
+    <button id="save">导出</button>
+    <button id="load">导入</button>
+    <div id="list"></div>
+    <div id="status"></div>
+  </div>
   <script>
     window.CESIUM_BASE_URL = '/sdk/cesium/';
   </script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“视角书签”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const earth = new GeoEarth("earth", undefined, { startup: { animation: false } });
+    const bookmarks = earth.camera.bookmarks;
+    const list = document.getElementById('list');
+    const status = document.getElementById('status');
+
+    function render() {
+      list.replaceChildren();
+      for (const bookmark of bookmarks.getAll()) {
+        const row = document.createElement('div');
+        const locate = document.createElement('button');
+        locate.textContent = bookmark.name;
+        locate.onclick = () => run(() => bookmarks.flyTo(bookmark.id));
+        const remove = document.createElement('button');
+        remove.textContent = '删除';
+        remove.onclick = () => { bookmarks.remove(bookmark.id); render(); };
+        if (bookmark.image) {
+          const image = document.createElement('img');
+          image.src = bookmark.image;
+          image.width = 160;
+          image.alt = bookmark.name;
+          row.append(image);
+        }
+        row.append(locate, remove);
+        list.append(row);
+      }
+    }
+
+    async function run(action) {
+      try { await action(); render(); status.textContent = ''; }
+      catch (error) { status.textContent = error.message; }
+    }
+    document.getElementById('create').onclick = () => run(() => bookmarks.create(document.getElementById('name').value));
+    document.getElementById('save').onclick = () => run(() => bookmarks.save());
+    document.getElementById('load').onclick = () => run(() => bookmarks.load());
+    window.addEventListener('pagehide', event => { if (!event.persisted) earth.destroy(); });
   </script>
 </body>
 

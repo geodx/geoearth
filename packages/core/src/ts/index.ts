@@ -25,6 +25,10 @@ export type {
     TerrainResourceItem,
 } from './sources/types';
 export { CameraManager } from './camera/CameraManager';
+export { BookmarkManager } from './camera/bookmark/BookmarkManager';
+export type { Bookmark, CreateBookmarkOptions } from './camera/bookmark/BookmarkManager';
+export { readFile, saveShareContent } from './utils/browser/files';
+export type { ReadFileOptions, ReadFileResult } from './utils/browser/files';
 export type { CameraView, CameraFlyToOptions } from './camera/types';
 export { MeasureTool, ElevationSource, ElevationTarget, MeasureCancelledError } from './tools/measure';
 export type {

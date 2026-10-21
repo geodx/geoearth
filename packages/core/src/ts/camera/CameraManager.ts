@@ -2,9 +2,11 @@ import { Cartesian2, Cartesian3, HeadingPitchRange, Rectangle, Math as CesiumMat
 import type { CameraEvent } from '../events/modules/CameraEvent'
 import type { WorldDegree, WorldRectangle } from '../viewer/types'
 import type { CameraView, CameraFlyToOptions } from './types'
+import { BookmarkManager } from './bookmark/BookmarkManager'
 
 /** Bound to one Viewer. Public angles are degrees; distances are meters. */
 export class CameraManager {
+    readonly bookmarks: BookmarkManager
     private readonly initialView: CameraView
     private settleFlight?: (completed: boolean) => void
     private previousEnableTilt?: boolean
@@ -18,6 +20,7 @@ export class CameraManager {
         private readonly beforeControl?: () => void
     ) {
         this.initialView = this.getView()
+        this.bookmarks = new BookmarkManager(viewer, this)
     }
 
     getView(): CameraView {
@@ -204,6 +207,7 @@ export class CameraManager {
         if (this.destroyed) return
         ++this.operationId
         this.destroyed = true
+        this.bookmarks.destroy()
         const settle = this.settleFlight
         if (!this.viewer.isDestroyed()) {
             this.beforeControl?.()
@@ -229,7 +233,7 @@ export class CameraManager {
         // camera.cancelFlight alone cannot cancel Viewer.flyTo waiting for data.
         // A public flyTo with an empty entity list supersedes that queued request
         // and ends without moving the camera. Avoid Cesium private zoom fields.
-        void this.viewer.flyTo([], { duration: 0 }).catch(() => {})
+        void this.viewer.flyTo([], { duration: 0 }).catch(() => { })
         this.viewer.scene.requestRender()
     }
 
