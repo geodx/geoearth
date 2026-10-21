@@ -9,14 +9,93 @@
 
 <body>
   <div id="earth"></div>
+  <div style="position:absolute;top:16px;left:16px;z-index:1;background:white;padding:12px;max-width:420px">
+    <select id="model" aria-label="漫游模型">
+      <option value="truck" selected>小车</option>
+      <option value="person">人物</option>
+      <option value="vehicle">越野车</option>
+      <option value="aircraft">飞行器</option>
+    </select>
+    <button id="draw">绘制路线</button>
+    <button id="start">开始</button>
+    <button id="pause">暂停</button>
+    <button id="resume">继续</button>
+    <button id="stop">停止</button>
+    <select id="view">
+      <option value="thirdPerson">跟随视角</option>
+      <option value="firstPerson">第一人称</option>
+      <option value="none">自由观察</option>
+    </select>
+    <select id="speed">
+      <option value="1">1 倍</option>
+      <option value="2">2 倍</option>
+      <option value="5">5 倍</option>
+    </select>
+    <div id="status">可直接开始；绘制时左键添加点，右键完成，点数不足时右键取消。</div>
+  </div>
   <script>
     window.CESIUM_BASE_URL = '/sdk/cesium/';
   </script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“路径漫游”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const earth = new GeoEarth("earth", undefined, { startup: { animation: false } });
+    const roaming = earth.camera.roaming;
+    const status = document.getElementById('status');
+    const modelSelect = document.getElementById('model');
+    // 模型仅用于演示，SDK 接收调用方提供的 URI。
+    const presets = {
+      person: { file: 'Cesium_Man.glb', scale: 0.9, speed: 1.4, range: 15, eyeHeight: 1.7, heightOffset: 0.1 },
+      truck: { file: 'CesiumMilkTruck.glb', scale: 1, speed: 10, range: 40, eyeHeight: 2, heightOffset: 0.1 },
+      vehicle: { file: 'GroundVehicle.glb', scale: 1, speed: 10, range: 50, eyeHeight: 2, heightOffset: 0.1 },
+      aircraft: { file: 'Cesium_Air.glb', scale: 0.1, speed: 35, range: 100, eyeHeight: 2, heightOffset: 120 },
+    };
+    let route = [
+      { longitude: 106.55, latitude: 29.56, height: 600 },
+      { longitude: 106.551, latitude: 29.56, height: 600 },
+      { longitude: 106.551, latitude: 29.561, height: 600 },
+      { longitude: 106.552, latitude: 29.561, height: 600 },
+    ];
+    roaming.setPath(route);
+    earth.camera.setView({ longitude: 106.55, latitude: 29.56, height: 1500, pitch: -60 });
+
+    async function run(action) {
+      const controls = ['draw', 'start', 'resume', 'model', 'view', 'speed'].map(id => document.getElementById(id));
+      controls.forEach(control => { control.disabled = true; });
+      try { await action(); status.textContent = '状态：' + roaming.state; }
+      catch (error) { status.textContent = error.message; }
+      finally { controls.forEach(control => { control.disabled = false; }); }
+    }
+    function pathOptions() {
+      // 地面模型贴地，飞行器使用地形上方 120 米的路线。
+      return { heightMode: 'terrain', heightOffset: presets[modelSelect.value].heightOffset };
+    }
+    document.getElementById('draw').onclick = () => {
+      status.textContent = '左键添加点，右键完成，点数不足时右键取消；停止按钮可取消绘制。';
+      run(async () => {
+        if (await roaming.drawPath(earth.tools.draw, pathOptions())) route = roaming.path;
+      });
+    };
+    document.getElementById('start').onclick = () => run(async () => {
+      const preset = presets[modelSelect.value];
+      status.textContent = '准备路线…';
+      if (!await roaming.preparePath(route, pathOptions())) return;
+      roaming.start({
+        speed: preset.speed,
+        multiplier: Number(document.getElementById('speed').value),
+        view: document.getElementById('view').value,
+        range: preset.range,
+        eyeHeight: preset.eyeHeight,
+        model: { uri: '/demo-assets/model/' + preset.file, scale: preset.scale, minimumPixelSize: 24 },
+      });
+    });
+    document.getElementById('pause').onclick = () => { roaming.pause(); status.textContent = '状态：' + roaming.state; };
+    document.getElementById('resume').onclick = () => run(() => roaming.resume());
+    document.getElementById('stop').onclick = () => { roaming.stop(); status.textContent = '已停止'; };
+    modelSelect.onchange = () => { roaming.stop(); status.textContent = '已更换模型，点击开始。'; };
+    document.getElementById('view').onchange = event => run(() => roaming.setView(event.target.value));
+    document.getElementById('speed').onchange = event => run(() => roaming.setMultiplier(Number(event.target.value)));
+    window.addEventListener('pagehide', event => { if (!event.persisted) earth.destroy(); });
   </script>
 </body>
 

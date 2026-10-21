@@ -25,6 +25,8 @@ export type {
     TerrainResourceItem,
 } from './sources/types';
 export { CameraManager } from './camera/CameraManager';
+export { PathRoaming } from './camera/roaming/PathRoaming';
+export type { PathRoamingOptions, PrepareRoamingPathOptions, RoamingState, RoamingView, RoamingPosition } from './camera/roaming/types';
 export { BookmarkManager } from './camera/bookmark/BookmarkManager';
 export type { Bookmark, CreateBookmarkOptions } from './camera/bookmark/BookmarkManager';
 export { readFile, saveShareContent } from './utils/browser/files';

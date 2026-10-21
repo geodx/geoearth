@@ -3,10 +3,17 @@ import type { CameraEvent } from '../events/modules/CameraEvent'
 import type { WorldDegree, WorldRectangle } from '../viewer/types'
 import type { CameraView, CameraFlyToOptions } from './types'
 import { BookmarkManager } from './bookmark/BookmarkManager'
+import { PathRoaming } from './roaming/PathRoaming'
 
 /** Bound to one Viewer. Public angles are degrees; distances are meters. */
 export class CameraManager {
     readonly bookmarks: BookmarkManager
+    private roamingInstance?: PathRoaming
+
+    get roaming(): PathRoaming {
+        this.assertAlive()
+        return this.roamingInstance ??= new PathRoaming(this.viewer, {}, () => this.cancelFlight())
+    }
     private readonly initialView: CameraView
     private settleFlight?: (completed: boolean) => void
     private previousEnableTilt?: boolean
@@ -155,6 +162,7 @@ export class CameraManager {
 
     cancelFlight(): void {
         this.assertAlive()
+        this.roamingInstance?.pause()
         ++this.operationId
         const settle = this.settleFlight
         this.beforeControl?.()
@@ -208,6 +216,7 @@ export class CameraManager {
         ++this.operationId
         this.destroyed = true
         this.bookmarks.destroy()
+        this.roamingInstance?.destroy()
         const settle = this.settleFlight
         if (!this.viewer.isDestroyed()) {
             this.beforeControl?.()

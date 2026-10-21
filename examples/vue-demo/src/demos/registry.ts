@@ -197,24 +197,6 @@ export const demoTree: DemoNode[] = [
         "title": "demos.draw-circle",
         "description": "demos.drawCircleDescription",
         "path": "demos/draw/circle.html"
-      },
-      {
-        "id": "draw-result-management",
-        "title": "demos.draw-result-management",
-        "description": "demos.placeholderDescription",
-        "path": "demos/draw/result-management.html"
-      },
-      {
-        "id": "draw-editing",
-        "title": "demos.draw-editing",
-        "description": "demos.placeholderDescription",
-        "path": "demos/draw/editing.html"
-      },
-      {
-        "id": "draw-import-export",
-        "title": "demos.draw-import-export",
-        "description": "demos.placeholderDescription",
-        "path": "demos/draw/import-export.html"
       }
     ]
   },
@@ -299,12 +281,6 @@ export const demoTree: DemoNode[] = [
         "title": "demos.camera-bookmarks",
         "description": "demos.placeholderDescription",
         "path": "demos/camera/bookmarks.html"
-      },
-      {
-        "id": "camera-orbit",
-        "title": "demos.camera-orbit",
-        "description": "demos.placeholderDescription",
-        "path": "demos/camera/orbit.html"
       },
       {
         "id": "camera-roaming",
