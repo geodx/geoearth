@@ -9,6 +9,7 @@ import {
 } from "cesium";
 import { PolylineGlowMaterial } from "../materials/lines";
 import { WorldDegree } from "../../viewer/types";
+import type { EntityAreaOptions, EntityLineOptions } from './types';
 /**
  * 名称：Entity 快捷创建库
  * 封装着一些常用的 Entity 创建方法
@@ -111,14 +112,51 @@ const EntityFactory = {
      * 创建发光线
      * @param positions
      */
-    createLightingLine(positions: Cartesian3[]) {
+    createLightingLine(positions: Cartesian3[], options: EntityLineOptions = {}): Entity {
         return new Entity({
             polyline: {
                 positions: positions,
                 width: 8,
-                clampToGround: true,
-                arcType: ArcType.RHUMB,
+                clampToGround: options.clampToGround ?? true,
+                arcType: options.arcType ?? ArcType.RHUMB,
                 material: new PolylineGlowMaterial()
+            }
+        });
+    },
+    /** 创建带填充和闭合边线的多边形；也可直接传入矩形的四角。 */
+    createPolygon(positions: Cartesian3[], options: EntityAreaOptions = {}): Entity {
+        if (positions.length < 3) throw new RangeError('多边形至少需要三个顶点。');
+        const clampToGround = options.clampToGround ?? true;
+        return new Entity({
+            polygon: {
+                hierarchy: positions,
+                material: options.fillColor ?? Color.CYAN.withAlpha(0.3),
+                perPositionHeight: !clampToGround
+            },
+            polyline: {
+                positions: [...positions, positions[0]],
+                width: options.width ?? 3,
+                material: options.outlineColor ?? Color.CYAN,
+                clampToGround,
+                arcType: clampToGround ? ArcType.GEODESIC : ArcType.NONE
+            }
+        });
+    },
+    /** 按圆心和米制半径创建圆面，不附加高度连线。 */
+    createCircle(center: Cartesian3, radius: number, options: EntityAreaOptions = {}): Entity {
+        if (!Number.isFinite(radius) || radius <= 0) throw new RangeError('圆半径必须大于零且为有限数值。');
+        const clampToGround = options.clampToGround ?? true;
+        return new Entity({
+            position: center,
+            ellipse: {
+                semiMajorAxis: radius,
+                semiMinorAxis: radius,
+                height: clampToGround ? 0 : Cartographic.fromCartesian(center).height,
+                heightReference: clampToGround ? HeightReference.CLAMP_TO_GROUND : HeightReference.NONE,
+                material: options.fillColor ?? Color.CYAN.withAlpha(0.3),
+                outline: true,
+                outlineColor: options.outlineColor ?? Color.CYAN,
+                outlineWidth: options.width ?? 3
             }
         });
     },

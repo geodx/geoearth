@@ -5,18 +5,66 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 高差量测</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    button { padding: 6px 12px; cursor: pointer; }
+    button:disabled { cursor: default; }
+  </style>
 </head>
 
 <body>
   <div id="earth"></div>
+  <section class="demo-panel" aria-label="高差量测示例">
+    <h2>高差量测</h2>
+    <p class="hint">依次左键选择两个位置，第二点自动完成。返回有符号椭球高差，右键或“结束”取消。</p>
+    <button id="start" disabled>开始测量</button>
+    <button id="end" disabled>结束</button>
+    <p id="status" class="status" role="status">正在初始化地球…</p>
+  </section>
   <script>
     window.CESIUM_BASE_URL = '/sdk/cesium/';
   </script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“高差量测”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const earth = new GeoEarth('earth', undefined, { startup: { animation: false } });
+    const measure = earth.tools.measure;
+    const startButton = document.getElementById('start');
+    const endButton = document.getElementById('end');
+    const status = document.getElementById('status');
+
+    earth.onReady(() => {
+      status.textContent = '准备就绪';
+      startButton.disabled = false;
+    });
+
+    startButton.onclick = async () => {
+      startButton.disabled = true;
+      endButton.disabled = false;
+      status.textContent = '正在测量…';
+      try {
+        // 默认保留结果图形和标注；传 { showResult: false } 可关闭显示。
+        const result = await measure.verticalDistance();
+        console.log('高差量测结果', result);
+        status.textContent = '测量完成，结果已显示并打印到控制台';
+      } catch (error) {
+        if (error instanceof GeoEarth.MeasureCancelledError) {
+          status.textContent = '已结束测量';
+        } else {
+          console.error(error);
+          status.textContent = '测量失败，请查看控制台';
+        }
+      } finally {
+        startButton.disabled = false;
+        endButton.disabled = true;
+      }
+    };
+
+    endButton.onclick = () => {
+      if (!measure.finish()) measure.stop();
+    };
+    window.addEventListener('pagehide', () => earth.destroy(), { once: true });
   </script>
 </body>
 

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { test } from 'node:test'
 import { build } from 'vite'
 import {
-    ImageryLayerCollection, Rectangle, SingleTileImageryProvider,
+    DataSourceCollection, ImageryLayerCollection, Rectangle, SingleTileImageryProvider,
 } from 'cesium'
 
 // 直接构建当前管理器，使用真实 Cesium 图层、集合和同步移除事件。
@@ -50,6 +50,7 @@ function setup(t) {
     const flights = []
     const viewer = {
         imageryLayers: new ImageryLayerCollection(),
+        dataSources: new DataSourceCollection(),
         isDestroyed: () => false,
         async flyTo(layer, options) { flights.push({ layer, options }); return true },
     }

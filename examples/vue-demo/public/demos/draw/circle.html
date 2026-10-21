@@ -5,18 +5,71 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 绘制圆</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    button { padding: 6px 12px; cursor: pointer; }
+    button:disabled { cursor: default; }
+  </style>
 </head>
 
 <body>
   <div id="earth"></div>
+  <section class="demo-panel" aria-label="绘制圆示例">
+    <h2>绘制圆</h2>
+    <p class="hint">左键确定圆心，再次左键确定圆周点并完成绘制。右键或“结束”取消本次绘制。完成后保留图形，返回数据在控制台查看。</p>
+    <button id="start" disabled>开始绘制</button>
+    <button id="end" disabled>结束</button>
+    <p id="status" class="status" role="status">正在初始化地球…</p>
+  </section>
   <script>
     window.CESIUM_BASE_URL = '/sdk/cesium/';
   </script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“绘制圆”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const { EntityFactory, DrawCancelledError } = GeoEarth;
+    const earth = new GeoEarth('earth', undefined, {
+      startup: { animation: false },
+    });
+    const results = new Cesium.CustomDataSource('draw-circle-results');
+    earth.viewer.dataSources.add(results);
+    const startButton = document.getElementById('start');
+    const endButton = document.getElementById('end');
+    const status = document.getElementById('status');
+
+    earth.onCreated(() => console.log('地球已创建'));
+    earth.onReady(() => {
+      status.textContent = '准备就绪';
+      startButton.disabled = false;
+    });
+    earth.onDestroyed(() => console.log('地球已销毁'));
+
+    startButton.onclick = async () => {
+      startButton.disabled = true;
+      endButton.disabled = false;
+      status.textContent = '正在绘制，请选择圆心和圆周点';
+      try {
+        const result = await earth.tools.draw.drawCircle();
+        results.entities.add(EntityFactory.createCircle(result.center, result.radius));
+        earth.viewer.scene.requestRender();
+        console.log('绘制圆结果', result);
+        status.textContent = '绘制完成，图形已保留，数据已打印到控制台';
+      } catch (error) {
+        if (error instanceof DrawCancelledError) {
+          status.textContent = '已结束绘制';
+        } else {
+          console.error(error);
+          status.textContent = '绘制失败，请查看控制台';
+        }
+      } finally {
+        startButton.disabled = false;
+        endButton.disabled = true;
+      }
+    };
+
+    endButton.onclick = () => earth.tools.draw.cancel();
+    window.addEventListener('pagehide', () => earth.destroy(), { once: true });
   </script>
 </body>
 

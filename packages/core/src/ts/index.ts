@@ -25,15 +25,31 @@ export type {
     TerrainResourceItem,
 } from './sources/types';
 export { flyTo, type FlyToOptions } from './camera/flyTo';
-export { MeasureCancelledError } from './tools/measure/types';
+export { MeasureTool, ElevationSource, ElevationTarget, MeasureCancelledError } from './tools/measure';
+export type {
+    MeasureOptions, PointElevationOptions, GroundDistanceOptions, PointElevationResult,
+    SpaceDistanceResult, GroundDistanceResult, AreaResult, PerimeterResult,
+    HeightDifferenceResult, AngleResult, TriangleDistanceResult, MeasureResult,
+} from './tools/measure';
 
 
-export { CoordinateType, DrawCancelledError, type DegreePosition } from './tools/draw/types';
+export { DrawTool, CoordinateType, DrawCancelledError } from './tools/draw';
+export type {
+    DegreePosition, DrawPositionMap, DrawPosition, DrawCoordinateOptions,
+    DrawPointStyle, DrawPathStyle, DrawAreaStyle, DrawPointOptions, DrawLineOptions, DrawPolylineOptions,
+    DrawPolygonOptions, DrawRectangleOptions, DrawCircleOptions, DrawCircleResult,
+    DrawHeightOptions, DrawHeightResult, DrawPlaneOptions, DrawPlaneResult,
+    DrawLineResult, DrawAngleOptions, DrawAngleResult, DrawTriangleOptions, DrawTriangleResult, DrawRectangleResult,
+} from './tools/draw';
+export { getRectanglePoints, getInclinedRectangle, type RectanglePoints,
+    getSpaceDistance, getSurfaceDistance, getSurfaceArea, getSpaceAngle } from './utils/geometry';
 
 
 export { getCameraHeight, getCameraInfo, getViewCenter } from './utils';
 
 export * from './visualization/materials/lines';
+export { EntityFactory } from './visualization/entities';
+export type { EntityLineOptions, EntityAreaOptions } from './visualization/entities';
 export * from './interaction';
 
 export { ResourceTree } from './widgets/resource-tree';

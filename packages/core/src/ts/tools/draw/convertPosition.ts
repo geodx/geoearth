@@ -28,5 +28,6 @@ export function convertPosition<T extends CoordinateType>(position: Cartesian3, 
         return result as DrawPosition<T>
     }
 
+    if (coordinateType !== CoordinateType.CARTESIAN3) throw new RangeError(`Unsupported coordinate type: ${coordinateType}`)
     return Cartesian3.clone(position) as DrawPosition<T>
 }

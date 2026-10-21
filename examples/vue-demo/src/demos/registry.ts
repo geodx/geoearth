@@ -183,19 +183,19 @@ export const demoTree: DemoNode[] = [
       {
         "id": "draw-polygon",
         "title": "demos.draw-polygon",
-        "description": "demos.placeholderDescription",
+        "description": "demos.drawPolygonDescription",
         "path": "demos/draw/polygon.html"
       },
       {
         "id": "draw-rectangle",
         "title": "demos.draw-rectangle",
-        "description": "demos.placeholderDescription",
+        "description": "demos.drawRectangleDescription",
         "path": "demos/draw/rectangle.html"
       },
       {
         "id": "draw-circle",
         "title": "demos.draw-circle",
-        "description": "demos.placeholderDescription",
+        "description": "demos.drawCircleDescription",
         "path": "demos/draw/circle.html"
       },
       {
@@ -225,43 +225,55 @@ export const demoTree: DemoNode[] = [
       {
         "id": "measure-point-height",
         "title": "demos.measure-point-height",
-        "description": "demos.placeholderDescription",
+        "description": "demos.measureDescription",
         "path": "demos/measure/point-height.html"
       },
       {
         "id": "measure-space-distance",
         "title": "demos.measure-space-distance",
-        "description": "demos.placeholderDescription",
+        "description": "demos.measureDescription",
         "path": "demos/measure/space-distance.html"
       },
       {
         "id": "measure-ground-distance",
         "title": "demos.measure-ground-distance",
-        "description": "demos.placeholderDescription",
+        "description": "demos.measureDescription",
         "path": "demos/measure/ground-distance.html"
       },
       {
         "id": "measure-area",
         "title": "demos.measure-area",
-        "description": "demos.placeholderDescription",
+        "description": "demos.measureDescription",
         "path": "demos/measure/area.html"
       },
       {
         "id": "measure-height-difference",
         "title": "demos.measure-height-difference",
-        "description": "demos.placeholderDescription",
+        "description": "demos.measureDescription",
         "path": "demos/measure/height-difference.html"
       },
       {
         "id": "measure-triangle",
         "title": "demos.measure-triangle",
-        "description": "demos.placeholderDescription",
+        "description": "demos.measureDescription",
         "path": "demos/measure/triangle.html"
+      },
+      {
+        "id": "measure-perimeter",
+        "title": "demos.measure-perimeter",
+        "description": "demos.measureDescription",
+        "path": "demos/measure/perimeter.html"
+      },
+      {
+        "id": "measure-angle",
+        "title": "demos.measure-angle",
+        "description": "demos.measureDescription",
+        "path": "demos/measure/angle.html"
       },
       {
         "id": "measure-result-management",
         "title": "demos.measure-result-management",
-        "description": "demos.placeholderDescription",
+        "description": "demos.measureDescription",
         "path": "demos/measure/result-management.html"
       }
     ]
