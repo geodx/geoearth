@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · 导航控件</title>
+  <link rel="stylesheet" href="/sdk/cesium/Widgets/widgets.css" />
+  <link rel="stylesheet" href="/sdk/geoearth.css" />
+  <style>
+    html,
+    body,
+    #earth {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="earth"></div>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
+  <script src="/sdk/cesium/Cesium.js"></script>
+  <script src="/sdk/geoearth.js"></script>
+  <script>
+    const earth = new GeoEarth('earth', undefined, {
+      startup: { animation: false },
+      homeView: { longitude: 106.55, latitude: 29.56, height: 50000, heading: 30, pitch: -60, roll: 0 },
+    });
+    earth.sources.presets.addBingImagery();
+
+    // 创建完整导航插件；不传参数时，默认开启罗盘、缩放、复位和比例尺。
+    earth.widgets.navigation.create({
+      position: 'top-right',           // 罗盘和缩放控件的位置，还支持 top-left、bottom-left、bottom-right。
+      enableCompass: true,            // 显示罗盘，默认开启。
+      enableZoomControls: true,       // 显示放大、缩小和复位按钮，默认开启。
+      enableDistanceLegend: true,     // 显示右下角比例尺，默认开启。
+      enableCompassOuterRing: true,   // 允许拖动罗盘外环旋转方向，默认开启。
+      duration: 1.5,                  // 复位飞行时长，单位为秒，默认为 3；设为 0 时立即定位。
+      // 自定义复位视角；省略时恢复地球初始视角。经纬度及姿态的角度单位均为度。
+      defaultResetView: {
+        longitude: 106.55, latitude: 29.56, height: 50000,
+        heading: 0, pitch: -60, roll: 0,
+      },
+      resetTooltip: '回到重庆',       // 复位按钮的提示文字。
+      zoomInTooltip: '放大地图',      // 放大按钮的提示文字。
+      zoomOutTooltip: '缩小地图',     // 缩小按钮的提示文字。
+      onError: error => console.error(error), // 可选的操作异常回调。
+      // defaultResetView 也支持 Cesium.Cartographic 或 Cesium.Rectangle。
+      // 使用这两种类型时，可通过 orientation 设置姿态，其角度单位为弧度。
+      // 自定义罗盘图标：compassOuterRingSvg、compassRotationMarkerSvg、compassGyroSvg。
+      // 自定义按钮图标：resetSvg、zoomInSvg、zoomOutSvg，均传入 SVG 字符串。
+    });
+
+  </script>
+</body>
+
+</html>

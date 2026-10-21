@@ -109,14 +109,3 @@ results.entities.add(EntityFactory.createPolygon(corners))
 ```
 
 `createCircle` 和 `createPolygon` 默认贴地；传 `{ clampToGround: false }` 保留输入位置的高度，可设置 `fillColor`、`outlineColor` 和 `width`。`createCircle` 创建普通圆面，不附加高度连线；`createHeightEllipse` 保留原有用途。
-
-在仓库根目录执行：
-
-```sh
-npm run typecheck
-npm run build:example
-node --test packages/core/tests/draw.test.mjs packages/core/tests/interaction.test.mjs
-node node_modules/typescript/bin/tsc --noEmit --strict --skipLibCheck --module esnext --moduleResolution bundler --target es2020 packages/core/tests/draw-types.ts
-```
-
-类型测试依赖上一步生成的 `dist` 声明文件，用于验证包入口公开的实际类型。Node 测试使用真实 Cesium 图形、集合和数学对象，替代屏幕输入与 GPU 拾取；图形显示及真实鼠标交互仍需通过浏览器示例检查。

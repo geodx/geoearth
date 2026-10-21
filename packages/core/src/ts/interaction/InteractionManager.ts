@@ -8,7 +8,7 @@ import type { InteractionEvent } from '../events/modules/InteractionEvent'
 import type { ScreenEvent } from '../events/modules/ScreenEvent'
 import type { RemoveCallback } from '../events/types'
 import type { DrawTool } from '../tools/draw/DrawTool'
-import { pickPosition } from '../tools/draw/pickPosition'
+import { pickPosition } from '../utils/picking/pickPosition'
 import { HighlightManager, highlightColor } from './HighlightManager'
 import { isPickAlive, propertyDescription, samePick, toPickResult } from './pickObject'
 import {

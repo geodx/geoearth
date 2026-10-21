@@ -297,26 +297,20 @@ export const demoTree: DemoNode[] = [
       {
         "id": "widgets-overview",
         "title": "demos.widgets-overview",
-        "description": "demos.placeholderDescription",
+        "description": "demos.overviewDescription",
         "path": "demos/widgets/overview.html"
       },
       {
         "id": "widgets-coordinate-status",
         "title": "demos.widgets-coordinate-status",
-        "description": "demos.placeholderDescription",
+        "description": "demos.coordinateStatusDescription",
         "path": "demos/widgets/coordinate-status.html"
       },
       {
-        "id": "widgets-scale",
-        "title": "demos.widgets-scale",
-        "description": "demos.placeholderDescription",
-        "path": "demos/widgets/scale.html"
-      },
-      {
-        "id": "widgets-compass",
-        "title": "demos.widgets-compass",
-        "description": "demos.placeholderDescription",
-        "path": "demos/widgets/compass.html"
+        "id": "widgets-navigation",
+        "title": "demos.widgets-navigation",
+        "description": "demos.navigationDescription",
+        "path": "demos/widgets/navigation.html"
       },
       {
         "id": "widgets-layer-control",

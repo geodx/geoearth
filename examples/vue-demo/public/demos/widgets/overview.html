@@ -4,19 +4,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GeoEarth · 鹰眼</title>
+  <title>GeoEarth · 鹰眼图</title>
+  <link rel="stylesheet" href="/sdk/cesium/Widgets/widgets.css" />
+  <link rel="stylesheet" href="/sdk/geoearth.css" />
+  <style>
+    html,
+    body,
+    #earth {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    .tools {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 1;
+      background: white;
+      padding: 12px;
+      max-width: 320px;
+      font: 14px sans-serif;
+    }
+
+    .tools fieldset {
+      border: 0;
+      padding: 0;
+      margin: 0;
+    }
+
+    .tools p {
+      margin: 8px 0 0;
+      line-height: 1.5;
+    }
+  </style>
 </head>
 
 <body>
   <div id="earth"></div>
-  <script>
-    window.CESIUM_BASE_URL = '/sdk/cesium/';
-  </script>
+  <div class="tools">
+    <fieldset id="controls" disabled>
+      <button id="open">开启</button>
+      <button id="hide">隐藏</button>
+      <button id="show">显示</button>
+      <button id="close">关闭</button>
+    </fieldset>
+    <p>移动或缩放主图查看联动；点击鹰眼或拖动红框可定位主图。</p>
+    <p id="status" role="status">正在初始化…</p>
+  </div>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“鹰眼”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const earth = new GeoEarth('earth', undefined, {
+      startup: { animation: false },
+      homeView: { longitude: 106.55, latitude: 29.56, height: 100000, heading: 0, pitch: -90, roll: 0 },
+    });
+    earth.sources.presets.addBingImagery();
+    const overview = earth.widgets.overview;
+    const status = document.getElementById('status');
+    let disposed = false;
+
+    function openOverview() {
+      overview.open({
+        position: 'bottom-right',
+        width: 280,
+        height: 180,
+        scaleFactor: 4,
+      });
+    }
+
+    const actions = {
+      open: () => { openOverview(); return '鹰眼已开启'; },
+      hide: () => { overview.hide(); return overview.isOpen ? '鹰眼已隐藏' : '请先开启鹰眼'; },
+      show: () => { overview.show(); return overview.isOpen ? '鹰眼已显示' : '请先开启鹰眼'; },
+      close: () => { overview.close(); return '鹰眼已关闭，可重新开启'; },
+    };
+    for (const [id, action] of Object.entries(actions)) {
+      document.getElementById(id).onclick = () => {
+        try { status.textContent = action(); }
+        catch (error) { status.textContent = error.message; }
+      };
+    }
+
+    earth.onReady().then(() => {
+      if (disposed) return;
+      openOverview();
+      document.getElementById('controls').disabled = false;
+      status.textContent = '鹰眼已开启';
+    }).catch(error => {
+      if (!disposed) status.textContent = error.message;
+    });
+
+    window.addEventListener('pagehide', event => {
+      if (!event.persisted) { disposed = true; earth.destroy(); }
+    });
   </script>
 </body>
 

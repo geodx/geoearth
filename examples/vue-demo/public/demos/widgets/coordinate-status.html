@@ -1,23 +1,97 @@
 <!doctype html>
 <html lang="zh-CN">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 坐标状态栏</title>
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; }
+    .bar { position: absolute; bottom: 28px; left: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 8px 24px; padding: 10px 14px; color: #eee; background: #17212de6; font: 12px/1.6 monospace; pointer-events: none; }
+    .bar strong { color: #8ed7ff; margin-right: 8px; }
+    .hint { position: absolute; top: 12px; left: 12px; margin: 0; padding: 8px 12px; background: white; font: 13px/1.5 sans-serif; }
+  </style>
 </head>
-
 <body>
   <div id="earth"></div>
-  <script>
-    window.CESIUM_BASE_URL = '/sdk/cesium/';
-  </script>
+  <p class="hint">移动鼠标、拖动或缩放地球查看数据。高度为椭球高度；FPS 为实际渲染帧率，空闲时可为 0。</p>
+  <div class="bar" aria-label="坐标与相机状态栏">
+    <div><strong>鼠标位置</strong><span id="mouse">—</span></div>
+    <div><strong>相机位置</strong><span id="camera">—</span></div>
+    <div><strong>相机姿态</strong><span id="orientation">—</span></div>
+    <div><strong>FPS</strong><span id="fps">—</span></div>
+  </div>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“坐标状态栏”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const { pickPosition, ScreenSpaceEventType, CameraEventType } = GeoEarth;
+    const earth = new GeoEarth('earth', undefined, { startup: { animation: false } });
+    const mouseOutput = document.getElementById('mouse');
+    const cameraOutput = document.getElementById('camera');
+    const orientationOutput = document.getElementById('orientation');
+    const fpsOutput = document.getElementById('fps');
+    const canvas = earth.viewer.scene.canvas;
+    const removers = [];
+    let mousePosition;
+    let mouseDirty = false;
+    let cameraDirty = true;
+    let disposed = false;
+    let positionTimer;
+    let fpsTimer;
+
+    function clearMouse() {
+      mousePosition = undefined;
+      mouseDirty = false;
+      mouseOutput.textContent = '—';
+    }
+    function updatePositions() {
+      if (cameraDirty) {
+        const view = earth.camera.getView();
+        cameraOutput.textContent = `${view.longitude.toFixed(5)}°, ${view.latitude.toFixed(5)}°, ${view.height.toFixed(1)} m`;
+        orientationOutput.textContent = `H ${view.heading.toFixed(1)}° / P ${view.pitch.toFixed(1)}° / R ${view.roll.toFixed(1)}°`;
+        cameraDirty = false;
+      }
+      if (!mouseDirty || !mousePosition) return;
+      mouseDirty = false;
+      const position = pickPosition(earth.viewer, mousePosition);
+      if (!position) { mouseOutput.textContent = '—'; return; }
+      const point = earth.viewer.scene.globe.ellipsoid.cartesianToCartographic(position);
+      mouseOutput.textContent = `${Cesium.Math.toDegrees(point.longitude).toFixed(5)}°, ${Cesium.Math.toDegrees(point.latitude).toFixed(5)}°, ${point.height.toFixed(1)} m`;
+    }
+    function updateFPS() { fpsOutput.textContent = String(earth.performance.getFPS()); }
+
+    earth.onReady().then(() => {
+      if (disposed) return;
+      removers.push(
+        earth.event.screen.addEventListener(ScreenSpaceEventType.MOUSE_MOVE, event => {
+          mousePosition = Cesium.Cartesian2.clone(event.endPosition);
+          mouseDirty = true;
+        }),
+        earth.event.camera.addEventListener(CameraEventType.CHANGE, () => {
+          cameraDirty = true;
+          mouseDirty = true;
+        }),
+        // A newly rendered terrain/model tile may change the point under a stationary cursor.
+        earth.viewer.scene.postRender.addEventListener(() => { mouseDirty = true; }),
+      );
+      canvas.addEventListener('mouseleave', clearMouse);
+      updatePositions();
+      updateFPS();
+      positionTimer = setInterval(updatePositions, 150);
+      fpsTimer = setInterval(updateFPS, 1000);
+    }).catch(error => {
+      if (!disposed) mouseOutput.textContent = error.message;
+    });
+
+    window.addEventListener('pagehide', event => {
+      if (event.persisted) return;
+      disposed = true;
+      clearInterval(positionTimer);
+      clearInterval(fpsTimer);
+      removers.forEach(remove => remove());
+      canvas.removeEventListener('mouseleave', clearMouse);
+      earth.destroy();
+    });
   </script>
 </body>
-
 </html>

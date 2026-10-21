@@ -7,7 +7,7 @@ import type { ScreenEvent } from '../../events/modules/ScreenEvent'
 import type { RemoveCallback, ScreenEventPayload } from '../../events/types'
 import { getInclinedRectangle, getRectanglePoints } from '../../utils/geometry'
 import { convertPosition } from './convertPosition'
-import { pickPosition } from './pickPosition'
+import { pickPosition } from '../../utils/picking/pickPosition'
 import {
     CoordinateType, DrawCancelledError,
     type DrawAngleOptions, type DrawAngleResult, type DrawAreaStyle, type DrawCircleOptions, type DrawCircleResult,

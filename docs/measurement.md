@@ -55,14 +55,3 @@ measure.clear()            // 停止当前任务并清空所有结果及实体
 展示复用 `EntityFactory`：点、发光线和文字标签。空间线段使用 `ArcType.NONE` 且不贴地，遮挡部分设置 `depthFailMaterial`，避免显示成与计算不一致的地表曲线。`EntityFactory` 已从包入口导出。
 
 示例站点的“测量工具”下有独立 HTML 页面，每页两个按钮。结果管理页通过“结束并清空”演示清理，其余页面通过“结束”提交节点或取消未完成任务。
-
-## 本地验证
-
-```sh
-npm run typecheck
-npm run build:example
-node --test packages/core/tests/measure.test.mjs packages/core/tests/draw.test.mjs packages/core/tests/interaction.test.mjs
-node node_modules/typescript/bin/tsc --noEmit --strict --skipLibCheck --module esnext --moduleResolution bundler --target es2020 packages/core/tests/measure-types.ts
-```
-
-自动化测试使用真实 Cesium 数学、Entity、数据源和输入采集逻辑，仅替代 GPU 拾取及外部地形数据；真实地形和 3D Tiles 场景的精度仍取决于实际资源。

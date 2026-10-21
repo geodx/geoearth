@@ -25,6 +25,7 @@ export type {
     TerrainResourceItem,
 } from './sources/types';
 export { CameraManager } from './camera/CameraManager';
+export { pickPosition } from './utils/picking/pickPosition';
 export { PathRoaming } from './camera/roaming/PathRoaming';
 export type { PathRoamingOptions, PrepareRoamingPathOptions, RoamingState, RoamingView, RoamingPosition } from './camera/roaming/types';
 export { BookmarkManager } from './camera/bookmark/BookmarkManager';
@@ -59,6 +60,8 @@ export type { EntityLineOptions, EntityAreaOptions } from './visualization/entit
 export * from './interaction';
 
 export { ResourceTree } from './widgets/resource-tree';
+export { Navigation } from './widgets/navigation';
+export type { NavigationOptions } from './widgets/navigation';
 export type {
     ResourceTreeHost,
     ResourceTreeOptions,
