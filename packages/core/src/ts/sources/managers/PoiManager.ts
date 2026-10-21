@@ -1,11 +1,12 @@
-import { Cartesian2, Cartesian3, Color, CustomDataSource, Entity, HeadingPitchRange, HeightReference, HorizontalOrigin, LabelStyle, NearFarScalar, VerticalOrigin, Viewer } from "cesium";
+import type { CameraManager } from '../../camera/CameraManager'
+import { Cartesian2, Cartesian3, Color, CustomDataSource, Entity, HeightReference, HorizontalOrigin, LabelStyle, NearFarScalar, VerticalOrigin, Viewer } from "cesium";
 import { PoiResourceItem } from "../types";
 import { CesiumData } from "./data/CesiumData";
 
 export class PoiManager extends CesiumData<Entity> {
     private readonly dataSourceTool: CustomDataSource;
-    constructor(viewer: Viewer) {
-        super(viewer);
+    constructor(viewer: Viewer, camera: CameraManager) {
+        super(viewer, camera);
         this.dataSourceTool = new CustomDataSource('工作区 POI - 标注点');
         this.viewer.dataSources.add(this.dataSourceTool).then();
     }
@@ -56,8 +57,8 @@ export class PoiManager extends CesiumData<Entity> {
         const entity = this.getInstanceById(id);
         if (!entity) return false;
 
-        return this.viewer.flyTo(entity, {
-            offset: new HeadingPitchRange(0, -Math.PI / 2, 0),
+        return this.camera.flyToTarget(entity, {
+            heading: 0, pitch: -90, range: 0,
         }).catch(() => false);
     }
     removeById(id: string): boolean {

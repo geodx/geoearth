@@ -27,7 +27,7 @@
   <script src="/sdk/geoearth.js"></script>
   <script>
     // HTML 中从 GeoEarth 获取 API；npm 中从 'geoearth' 导入。
-    const { CameraEventType, flyTo } = GeoEarth;
+    const { CameraEventType } = GeoEarth;
     const earth = new GeoEarth("earth", undefined, {
       startup: { animation: false },
     });
@@ -42,21 +42,12 @@
       [CameraEventType.MOVE_START, "相机开始移动"],
       [CameraEventType.MOVE_END, "相机停止移动"],
       [CameraEventType.FLY_START, "飞行开始"],
+      [CameraEventType.FLY_CANCEL, "飞行取消"],
       [CameraEventType.FLY_END, "飞行正常完成"],
     ];
 
-    function showView(camera) {
-      const position = camera.positionCartographic;
-      const degrees = radians => (radians * 180 / Math.PI).toFixed(2);
-      // 当场读取数值，不把实时变化的 camera 对象作为历史状态保存。
-      viewOutput.textContent = [
-        `经度：${degrees(position.longitude)}`,
-        `纬度：${degrees(position.latitude)}`,
-        `高度：${Math.round(position.height)} 米`,
-        `heading：${degrees(camera.heading)}`,
-        `pitch：${degrees(camera.pitch)}`,
-        `roll：${degrees(camera.roll)}`,
-      ].join("\n");
+    function showView() {
+      viewOutput.textContent = JSON.stringify(earth.camera.getView(), null, 2);
     }
 
     function log(message) {
@@ -104,10 +95,8 @@
     }
 
     function flyToView(longitude, latitude, height) {
-      // 使用 SDK 封装的 flyTo，才能收到 flyStart / flyEnd。
-      flyTo({
-        viewer: earth.viewer,
-        cameraEvent: earth.event.camera,
+      // 所有 SDK 相机操作统一通过 earth.camera。
+      earth.camera.flyTo({
         longitude,
         latitude,
         height,
@@ -116,12 +105,11 @@
     }
 
     function flyHome() {
-      const { longitude, latitude, height } = earth.config.homeView;
-      flyToView(longitude, latitude, height);
+      earth.camera.reset();
     }
 
     function cancelFlight() {
-      earth.viewer.camera.cancelFlight();
+      earth.camera.cancelFlight();
       log("已请求取消飞行");
     }
 

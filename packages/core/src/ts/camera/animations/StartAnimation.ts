@@ -1,18 +1,6 @@
 import { Cartesian3, EasingFunction, Math as CesiumMath, type Viewer } from 'cesium'
 
-/**
- * 相机视角。
- *
- * 经纬度和姿态角均使用度，高度使用米。
- */
-export interface CameraView {
-    longitude: number
-    latitude: number
-    height: number
-    heading?: number
-    pitch?: number
-    roll?: number
-}
+import type { CameraView } from '../types'
 
 export interface StartAnimationOptions {
     /**

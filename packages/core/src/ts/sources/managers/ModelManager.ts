@@ -1,9 +1,9 @@
+import type { CameraManager } from '../../camera/CameraManager'
 import {
     Cartesian3,
     CustomDataSource,
     DistanceDisplayCondition,
     Entity,
-    HeadingPitchRange,
     HeadingPitchRoll,
     HeightReference,
     Math, Resource,
@@ -18,8 +18,8 @@ import { CesiumData } from './data/CesiumData';
 export class ModelManager extends CesiumData<Entity> {
     private readonly dataSourceTool: CustomDataSource;
 
-    constructor(viewer: Viewer) {
-        super(viewer);
+    constructor(viewer: Viewer, camera: CameraManager) {
+        super(viewer, camera);
         this.dataSourceTool = new CustomDataSource('工作区 GLTF - 附加实体集合');
         this.viewer.dataSources.add(this.dataSourceTool);
     }
@@ -95,8 +95,8 @@ export class ModelManager extends CesiumData<Entity> {
     async flyToById(id: string): Promise<boolean> {
         const entity = this.getInstanceById(id);
         if (!entity) return false;
-        return this.viewer.flyTo(entity, {
-            offset: new HeadingPitchRange(0, -Math.PI / 2, 0)
+        return this.camera.flyToTarget(entity, {
+            heading: 0, pitch: -90, range: 0
         }).catch(() => false);
     }
 

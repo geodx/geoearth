@@ -1,3 +1,4 @@
+import type { CameraManager } from '../camera/CameraManager'
 import { Viewer } from 'cesium'
 import { SourceEvent } from '../events/modules/SourceEvent'
 import { SourceEventType } from '../events/types'
@@ -32,15 +33,15 @@ export class ResourceManager {
     public readonly poiManager: PoiManager
 
     public readonly presets: ResourcePresets;
-    constructor(viewer: Viewer, sourceEvent: SourceEvent) {
+    constructor(viewer: Viewer, sourceEvent: SourceEvent, camera: CameraManager) {
         this.sourceEvent = sourceEvent;
 
-        this.imageryManager = new ImageryManager(viewer, sourceEvent)
-        this.terrainManager = new TerrainManager(viewer);
-        this.modelManager = new ModelManager(viewer);
-        this.tilesetManager = new TilesetManager(viewer);
-        this.geoJsonManager = new GeoJsonManager(viewer);
-        this.poiManager = new PoiManager(viewer);
+        this.imageryManager = new ImageryManager(viewer, sourceEvent, camera)
+        this.terrainManager = new TerrainManager(viewer, camera);
+        this.modelManager = new ModelManager(viewer, camera);
+        this.tilesetManager = new TilesetManager(viewer, camera);
+        this.geoJsonManager = new GeoJsonManager(viewer, camera);
+        this.poiManager = new PoiManager(viewer, camera);
 
         this.presets = new ResourcePresets(item => this.addData(item));
     }

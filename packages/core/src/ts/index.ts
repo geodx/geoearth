@@ -24,7 +24,8 @@ export type {
     TerrainProperties,
     TerrainResourceItem,
 } from './sources/types';
-export { flyTo, type FlyToOptions } from './camera/flyTo';
+export { CameraManager } from './camera/CameraManager';
+export type { CameraView, CameraFlyToOptions } from './camera/types';
 export { MeasureTool, ElevationSource, ElevationTarget, MeasureCancelledError } from './tools/measure';
 export type {
     MeasureOptions, PointElevationOptions, GroundDistanceOptions, PointElevationResult,
@@ -45,7 +46,6 @@ export { getRectanglePoints, getInclinedRectangle, type RectanglePoints,
     getSpaceDistance, getSurfaceDistance, getSurfaceArea, getSpaceAngle } from './utils/geometry';
 
 
-export { getCameraHeight, getCameraInfo, getViewCenter } from './utils';
 
 export * from './visualization/materials/lines';
 export { EntityFactory } from './visualization/entities';

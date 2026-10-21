@@ -1,3 +1,4 @@
+import type { CameraManager } from '../../../camera/CameraManager'
 import { Viewer } from 'cesium';
 import type { CesiumDataImpl } from './CesiumDataImpl';
 import { ResourceItem } from '../../types';
@@ -7,7 +8,7 @@ abstract class CesiumData<T> implements CesiumDataImpl<T> {
     sourcesItems: ResourceItem[];
     instancesMap: Map<string, T>;
 
-    protected constructor(viewer: Viewer) {
+    protected constructor(viewer: Viewer, protected readonly camera: CameraManager) {
         this.viewer = viewer;
         this.sourcesItems = [];
         this.instancesMap = new Map<string, T>();

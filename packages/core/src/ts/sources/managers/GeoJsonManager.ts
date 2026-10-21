@@ -1,14 +1,16 @@
+import type { Viewer } from 'cesium'
+import type { CameraManager } from '../../camera/CameraManager'
 import { Color } from "cesium";
 import { PlotDataSource } from "../../tools/plot/PlotDataSource";
 import { CesiumData } from "./data/CesiumData";
 import { PolylineArrowMaterialProperty } from "cesium";
-import { Cartesian2, HeadingPitchRange } from "cesium";
+import { Cartesian2 } from "cesium";
 import * as turf from "@turf/turf";
 import { EntityFactory } from "../../visualization";
 import { GeoJsonResourceItem } from "../types";
 export class GeoJsonManager extends CesiumData<PlotDataSource> {
-    constructor(viewer) {
-        super(viewer);
+    constructor(viewer: Viewer, camera: CameraManager) {
+        super(viewer, camera);
     }
 
     async addData(sourceItem: GeoJsonResourceItem): Promise<PlotDataSource> {
@@ -83,8 +85,8 @@ export class GeoJsonManager extends CesiumData<PlotDataSource> {
             return false;
         }
 
-        return this.viewer.flyTo(dataSource, {
-            offset: new HeadingPitchRange(0, -Math.PI / 2, 0),
+        return this.camera.flyToTarget(dataSource, {
+            heading: 0, pitch: -90, range: 0,
         }).catch(() => false);
     }
 

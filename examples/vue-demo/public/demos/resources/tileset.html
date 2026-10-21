@@ -177,15 +177,8 @@
     }
 
     function flyToTileset(tileset) {
-      // 资源由 SDK 管理，原生相机选项用于斜视取景，避免只看到模型顶部。
-      return earth.viewer.flyTo(tileset, {
-        duration: 1.5,
-        offset: new Cesium.HeadingPitchRange(
-          Cesium.Math.toRadians(25),
-          Cesium.Math.toRadians(-30),
-          tileset.boundingSphere.radius * 3,
-        ),
-      });
+      // 相机角度使用度，距离使用米。
+      return earth.camera.flyToTarget(tileset, { duration: 1.5, heading: 25, pitch: -30, range: tileset.boundingSphere.radius * 3 });
     }
 
     async function loadTileset() {

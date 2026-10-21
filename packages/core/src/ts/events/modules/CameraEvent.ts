@@ -89,6 +89,13 @@ export class CameraEvent extends BaseEvent<CameraEventType, CameraEventPayload> 
         })
     }
 
+    raiseFlyCancel(): void {
+        this.raiseEvent(CameraEventType.FLY_CANCEL, {
+            type: CameraEventType.FLY_CANCEL,
+            camera: this.viewer.camera
+        })
+    }
+
     destroy(): void {
         // Cesium addEventListener 返回的函数用于移除对应监听。
         this.removeChangedListener?.()

@@ -1,4 +1,5 @@
-import { Cesium3DTileset, HeadingPitchRange, Resource, Viewer } from 'cesium';
+import type { CameraManager } from '../../camera/CameraManager'
+import { Cesium3DTileset, Resource, Viewer } from 'cesium';
 import { offSetTileSetByCartographic } from '../../utils/scene';
 import { TilesetResourceItem } from '../types';
 import { CesiumData } from './data/CesiumData';
@@ -13,8 +14,8 @@ type LoadTileCallback = (
 export class TilesetManager extends CesiumData<Cesium3DTileset> {
     readonly loadTileCallFunMap = new Map<string, LoadTileCallback>();
 
-    constructor(viewer: Viewer) {
-        super(viewer);
+    constructor(viewer: Viewer, camera: CameraManager) {
+        super(viewer, camera);
     }
 
     async addData(sourceItem: TilesetResourceItem): Promise<Cesium3DTileset> {
@@ -129,8 +130,8 @@ export class TilesetManager extends CesiumData<Cesium3DTileset> {
 
         if (!tileset || tileset.isDestroyed()) return false;
 
-        return this.viewer.flyTo(tileset, {
-            offset: new HeadingPitchRange(0, -Math.PI / 2, 0),
+        return this.camera.flyToTarget(tileset, {
+            heading: 0, pitch: -90, range: 0,
         }).catch(() => false);
     }
 

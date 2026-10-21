@@ -15,8 +15,34 @@
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“飞行定位”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const earth = new GeoEarth("earth", undefined, { startup: { animation: false } });
+    const panel = document.createElement('div');
+    panel.style.cssText = 'position:absolute;top:16px;left:16px;z-index:1;background:#fff;padding:12px;display:flex;gap:8px;flex-wrap:wrap;max-width:520px';
+    document.body.append(panel);
+    const status = document.createElement('pre');
+    for (const [label, action] of [
+      ['飞到重庆', () => earth.camera.flyTo({ longitude: 106.55, latitude: 29.56, height: 3000, pitch: -45 })],
+      ['正北', () => earth.camera.resetNorth()],
+      ['俯视', () => earth.camera.setTopView()],
+      ['锁定俯视', () => earth.camera.lockTopView(true)],
+      ['解除锁定', () => earth.camera.lockTopView(false)],
+      ['重置', () => earth.camera.reset()],
+      ['全球', () => earth.camera.globalView()],
+      ['取消', () => earth.camera.cancelFlight()],
+      ['读取视角', () => { status.textContent = JSON.stringify({ view: earth.camera.getView(), center: earth.camera.getCenter(), extent: earth.camera.getExtent() }, null, 2); }],
+    ]) {
+      const button = document.createElement('button');
+      button.textContent = label;
+      button.onclick = async () => {
+        try {
+          const result = await action();
+          if (typeof result === 'boolean') status.textContent = result ? '操作完成' : '操作取消或目标不可用';
+        } catch (error) { status.textContent = error.message; }
+      };
+      panel.append(button);
+    }
+    panel.append(status);
+    window.addEventListener('pagehide', event => { if (!event.persisted) earth.destroy(); });
   </script>
 </body>
 

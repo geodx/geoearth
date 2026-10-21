@@ -173,15 +173,8 @@
     }
 
     function flyToModel(entity) {
-      // 使用原生相机选项指定斜视角；资源仍由 ResourceManager 管理。
-      return earth.viewer.flyTo(entity, {
-        duration: 1.5,
-        offset: new Cesium.HeadingPitchRange(
-          Cesium.Math.toRadians(30),
-          Cesium.Math.toRadians(-25),
-          60 * Number(scaleInput.value),
-        ),
-      });
+      // 相机角度使用度，距离使用米。
+      return earth.camera.flyToTarget(entity, { duration: 1.5, heading: 30, pitch: -25, range: 60 * Number(scaleInput.value) });
     }
 
     async function loadModel() {

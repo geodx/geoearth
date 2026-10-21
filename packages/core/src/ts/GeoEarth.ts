@@ -4,6 +4,7 @@ import { createViewer } from './viewer/createViewer';
 import { PerformanceManager } from './performance';
 
 import { StartAnimation } from './camera/animations/StartAnimation';
+import { CameraManager } from './camera/CameraManager';
 import { ConfigManager } from './config/ConfigManager';
 import { Config } from './config/types';
 import { EventManager } from './events/EventManager';
@@ -15,7 +16,7 @@ import { WidgetManager } from './widgets';
 
 export class GeoEarth {
     public readonly viewer: Viewer
-    // public readonly camera: CameraManager
+    public readonly camera: CameraManager
     public readonly config: ConfigManager
 
     public readonly performance: PerformanceManager
@@ -48,14 +49,14 @@ export class GeoEarth {
 
         // 初始化事件
         this.event = new EventManager(this.viewer)
-
-        // this.camera = new CameraManager(this.viewer)
-
         this.performance = new PerformanceManager(this.viewer)
 
         this.startAnimation = new StartAnimation(this.viewer)
+        this.camera = new CameraManager(this.viewer, this.event.camera, () => {
+            if (this.startAnimation.isPlaying) this.startAnimation.stop()
+        })
 
-        this.sources = new ResourceManager(this.viewer, this.event.source)
+        this.sources = new ResourceManager(this.viewer, this.event.source, this.camera)
 
         this.tools = new ToolManager(this.viewer, this.event.screen)
 
@@ -123,6 +124,7 @@ export class GeoEarth {
         this.interaction.destroy()
         this.tools.destroy()
         this.startAnimation.destroy()
+        this.camera.destroy()
         this.sources.destroy()
         this.performance.destroy()
         this.widgets.destroy()

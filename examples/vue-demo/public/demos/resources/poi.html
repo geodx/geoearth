@@ -130,11 +130,8 @@
     }
 
     async function flyToPin(entity) {
-      // 为单个标签明确指定观察距离和角度。
-      return earth.viewer.flyTo(entity, {
-        duration: 1.5,
-        offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-60), 1500),
-      });
+      // 相机角度使用度，距离使用米。
+      return earth.camera.flyToTarget(entity, { duration: 1.5, heading: 0, pitch: -60, range: 1500 });
     }
 
     async function loadPin() {

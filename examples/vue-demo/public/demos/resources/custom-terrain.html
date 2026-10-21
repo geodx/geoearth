@@ -37,19 +37,7 @@
         },
       },
     }).then(r => {
-      earth.viewer.camera.flyTo({
-        destination: {
-          x: 4348444.833569,
-          y: 609586.267824,
-          z: 4623578.767371,
-        },
-        orientation: {
-          heading: 3.256076,
-          pitch: -0.420911,
-          roll: 0,
-        },
-        duration: 2,
-      });
+      earth.camera.flyToExtent({ west: 7.5, south: 46.3, east: 9.0, north: 47.0 });
     });
   </script>
 </body>

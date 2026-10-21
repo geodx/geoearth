@@ -1,6 +1,7 @@
+import type { CameraManager } from '../../camera/CameraManager'
 import {
     CesiumTerrainProvider, EllipsoidTerrainProvider, IonResource,
-    Rectangle, Resource, TerrainProvider, Viewer,
+    Resource, TerrainProvider, Viewer,
     VRTheWorldTerrainProvider
 } from "cesium";
 import { TerrainScheme } from "..";
@@ -8,8 +9,8 @@ import { TerrainResourceItem } from "../types";
 import { CesiumData } from "./data/CesiumData";
 
 export class TerrainManager extends CesiumData<TerrainProvider> {
-    constructor(viewer: Viewer) {
-        super(viewer);
+    constructor(viewer: Viewer, camera: CameraManager) {
+        super(viewer, camera);
     }
 
     async addData(sourceItem: TerrainResourceItem): Promise<TerrainProvider> {
@@ -64,19 +65,9 @@ export class TerrainManager extends CesiumData<TerrainProvider> {
         const item = this.getSourceItemById(id) as TerrainResourceItem | null;
         const bounds = item?.properties.rectangle;
         if (!bounds) return false;
-        return new Promise<boolean>(resolve => {
-            this.viewer.camera.flyTo({
-                destination: Rectangle.fromDegrees(
-                    bounds.west,
-                    bounds.south,
-                    bounds.east,
-                    bounds.north,
-                ),
-                complete: () => resolve(true),
-                cancel: () => resolve(false),
-            });
-        });
+        return this.camera.flyToExtent(bounds);
     }
+
     removeById(id: string): boolean {
         const provider = this.instancesMap.get(id);
         if (!provider) return false;

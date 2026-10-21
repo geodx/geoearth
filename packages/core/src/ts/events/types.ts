@@ -19,7 +19,8 @@ export enum CameraEventType {
     MOVE_START = 'moveStart',
     MOVE_END = 'moveEnd',
     FLY_START = 'flyStart',
-    FLY_END = 'flyEnd'
+    FLY_END = 'flyEnd',
+    FLY_CANCEL = 'flyCancel'
 }
 
 /**

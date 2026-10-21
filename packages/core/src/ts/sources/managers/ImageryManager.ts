@@ -1,3 +1,4 @@
+import type { CameraManager } from '../../camera/CameraManager'
 import {
     ArcGisMapServerImageryProvider, GeographicTilingScheme, ImageryLayer, IonImageryProvider, Rectangle, Resource,
     SingleTileImageryProvider, TileMapServiceImageryProvider,
@@ -17,8 +18,8 @@ import { CesiumData } from './data/CesiumData';
 export class ImageryManager extends CesiumData<ImageryLayer> {
     private sourceEvent: SourceEvent
     private readonly removeLayersListener: () => void
-    constructor(viewer: Viewer, sourceEvent: SourceEvent) {
-        super(viewer);
+    constructor(viewer: Viewer, sourceEvent: SourceEvent, camera: CameraManager) {
+        super(viewer, camera);
         this.sourceEvent = sourceEvent;
         this.removeLayersListener = this.bindLayersEvents();
     }
@@ -57,7 +58,7 @@ export class ImageryManager extends CesiumData<ImageryLayer> {
     async flyToById(id: string): Promise<boolean> {
         const layer = this.getInstanceById(id);
         if (!layer) return false;
-        return this.viewer.flyTo(layer, {
+        return this.camera.flyToTarget(layer, {
             duration: 2,
         });
     }
