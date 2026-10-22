@@ -87,7 +87,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "resource-tree",
         "title": "demos.resource-tree",
-        "description": "demos.placeholderDescription",
+        "description": "demos.resourceTreeDescription",
         "path": "demos/resources/resource-tree.html"
       },
       {
@@ -311,12 +311,6 @@ export const demoTree: DemoNode[] = [
         "title": "demos.widgets-navigation",
         "description": "demos.navigationDescription",
         "path": "demos/widgets/navigation.html"
-      },
-      {
-        "id": "widgets-layer-control",
-        "title": "demos.widgets-layer-control",
-        "description": "demos.placeholderDescription",
-        "path": "demos/widgets/layer-control.html"
       },
       {
         "id": "widgets-multi-view",

@@ -4,19 +4,125 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GeoEarth · 多视图联动</title>
+  <title>GeoEarth · 二三维联动</title>
+
+  <link rel="stylesheet" href="/sdk/cesium/Widgets/widgets.css" />
+  <link rel="stylesheet" href="/sdk/geoearth.css" />
+
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 10px;
+      background: #101827;
+      color: white;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="toolbar">
+    <button id="visibility" disabled>收起副视图</button>
+    <button id="enabled" disabled>暂停联动</button>
+    <span id="status" role="status">正在初始化…</span>
+  </div>
+
   <div id="earth"></div>
+
   <script>
     window.CESIUM_BASE_URL = '/sdk/cesium/';
   </script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
+
   <script>
-    // TODO：补充“多视图联动”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const earth = new GeoEarth('earth', undefined, {
+      startup: { animation: false },
+    });
+
+    const linkage = earth.widgets.linkage;
+    const visibility = document.getElementById('visibility');
+    const enabled = document.getElementById('enabled');
+    const status = document.getElementById('status');
+
+    let disposed = false;
+
+    function refresh() {
+      visibility.textContent = linkage.isVisible
+        ? '收起副视图'
+        : '展开副视图';
+
+      enabled.textContent = linkage.isEnabled
+        ? '暂停联动'
+        : '恢复联动';
+
+      status.textContent = !linkage.isVisible
+        ? '副视图已收起'
+        : linkage.isEnabled
+          ? '二三维联动中，可操作任一视图'
+          : '联动已暂停，可分别操作';
+    }
+
+    visibility.addEventListener('click', () => {
+      linkage.isVisible ? linkage.hide() : linkage.show();
+      refresh();
+    });
+
+    enabled.addEventListener('click', () => {
+      linkage.setEnabled(!linkage.isEnabled);
+      refresh();
+    });
+
+    async function initialize() {
+      try {
+        await earth.onReady();
+        if (disposed) return;
+
+        await linkage.create({
+          sceneMode: '2D',
+          layout: 'horizontal',
+          ratio: 0.5,
+          bidirectional: true,
+          onError(error) {
+            console.error(error);
+            refresh();
+            status.textContent = '联动异常，已暂停，请查看控制台';
+          },
+        });
+
+        if (disposed) return;
+
+        visibility.disabled = false;
+        enabled.disabled = false;
+        refresh();
+      } catch (error) {
+        if (disposed) return;
+
+        console.error(error);
+        status.textContent = '初始化失败，请查看控制台';
+      }
+    }
+
+    window.addEventListener('pagehide', () => {
+      disposed = true;
+      earth.destroy();
+    }, { once: true });
+
+    initialize();
   </script>
 </body>
 

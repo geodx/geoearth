@@ -62,7 +62,9 @@ export class GeoEarth {
 
         this.interaction = new InteractionManager(this.viewer, this.event.screen, this.event.interaction, this.tools.draw)
 
-        this.widgets = new WidgetManager(this.viewer, this)
+        this.widgets = new WidgetManager(this.viewer, this, (container, options, config) => {
+            return new GeoEarth(container, options, config)
+        },)
 
         this.viewer.container.ownerDocument.addEventListener('visibilitychange', this.handleVisibilityChange)
 

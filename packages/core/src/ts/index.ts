@@ -49,8 +49,10 @@ export type {
     DrawHeightOptions, DrawHeightResult, DrawPlaneOptions, DrawPlaneResult,
     DrawLineResult, DrawAngleOptions, DrawAngleResult, DrawTriangleOptions, DrawTriangleResult, DrawRectangleResult,
 } from './tools/draw';
-export { getRectanglePoints, getInclinedRectangle, type RectanglePoints,
-    getSpaceDistance, getSurfaceDistance, getSurfaceArea, getSpaceAngle } from './utils/geometry';
+export {
+    getRectanglePoints, getInclinedRectangle, type RectanglePoints,
+    getSpaceDistance, getSurfaceDistance, getSurfaceArea, getSpaceAngle
+} from './utils/geometry';
 
 
 
@@ -67,3 +69,6 @@ export type {
     ResourceTreeOptions,
     ResourceTreeState,
 } from './widgets/resource-tree';
+
+export { LinkedView } from './widgets/linkage'
+export type { LinkedViewOptions } from './widgets/linkage'

@@ -1,3 +1,5 @@
 export { WidgetManager } from './WidgetManager'
 export * from './navigation'
 export type { OverviewMapOptions } from './overview'
+export { LinkedView } from './linkage'
+export type { LinkedViewOptions } from './linkage'
