@@ -261,6 +261,18 @@ export const demoTree: DemoNode[] = [
     ]
   },
   {
+    "id": "group-trajectory",
+    "title": "groups.trajectory",
+    "children": [
+      {
+        "id": "visualization-trajectory",
+        "title": "demos.visualization-trajectory",
+        "description": "demos.visualizationScaffoldDescription",
+        "path": "demos/tools/trajectory/index.html"
+      }
+    ]
+  },
+  {
     "id": "group-camera",
     "title": "groups.camera",
     "children": [
@@ -325,40 +337,202 @@ export const demoTree: DemoNode[] = [
     "title": "groups.visualization",
     "children": [
       {
-        "id": "visualization-point-line-polygon",
-        "title": "demos.visualization-point-line-polygon",
-        "description": "demos.placeholderDescription",
-        "path": "demos/visualization/point-line-polygon.html"
+        "id": "group-visualization-basics",
+        "title": "groups.visualizationBasics",
+        "children": [
+          {
+            "id": "visualization-point-line-polygon",
+            "title": "demos.visualization-point-line-polygon",
+            "description": "demos.visualizationBasicsDescription",
+            "path": "demos/visualization/entities/basic.html"
+          },
+          {
+            "id": "visualization-dynamic-line",
+            "title": "demos.visualization-dynamic-line",
+            "description": "demos.visualizationLinesDescription",
+            "path": "demos/visualization/materials/lines.html"
+          },
+          {
+            "id": "visualization-area-materials",
+            "title": "demos.visualization-area-materials",
+            "description": "demos.visualizationAreasDescription",
+            "path": "demos/visualization/materials/areas.html"
+          }
+        ]
       },
       {
-        "id": "visualization-labels-icons",
-        "title": "demos.visualization-labels-icons",
-        "description": "demos.placeholderDescription",
-        "path": "demos/visualization/labels-icons.html"
+        "id": "group-visualization-markers",
+        "title": "groups.visualizationMarkers",
+        "children": [
+          {
+            "id": "visualization-labels-icons",
+            "title": "demos.visualization-labels-icons",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/markers/labels-icons.html"
+          },
+          {
+            "id": "visualization-html-overlay",
+            "title": "demos.visualization-html-overlay",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/markers/base.html"
+          },
+          {
+            "id": "visualization-html-labels",
+            "title": "demos.visualization-html-labels",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/markers/labels.html"
+          },
+          {
+            "id": "visualization-popup",
+            "title": "demos.visualization-popup",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/markers/popup.html"
+          },
+          {
+            "id": "visualization-panel",
+            "title": "demos.visualization-panel",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/markers/panel.html"
+          },
+          {
+            "id": "visualization-liquid-fill",
+            "title": "demos.visualization-liquid-fill",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/markers/liquid-fill.html"
+          },
+          {
+            "id": "visualization-video-overlay",
+            "title": "demos.visualization-video-overlay",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/markers/video.html"
+          },
+          {
+            "id": "visualization-clustering",
+            "title": "demos.visualization-clustering",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/markers/clustering.html"
+          },
+          {
+            "id": "visualization-bounce",
+            "title": "demos.visualization-bounce",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/markers/bounce.html"
+          },
+          {
+            "id": "visualization-floating",
+            "title": "demos.visualization-floating",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/markers/floating.html"
+          }
+        ]
       },
       {
-        "id": "visualization-dynamic-line",
-        "title": "demos.visualization-dynamic-line",
-        "description": "demos.placeholderDescription",
-        "path": "demos/visualization/dynamic-line.html"
+        "id": "group-visualization-thematic",
+        "title": "groups.visualizationThematic",
+        "children": [
+          {
+            "id": "visualization-migration-echarts",
+            "title": "demos.visualization-migration-echarts",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/thematic/migration/echarts.html"
+          },
+          {
+            "id": "visualization-migration-mapv",
+            "title": "demos.visualization-migration-mapv",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/thematic/migration/mapv.html"
+          },
+          {
+            "id": "visualization-inflow",
+            "title": "demos.visualization-inflow",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/thematic/inflow/echarts.html"
+          },
+          {
+            "id": "visualization-outflow",
+            "title": "demos.visualization-outflow",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/thematic/outflow/echarts.html"
+          },
+          {
+            "id": "visualization-scatter",
+            "title": "demos.visualization-scatter",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/thematic/scatter/echarts.html"
+          },
+          {
+            "id": "visualization-heatmap",
+            "title": "demos.visualization-heatmap",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/thematic/heatmap/heatmapjs.html"
+          },
+          {
+            "id": "visualization-heatmap-mapv",
+            "title": "demos.visualization-heatmap-mapv",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/thematic/heatmap/mapv.html"
+          },
+          {
+            "id": "visualization-grid",
+            "title": "demos.visualization-grid",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/thematic/grid/mapv.html"
+          },
+          {
+            "id": "visualization-honeycomb",
+            "title": "demos.visualization-honeycomb",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/thematic/honeycomb/mapv.html"
+          },
+          {
+            "id": "visualization-regions",
+            "title": "demos.visualization-regions",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/thematic/regions/index.html"
+          }
+        ]
       },
       {
-        "id": "visualization-trajectory",
-        "title": "demos.visualization-trajectory",
-        "description": "demos.placeholderDescription",
-        "path": "demos/visualization/trajectory.html"
+        "id": "group-visualization-projection",
+        "title": "groups.visualizationProjection",
+        "children": [
+          {
+            "id": "visualization-video-projection",
+            "title": "demos.visualization-video-projection",
+            "description": "demos.visualizationScaffoldDescription",
+            "path": "demos/visualization/projection/video.html"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "group-effects",
+    "title": "groups.effects",
+    "children": [
+      {
+        "id": "effect-weather",
+        "title": "demos.effect-weather",
+        "description": "demos.visualizationScaffoldDescription",
+        "path": "demos/effects/weather.html"
       },
       {
-        "id": "visualization-clustering",
-        "title": "demos.visualization-clustering",
-        "description": "demos.placeholderDescription",
-        "path": "demos/visualization/clustering.html"
+        "id": "effect-particle",
+        "title": "demos.effect-particle",
+        "description": "demos.visualizationScaffoldDescription",
+        "path": "demos/effects/particle.html"
       },
       {
-        "id": "visualization-heatmap",
-        "title": "demos.visualization-heatmap",
-        "description": "demos.placeholderDescription",
-        "path": "demos/visualization/heatmap.html"
+        "id": "effect-water",
+        "title": "demos.effect-water",
+        "description": "demos.visualizationScaffoldDescription",
+        "path": "demos/effects/water.html"
+      },
+      {
+        "id": "effect-point-lights",
+        "title": "demos.effect-point-lights",
+        "description": "demos.visualizationScaffoldDescription",
+        "path": "demos/effects/point-lights.html"
       }
     ]
   },

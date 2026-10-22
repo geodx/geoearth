@@ -58,7 +58,8 @@
       const point = earth.viewer.scene.globe.ellipsoid.cartesianToCartographic(position);
       mouseOutput.textContent = `${Cesium.Math.toDegrees(point.longitude).toFixed(5)}°, ${Cesium.Math.toDegrees(point.latitude).toFixed(5)}°, ${point.height.toFixed(1)} m`;
     }
-    function updateFPS() { fpsOutput.textContent = String(earth.performance.getFPS()); }
+    // 首次读取时自动开始统计；由地球的工具管理器在销毁时统一清理。
+    function updateFPS() { fpsOutput.textContent = String(earth.tools.fps.getFPS()); }
 
     earth.onReady().then(() => {
       if (disposed) return;
@@ -71,7 +72,7 @@
           cameraDirty = true;
           mouseDirty = true;
         }),
-        // A newly rendered terrain/model tile may change the point under a stationary cursor.
+        // 新渲染的地形或模型瓦片，可能改变静止鼠标下的地表位置。
         earth.viewer.scene.postRender.addEventListener(() => { mouseDirty = true; }),
       );
       canvas.addEventListener('mouseleave', clearMouse);

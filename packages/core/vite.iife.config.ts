@@ -96,6 +96,16 @@ function iifeResources(): Plugin {
 }
 
 export default defineConfig({
+    // 与入口脚本同目录发布的纹理不能绑定站点根路径。
+    base: './',
+    experimental: {
+        renderBuiltUrl(filename, { hostType }) {
+            // 构造对象时 currentScript 已为空，资源必须使用加载入口时保存的地址。
+            return hostType === 'js'
+                ? { runtime: `new URL(${JSON.stringify(filename)}, __geoearthScriptUrl).href` }
+                : { relative: true };
+        },
+    },
     plugins: [iifeResources()],
 
     build: {

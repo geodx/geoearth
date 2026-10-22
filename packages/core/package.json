@@ -8,7 +8,8 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "exports": {
     ".": {
@@ -19,17 +20,30 @@
       "types": "./dist/vite.d.ts",
       "import": "./dist/vite.js"
     },
-    "./style.css": "./dist/geoearth.css"
+    "./style.css": "./dist/geoearth.css",
+    "./thematic/echarts": {
+      "types": "./dist/ts/visualization/thematic/charts/echarts/index.d.ts",
+      "import": "./dist/thematic/echarts.js"
+    },
+    "./thematic/mapv": {
+      "types": "./dist/ts/visualization/thematic/charts/mapv/index.d.ts",
+      "import": "./dist/thematic/mapv.js"
+    },
+    "./thematic/heatmap": {
+      "types": "./dist/ts/visualization/thematic/heatmap/index.d.ts",
+      "import": "./dist/thematic/heatmap.js"
+    }
   },
   "scripts": {
-    "build": "npm run build:esm && npm run build:iife",
+    "build": "npm run build:esm && npm run build:iife && npm run build:extensions",
     "build:esm": "vite build --config vite.config.ts",
     "build:iife": "vite build --config vite.iife.config.ts",
     "typecheck": "tsc --noEmit",
-    "pack:test": "npm pack --dry-run"
+    "build:extensions": "vite build --config vite.extensions.config.ts --mode echarts && vite build --config vite.extensions.config.ts --mode mapv && vite build --config vite.extensions.config.ts --mode heatmap"
   },
   "peerDependencies": {
     "cesium": "^1.146.0",
+    "echarts": "5.6.0",
     "vite": "^7.0.0 || ^8.0.0"
   },
   "devDependencies": {
@@ -37,7 +51,8 @@
     "sass": "^1.101.0",
     "typescript": "^6.0.3",
     "vite": "^8.1.2",
-    "vite-plugin-dts": "^5.0.3"
+    "vite-plugin-dts": "^5.0.3",
+    "echarts": "5.6.0"
   },
   "keywords": [
     "geoearth",
@@ -62,5 +77,10 @@
   "dependencies": {
     "@turf/turf": "^7.4.0",
     "wunderbaum": "^0.14.1"
+  },
+  "peerDependenciesMeta": {
+    "echarts": {
+      "optional": true
+    }
   }
 }

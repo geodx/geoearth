@@ -5,6 +5,12 @@ export {
     PolylineDashMaterialProperty as PolylineDashMaterial,
     PolylineArrowMaterialProperty as PolylineArrowMaterial
 } from 'cesium'
-
-export { PolylineFlowMaterial } from './lib/PolylineFlowMaterial'
-export { PolylinePulseMaterial } from './lib/PolylinePulseMaterial'
+export { PolylineFlowMaterial } from './ts/PolylineFlowMaterial'
+export { PolylinePulseMaterial } from './ts/PolylinePulseMaterial'
+export type { PolylineFlowMaterialOptions } from './ts/PolylineFlowMaterial'
+export type { PolylinePulseMaterialOptions } from './ts/PolylinePulseMaterial'
+export { PolylineTextureMaterial, PolylineTextureImages } from './ts/PolylineTextureMaterial'
+export type { PolylineTextureMaterialOptions, PolylineTextureEffect } from './ts/PolylineTextureMaterial'
+export { PolylineEnergyMaterial } from './ts/PolylineEnergyMaterial'
+export { PolylineTrailMaterial } from './ts/PolylineTrailMaterial'
+export type { PolylineTrailMaterialOptions } from './ts/PolylineTrailMaterial'

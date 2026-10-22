@@ -1,33 +1,35 @@
 import type { WorldDegree } from '../../viewer/types'
+import type { TrajectoryState } from '../../tools/trajectory/types'
 
 export type RoamingView = 'thirdPerson' | 'firstPerson' | 'none'
-export type RoamingState = 'idle' | 'playing' | 'paused' | 'completed'
+/** 漫游状态由轨迹播放器统一维护，保留原有公共类型名。 */
+export type RoamingState = TrajectoryState
 
 export interface PathRoamingOptions {
-    /** Meters per second, defaults to 10. */
+    /** 速度，单位：米/秒，默认 10。 */
     speed?: number
-    /** Playback multiplier, defaults to 1. */
+    /** 播放倍率，默认 1。 */
     multiplier?: number
     loop?: boolean
     showPath?: boolean
     view?: RoamingView
-    /** Third-person angle in degrees, defaults to -30. */
+    /** 第三人称俯仰角，单位：度，默认 -30。 */
     pitch?: number
-    /** Third-person distance in meters, defaults to 100. */
+    /** 第三人称跟随距离，单位：米，默认 100。 */
     range?: number
-    /** First-person eye height above the path, defaults to 1.7 meters. */
+    /** 第一人称视点相对路线的高度，单位：米，默认 1.7。 */
     eyeHeight?: number
     model?: { uri: string; scale?: number; minimumPixelSize?: number }
 }
 
 export interface PrepareRoamingPathOptions {
-    /** Keep input ellipsoid heights, sample terrain, or prefer model surfaces. Default: surface. */
+    /** 保留输入椭球高、采样地形，或优先使用模型表面高度；默认 surface。 */
     heightMode?: 'absolute' | 'terrain' | 'surface'
-    /** Added to each resulting height, in meters. Default: 0. */
+    /** 叠加到采样高度的偏移，单位：米，默认 0。 */
     heightOffset?: number
-    /** Terrain/surface sample spacing, defaults to 30 meters. */
+    /** 地形或模型表面的采样间距，单位：米，默认 30。 */
     sampleSpacing?: number
-    /** Upper bound for densified samples, defaults to 4096. */
+    /** 路线加密后的采样点上限，默认 4096。 */
     maxSamples?: number
 }
 

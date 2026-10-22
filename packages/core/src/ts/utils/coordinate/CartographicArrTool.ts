@@ -1,52 +1,13 @@
-/****************************************************************************
- 名称：Cesium的制图坐标系：经纬度高对象
+import type { Cartesian3 } from 'cesium'
+import { CartographicTool } from './CartographicTool'
 
- 最后修改日期：2022-04-12
- ****************************************************************************/
-
-import { Cartesian3, Ellipsoid, Math } from "cesium";
-
-
-
-const CartographicArrTool = {
-
-    // 【笛卡尔坐标对象】数组 转 【经纬度】数组
-    // 输入格式：
-    // let points = { x: -1708218.500471409, y: 5211816.659704349, z: 3247022.1648146017 };
-    // 输出格式：
-    // let coordinates = [108.14700948231935, 30.795471733827313, 1145.012060885598];
-    formCartesian3(p: Cartesian3) {
-        let ellipsoid = Ellipsoid.WGS84;
-        let cartesian3 = new Cartesian3(p.x, p.y, p.z);
-        let cartographic = ellipsoid.cartesianToCartographic(cartesian3);
-        let lon = Math.toDegrees(cartographic.longitude);
-        let lat = Math.toDegrees(cartographic.latitude);
-        let alt = cartographic.height;
-
-        return [lon, lat, alt];
+/** 度制经纬度数组与对象转换共用实现，避免维护两套弧度转换。 */
+export const CartographicArrTool = {
+    formCartesian3(position: Cartesian3): [number, number, number] {
+        const { longitude, latitude, height } = CartographicTool.formCartesian3(position)
+        return [longitude, latitude, height]
     },
-
-
-    // 【笛卡尔坐标对象】数组 转 【经纬度】数组
-    // 输入格式：
-    // let points = [
-    //    { x: -1708218.500471409, y: 5211816.659704349, z: 3247022.1648146017 },
-    //    { x: -1708476.6222892085, y: 5216851.541701467, z: 3237797.206687023 }
-    // ];
-    // 输出格式：
-    // let coordinates = [
-    //     [108.14700948231935, 30.795471733827313, 1145.012060885598],
-    //     [108.1332022783138, 30.70153773444751, 609.6407666736469]
-    // ];
-    formCartesian3S(ps: Cartesian3[]) {
-        let arr = [];
-        for (let i = 0; i < ps.length; i++) {
-            let p = ps[i]!;
-            arr.push(this.formCartesian3(p));
-        }
-        return arr;
-    }
-};
-
-
-export { CartographicArrTool };
+    formCartesian3S(positions: readonly Cartesian3[]): [number, number, number][] {
+        return positions.map(position => CartographicArrTool.formCartesian3(position))
+    },
+}

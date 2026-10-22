@@ -1,8 +1,6 @@
 import type { Viewer } from 'cesium';
 import { createViewer } from './viewer/createViewer';
 
-import { PerformanceManager } from './performance';
-
 import { StartAnimation } from './camera/animations/StartAnimation';
 import { CameraManager } from './camera/CameraManager';
 import { ConfigManager } from './config/ConfigManager';
@@ -18,8 +16,6 @@ export class GeoEarth {
     public readonly viewer: Viewer
     public readonly camera: CameraManager
     public readonly config: ConfigManager
-
-    public readonly performance: PerformanceManager
 
     public readonly event: EventManager
 
@@ -49,7 +45,6 @@ export class GeoEarth {
 
         // 初始化事件
         this.event = new EventManager(this.viewer)
-        this.performance = new PerformanceManager(this.viewer)
 
         this.startAnimation = new StartAnimation(this.viewer)
         this.camera = new CameraManager(this.viewer, this.event.camera, () => {
@@ -128,7 +123,6 @@ export class GeoEarth {
         this.startAnimation.destroy()
         this.camera.destroy()
         this.sources.destroy()
-        this.performance.destroy()
         this.widgets.destroy()
 
         if (!this.viewer.isDestroyed()) {

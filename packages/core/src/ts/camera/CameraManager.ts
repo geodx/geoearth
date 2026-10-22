@@ -1,11 +1,12 @@
-import { Cartesian2, Cartesian3, HeadingPitchRange, Rectangle, Math as CesiumMath, type Viewer } from 'cesium'
+import { Cartesian3, HeadingPitchRange, Rectangle, Math as CesiumMath, type Viewer } from 'cesium'
+import { getCameraExtent, getScreenCenterPoint } from '../utils/camera/queries'
 import type { CameraEvent } from '../events/modules/CameraEvent'
 import type { WorldDegree, WorldRectangle } from '../viewer/types'
 import type { CameraView, CameraFlyToOptions } from './types'
 import { BookmarkManager } from './bookmark/BookmarkManager'
 import { PathRoaming } from './roaming/PathRoaming'
 
-/** Bound to one Viewer. Public angles are degrees; distances are meters. */
+/** 绑定单个 Viewer；公开角度使用度，距离使用米。 */
 export class CameraManager {
     readonly bookmarks: BookmarkManager
     private roamingInstance?: PathRoaming
@@ -44,37 +45,21 @@ export class CameraManager {
         }
     }
 
-    /** Ellipsoid height, not height above terrain. */
+    /** 相机椭球高度，单位：米。 */
     getHeight(): number {
         return this.getView().height
     }
 
-    /** Intersection of the screen-center ray with the globe (including loaded terrain). */
+    /** 屏幕中心射线与地球的交点，包含已加载的地形。 */
     getCenter(): WorldDegree | undefined {
         this.assertAlive()
-        const { scene, camera } = this.viewer
-        const ray = camera.getPickRay(new Cartesian2(scene.canvas.clientWidth / 2, scene.canvas.clientHeight / 2))
-        const point = ray && scene.globe?.pick(ray, scene)
-        if (!point) return undefined
-        const position = scene.globe.ellipsoid.cartesianToCartographic(point)
-        return {
-            longitude: CesiumMath.toDegrees(position.longitude),
-            latitude: CesiumMath.toDegrees(position.latitude),
-            height: position.height
-        }
+        return getScreenCenterPoint(this.viewer)
     }
 
-    /** Approximate ellipsoid view rectangle in degrees; west > east crosses the date line. */
+    /** 角度制视野包围盒；west > east 表示跨日期变更线。 */
     getExtent(): WorldRectangle | undefined {
         this.assertAlive()
-        const rectangle = this.viewer.camera.computeViewRectangle(this.viewer.scene.globe?.ellipsoid)
-        if (!rectangle) return undefined
-        return {
-            west: CesiumMath.toDegrees(rectangle.west),
-            south: CesiumMath.toDegrees(rectangle.south),
-            east: CesiumMath.toDegrees(rectangle.east),
-            north: CesiumMath.toDegrees(rectangle.north)
-        }
+        return getCameraExtent(this.viewer)
     }
 
     setView(view: CameraView): void {
@@ -85,7 +70,7 @@ export class CameraManager {
         this.viewer.scene.requestRender()
     }
 
-    /** Resolves true on completion, false on interruption or cancellation. */
+    /** 飞行完成返回 true；被中断或取消时返回 false。 */
     flyTo(options: CameraFlyToOptions): Promise<boolean> {
         this.validate(options)
         const duration = options.duration ?? 2
@@ -95,7 +80,7 @@ export class CameraManager {
         })
     }
 
-    /** Fit a geographic rectangle. Bounds are degrees and may cross the date line. */
+    /** 定位到地理矩形；边界以度计，支持跨日期变更线。 */
     flyToExtent(extent: WorldRectangle, duration = 2): Promise<boolean> {
         this.assertAlive()
         for (const key of ['west', 'south', 'east', 'north'] as const) {
@@ -113,7 +98,7 @@ export class CameraManager {
         })
     }
 
-    /** Fit a Cesium entity, data source, imagery layer, or tileset. */
+    /** 定位到 Cesium 实体、数据源、影像层或瓦片集。 */
     flyToTarget(target: Parameters<Viewer['flyTo']>[0], options: { duration?: number; heading?: number; pitch?: number; range?: number } = {}): Promise<boolean> {
         this.assertAlive()
         this.validateDuration(options.duration ?? 2)
@@ -171,12 +156,12 @@ export class CameraManager {
         settle?.(false)
     }
 
-    /** Restore north without changing the camera position, pitch, or roll. */
+    /** 恢复朝北方向，保留相机位置、俯仰角和翻滚角。 */
     resetNorth(): void {
         this.setView({ ...this.getView(), heading: 0 })
     }
 
-    /** Look down at the current globe center; return false when looking into space. */
+    /** 俯视当前地球中心点；视线未落在地球上时返回 false。 */
     setTopView(): boolean {
         const center = this.getCenter()
         if (!center) return false
@@ -185,7 +170,7 @@ export class CameraManager {
         return true
     }
 
-    /** Explicit setter, rather than a toggle. Restores the previous tilt setting on unlock. */
+    /** 显式设置视角锁定；解锁时恢复此前的倾斜控制设置。 */
     lockTopView(locked = true): boolean {
         this.assertAlive()
         const controller = this.viewer.scene.screenSpaceCameraController
@@ -200,14 +185,14 @@ export class CameraManager {
         return true
     }
 
-    /** Restore the view captured when the manager was constructed. */
+    /** 恢复管理器创建时记录的视角。 */
     reset(duration = 2): Promise<boolean> {
         return this.flyTo({ ...this.initialView, duration })
     }
 
-    /** Fly to a global view above longitude 0, latitude 0. */
+    /** 飞到经纬度均为零的全球视角。 */
     globalView(duration = 2): Promise<boolean> {
-        // Use a stable geographic global view independent of Cesium's mutable home rectangle.
+        // 使用固定地理视角，避免依赖 Cesium 可变的默认视野。
         return this.flyTo({ longitude: 0, latitude: 0, height: 23000000, heading: 0, pitch: -90, roll: 0, duration })
     }
 
@@ -239,9 +224,9 @@ export class CameraManager {
     private cancelPendingTarget(): void {
         if (!this.targetPending) return
         this.targetPending = false
-        // camera.cancelFlight alone cannot cancel Viewer.flyTo waiting for data.
-        // A public flyTo with an empty entity list supersedes that queued request
-        // and ends without moving the camera. Avoid Cesium private zoom fields.
+        // camera.cancelFlight 无法取消 Viewer.flyTo 等待数据的任务。
+        // 通过公开 flyTo 传空实体列表，替代尚在队列中的定位请求，
+        // 使其结束并保持当前位置，无需访问 Cesium 私有缩放字段。
         void this.viewer.flyTo([], { duration: 0 }).catch(() => { })
         this.viewer.scene.requestRender()
     }

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · 动态线材质</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    .demo-panel { width: min(290px, calc(100vw - 32px)); }
+    .demo-panel h2 { margin: 0 0 8px; font-size: 16px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .actions button { padding: 6px 12px; color: #e2e8f0; background: #334155; border: 1px solid #475569; border-radius: 5px; cursor: pointer; }
+    .actions button:disabled { opacity: .45; cursor: default; }
+    
+  </style>
+</head>
+<body>
+  <div id="earth"></div>
+  <section class="demo-panel" aria-label="动态线材质示例">
+    <h2>动态线材质</h2>
+    <p class="hint">并排比较 14 种线材质，也可单独查看。暂停后保留当前相位；原生箭头为静态效果。</p>
+    <div id="gui"></div>
+    <div class="actions">
+      <button id="reload" type="button" disabled>重新加载</button>
+      <button id="remove" type="button" disabled>移除全部</button>
+      <button id="locate" type="button" disabled>定位</button>
+    </div>
+    <p id="status" class="status" role="status" data-state="loading">正在初始化地球…</p>
+  </section>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
+  <script src="/sdk/cesium/Cesium.js"></script>
+  <script src="/sdk/geoearth.js"></script>
+  <script src="/demo-assets/lil-gui.umd.min.js"></script>
+  <script>
+    const C = Cesium;
+    const G = GeoEarth;
+    const earth = new GeoEarth('earth', { requestRenderMode: true, shouldAnimate: true, maximumRenderTimeChange: 0 }, {
+      startup: { animation: false },
+      homeView: { longitude: 110, latitude: 30, height: 30000, pitch: -90 },
+    });
+    const viewer = earth.viewer;
+    const source = new C.CustomDataSource('line-materials');
+    const status = document.getElementById('status');
+    const buttons = Object.fromEntries(['reload', 'remove', 'locate'].map(id => [id, document.getElementById(id)]));
+    const params = { material: 'all', color: '#36d9ff', width: 7, duration: 2400, repeat: 3, reverse: false, trailLength: .3, animate: true, labels: true, visible: true };
+    // 这些预设均调用 SDK 公共材质，不在示例中重复编写着色器。
+    const entries = [
+      { id: 'solid', name: '纯色', create: o => new G.PolylineColorMaterial(o.color) },
+      { id: 'glow', name: '发光', create: o => new G.PolylineGlowMaterial({ color: o.color, glowPower: .25 }) },
+      { id: 'outline', name: '描边', create: o => new G.PolylineOutlineMaterial({ color: o.color, outlineColor: C.Color.WHITE, outlineWidth: 2 }) },
+      { id: 'dash', name: '虚线', create: o => new G.PolylineDashMaterial({ color: o.color, dashLength: 20 }) },
+      { id: 'arrow', name: '原生箭头 · 静态', create: o => new G.PolylineArrowMaterial(o.color) },
+      { id: 'flow', name: '流动高光', create: o => new G.PolylineFlowMaterial(o) },
+      { id: 'pulse', name: '明暗脉冲', create: o => new G.PolylinePulseMaterial(o) },
+      { id: 'trail', name: '移动尾迹', create: o => new G.PolylineTrailMaterial({ ...o, length: params.trailLength }) },
+      { id: 'energy', name: '能量传输', create: o => new G.PolylineEnergyMaterial(o) },
+      ...[['link-pulse','脉冲贴图'],['migrate','迁徙贴图'],['sprite','精灵贴图'],['super','超级线贴图'],['volume','重复箭头贴图']].map(([id, name]) => ({
+        id, name, create: options => new G.PolylineTextureMaterial({ ...options, effect: id }),
+      })),
+    ];
+    let loaded = false;
+    let disposed = false;
+    let startTime;
+    const gui = new lil.GUI({ container: document.getElementById('gui'), title: '材质参数' });
+    gui.add(params, 'material', Object.fromEntries([['全部对比', 'all'], ...entries.map(item => [item.name, item.id])])).name('查看材质');
+    gui.addColor(params, 'color').name('线颜色');
+    gui.add(params, 'width', 2, 16, 1).name('线宽（像素）');
+    const animation = gui.addFolder('动态参数');
+    animation.add(params, 'animate').name('播放动画');
+    animation.add(params, 'duration', 600, 10000, 100).name('周期（毫秒）');
+    animation.add(params, 'repeat', 1, 10, 1).name('流动 / 贴图重复');
+    animation.add(params, 'reverse').name('反向流动');
+    animation.add(params, 'trailLength', .05, .9, .05).name('尾迹长度比例');
+    gui.add(params, 'labels').name('显示名称');
+    gui.add(params, 'visible').name('显示线图层');
+    gui.controllersRecursive().forEach(control => control.disable());
+
+    function loadLines() {
+      source.entities.removeAll();
+      const selected = entries.filter(item => params.material === 'all' || item.id === params.material);
+      const options = {
+        color: C.Color.fromCssColorString(params.color), duration: params.duration,
+        repeat: params.repeat, reverse: params.reverse, startTime,
+      };
+      selected.forEach((item, index) => {
+        const center = selected.length === 1 ? 110 : 109.947 + Math.floor(index / 7) * .098;
+        const latitude = selected.length === 1 ? 30 : 30.048 - (index % 7) * .016;
+        const halfWidth = selected.length === 1 ? .07 : .036;
+        const line = G.EntityFactory.createLine(C.Cartesian3.fromDegreesArrayHeights([
+          center-halfWidth, latitude-.002, 200,
+          center-halfWidth/3, latitude+.002, 200,
+          center+halfWidth/3, latitude-.002, 200,
+          center+halfWidth, latitude+.002, 200,
+        ]), { width: params.width, material: item.create(options) });
+        line.name = item.name;
+        line.position = C.Cartesian3.fromDegrees(center, latitude+.006, 200);
+        line.label = new C.LabelGraphics({
+          text: item.name, font: '13px sans-serif', fillColor: C.Color.WHITE,
+          style: C.LabelStyle.FILL_AND_OUTLINE, outlineColor: C.Color.BLACK, outlineWidth: 3,
+          show: params.labels, disableDepthTestDistance: Infinity,
+        });
+        source.entities.add(line);
+      });
+      loaded = true;
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      source.show = params.visible;
+      viewer.clock.shouldAnimate = params.animate && loaded && params.visible;
+      for (const entity of source.entities.values) entity.label.show = params.labels;
+      const state = !params.visible ? '图层已隐藏' : params.animate ? '动画播放中' : '动画已暂停';
+      status.textContent = loaded ? source.entities.values.length + ' 种材质 · ' + state : '线图层已移除，可重新加载';
+      status.dataset.state = 'ready';
+      buttons.remove.disabled = buttons.locate.disabled = !loaded;
+      viewer.scene.requestRender();
+    }
+
+    function locate() {
+      const extent = {"west":109.9,"south":29.935,"east":110.09,"north":30.065};
+      // 按当前预览宽度为面板预留空间，代码面板展开或收起后也能完整查看图形。
+      const panelWidth = document.querySelector('.demo-panel').getBoundingClientRect().width + 32;
+      const reserved = Math.min(.65, panelWidth / viewer.canvas.clientWidth);
+      extent.east += (extent.east - extent.west) * reserved / (1 - reserved);
+      return earth.camera.flyToExtent(extent, 0);
+    }
+
+    function onResize() { if (loaded && !disposed) void locate(); }
+    window.addEventListener('resize', onResize);
+
+    gui.onChange(({ property }) => {
+      if (['animate', 'labels', 'visible'].includes(property)) updateDisplay();
+      else if (loaded) loadLines();
+    });
+    buttons.reload.onclick = loadLines;
+    buttons.remove.onclick = () => { source.entities.removeAll(); loaded = false; updateDisplay(); };
+    buttons.locate.onclick = locate;
+    (async () => {
+      await earth.onReady();
+      if (disposed) return;
+      await viewer.dataSources.add(source);
+      if (disposed) return;
+      // 所有动态材质共享起点，便于在相同时间进度下比较。
+      viewer.clock.multiplier = 1;
+      startTime = C.JulianDate.clone(viewer.clock.currentTime);
+      loadLines();
+      await locate();
+      if (disposed) return;
+      gui.controllersRecursive().forEach(control => control.enable());
+      buttons.reload.disabled = false;
+    })().catch(error => { if (!disposed) { status.textContent = error.message; status.dataset.state = 'error'; console.error(error); } });
+    window.addEventListener('pagehide', event => {
+      if (event.persisted) return;
+      disposed = true;
+      window.removeEventListener('resize', onResize);
+      gui.destroy();
+      earth.destroy();
+    });
+  </script>
+</body>
+</html>

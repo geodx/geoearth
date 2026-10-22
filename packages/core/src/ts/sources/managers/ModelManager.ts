@@ -11,12 +11,12 @@ import {
     Viewer
 } from 'cesium';
 
-import * as turf from "@turf/turf";
-import { MotionEntity } from '../../visualization';
+import { TrajectoryPlayer } from '../../tools/trajectory/index';
 import { ModelResourceItem } from '../types';
 import { CesiumData } from './data/CesiumData';
 export class ModelManager extends CesiumData<Entity> {
     private readonly dataSourceTool: CustomDataSource;
+    private readonly motionPlayers = new Map<string, TrajectoryPlayer>();
 
     constructor(viewer: Viewer, camera: CameraManager) {
         super(viewer, camera);
@@ -69,20 +69,31 @@ export class ModelManager extends CesiumData<Entity> {
         prop.minimumPixelSize && (option.model.minimumPixelSize = prop.minimumPixelSize);
 
         const motion = prop.motion;
-        const route = motion ? turf.lineString(motion.path) : undefined;
         if (motion && (
             !Number.isFinite(motion.speed) ||
             motion.speed <= 0 ||
-            turf.length(route, { units: 'meters' }) <= 0
+            !Array.isArray(motion.path) || motion.path.length < 2
         )) {
             throw new Error('运动速度和路线长度必须大于 0');
         }
 
         const entity = this.dataSourceTool.entities.add(option);
 
-        // 添加实体运动
+        // 模型资源只负责接入轨迹工具；运动不修改全局时钟，也不接管相机。
         if (motion) {
-            MotionEntity(entity, route, prop.motion.speed);
+            const player = new TrajectoryPlayer(this.viewer, { entity, speed: motion.speed, loop: true, showPath: false });
+            try {
+                player.setPath(motion.path.map(point => ({ position: {
+                    // 二维路线沿用模型配置高度，不额外做地形采样。
+                    longitude: point[0], latitude: point[1], height: prop.position.height ?? 0,
+                } })));
+                player.play();
+                this.motionPlayers.set(entity.id, player);
+            } catch (error) {
+                player.destroy();
+                this.dataSourceTool.entities.remove(entity);
+                throw error;
+            }
         }
 
         this.sourcesItems.push(sourceItem);
@@ -101,6 +112,8 @@ export class ModelManager extends CesiumData<Entity> {
     }
 
     removeById(id: string) {
+        this.motionPlayers.get(id)?.destroy();
+        this.motionPlayers.delete(id);
         let removeRes = false;
         const instance = this.getInstanceById(id);
         this.sourcesItems = this.sourcesItems.filter(item => item.id !== id);

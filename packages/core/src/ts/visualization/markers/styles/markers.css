@@ -1,0 +1,52 @@
+.geoearth-html-overlay { box-sizing: border-box; font: 14px/1.5 system-ui, sans-serif; color: #e6faff; }
+.geoearth-label { --geoearth-accent: #22d3ee; padding: 8px 14px; border: 1px solid var(--geoearth-accent); border-radius: 5px; background: #071a2ee8; box-shadow: 0 0 12px color-mix(in srgb, var(--geoearth-accent) 35%, transparent); white-space: nowrap; }
+.geoearth-label strong { display: block; color: var(--geoearth-accent); }
+.geoearth-label--floating { animation: geoearth-float 2s ease-in-out infinite alternate; }
+@font-face { font-family: GeoEarthLED; src: url('../assets/fonts/LED.woff2') format('woff2'); font-display: swap; }
+.geoearth-label--led { font: 28px/1.2 GeoEarthLED, monospace; letter-spacing: .12em; color: var(--geoearth-accent); text-shadow: 0 0 8px currentColor; background: #071116; }
+.geoearth-popup { --geoearth-accent: #22d3ee; min-width: 180px; max-width: 420px; border: 1px solid var(--geoearth-accent); border-radius: 6px; background: #071a2ef5; box-shadow: 0 6px 24px #0008; overflow: hidden; }
+.geoearth-popup header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 12px; background: #0e405a; }
+.geoearth-popup header button { cursor: pointer; color: inherit; border: 0; background: transparent; font-size: 20px; }
+.geoearth-popup section { padding: 12px; overflow: auto; max-height: 320px; }
+.geoearth-popup--hud { border-radius: 0; border-width: 2px 0; }
+.geoearth-liquid { position: relative; width: 100px; height: 100px; overflow: hidden; border: 2px solid #22d3ee; border-radius: 50%; background: #061a2fee; }
+.geoearth-liquid .geoearth-water { position: absolute; left: -50%; width: 200%; height: 200%; border-radius: 42%; background: #0891b2; animation: geoearth-wave 6s linear infinite; }
+.geoearth-liquid span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 22px; font-weight: bold; }
+.geoearth-video video { display: block; width: 320px; max-width: 100%; }
+@keyframes geoearth-float { to { transform: translateY(-8px); } }
+@keyframes geoearth-wave { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .geoearth-label, .geoearth-liquid .geoearth-water { animation: none; } }
+
+/* 旧标牌的可见特征统一作用在模块前缀下，避免全局样式和动画名冲突。 */
+.geoearth-label--gradient, .geoearth-label--erect, .geoearth-label--hotspot { border: 0; border-radius: 0; background: transparent; box-shadow: none; padding: 0; }
+.geoearth-label--gradient > :not(.geoearth-marker-stem) { padding: 5px 20px; background: linear-gradient(#070acbbf, #10eedc); }
+.geoearth-label--gradient > strong { border-radius: 5px 5px 0 0; }
+.geoearth-label--gradient .geoearth-marker-stem { width: 3px; height: 60px; margin: auto; background: var(--geoearth-accent); }
+.geoearth-label--erect > div:not(.geoearth-marker-stem) { writing-mode: vertical-lr; font-size: 16px; letter-spacing: 4px; margin: auto; }
+.geoearth-label--erect .geoearth-marker-stem { height: 100px; width: 1px; margin: auto; background: currentColor; }
+.geoearth-label--erect::after { content: none; }
+.geoearth-label--hotspot { width: 180px; padding: 12px 0 0; background: url('../assets/images/hotspot-head.png') top center / 180px 82px no-repeat; text-align: center; }
+.geoearth-label--hotspot > strong, .geoearth-label--hotspot > div:not(.geoearth-marker-stem):not(.geoearth-hotspot-foot) { min-height: 24px; padding: 0 12px; color: #beedff; }
+.geoearth-label--hotspot .geoearth-marker-stem { position: relative; width: 2px; height: 150px; margin: 10px auto 0; background: linear-gradient(var(--geoearth-accent), transparent); }
+.geoearth-label--hotspot .geoearth-marker-stem::before, .geoearth-label--hotspot .geoearth-marker-stem::after { content: ''; position: absolute; height: 45%; width: 1px; left: -5px; background: linear-gradient(var(--geoearth-accent), transparent); animation: geoearth-rise 3s linear infinite; }
+.geoearth-label--hotspot .geoearth-marker-stem::after { left: 6px; animation-delay: -1s; }
+.geoearth-hotspot-foot { width: 70px; height: 44px; margin: -22px auto 0; background: url('../assets/images/hotspot-base.png') center / contain no-repeat; }
+.geoearth-label--hotspot:hover { --geoearth-accent: #ff7a21; background-image: url('../assets/images/hotspot-head-active.png'); }
+.geoearth-label--hotspot:hover .geoearth-hotspot-foot { background-image: url('../assets/images/hotspot-base-active.png'); }
+.geoearth-label--dynamic { position: relative; animation: none; }
+.geoearth-label--dynamic::before, .geoearth-label--dynamic::after { content: ''; pointer-events: none; position: absolute; inset: -4px; border: 2px solid var(--geoearth-accent); animation: geoearth-border 8s linear infinite; }
+.geoearth-label--dynamic::after { animation-delay: -4s; }
+.geoearth-label--led > div { background: linear-gradient(0deg, #ff3030, #fd8403, #ffe600); color: transparent; background-clip: text; }
+.geoearth-label--frame { min-width: 180px; min-height: 100px; padding: 22px; border-radius: 0; clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px); background: linear-gradient(135deg, #143b59ed, #28bbf04d); border: 2px solid var(--geoearth-accent); }
+.geoearth-panel-marker { --geoearth-accent: #22d3ee; padding-bottom: 8px; }
+.geoearth-panel-marker .geoearth-popup { position: relative; margin-left: 20px; overflow: visible; }
+.geoearth-panel-marker--sample .geoearth-popup { border-color: #ffffff4f; background: linear-gradient(0deg, #1e202af5, #0d1013f5); }
+.geoearth-panel-marker--hud .geoearth-popup { border-radius: 0; border-width: 2px 0; box-shadow: 0 0 18px color-mix(in srgb, var(--geoearth-accent) 45%, transparent); }
+.geoearth-panel-toggle { display: block; width: 18px; height: 18px; border: 0; padding: 0; margin: 0; background: transparent center / contain no-repeat; cursor: pointer; }
+.geoearth-panel-pedestal { height: 30px; margin-left: -20px; background: url('../assets/images/panel-pedestal.png') center / 100% 100% no-repeat; }
+.geoearth-popup--angular { border-radius: 0 18px 0 18px; border-width: 2px; background: linear-gradient(135deg, #063155f5, #071a2ef5); }
+.geoearth-popup--hud { box-shadow: 0 0 20px color-mix(in srgb, var(--geoearth-accent) 35%, transparent); }
+.geoearth-video .geoearth-panel-toggle { width: 30px; height: 30px; }
+@keyframes geoearth-rise { from { top: 75%; opacity: 0; } 50% { opacity: 1; } to { top: 0; opacity: 0; } }
+@keyframes geoearth-border { 0%, 100% { clip-path: inset(0 0 calc(100% - 2px) 0); } 25% { clip-path: inset(0 calc(100% - 2px) 0 0); } 50% { clip-path: inset(calc(100% - 2px) 0 0 0); } 75% { clip-path: inset(0 0 0 calc(100% - 2px)); } }
+@media (prefers-reduced-motion: reduce) { .geoearth-label::before, .geoearth-label::after, .geoearth-marker-stem::before, .geoearth-marker-stem::after { animation: none; } }

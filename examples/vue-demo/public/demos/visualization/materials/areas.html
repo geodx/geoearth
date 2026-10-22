@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · 渐变面材质</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    .demo-panel { width: min(290px, calc(100vw - 32px)); }
+    .demo-panel h2 { margin: 0 0 8px; font-size: 16px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .actions button { padding: 6px 12px; color: #e2e8f0; background: #334155; border: 1px solid #475569; border-radius: 5px; cursor: pointer; }
+    .actions button:disabled { opacity: .45; cursor: default; }
+    
+  </style>
+</head>
+<body>
+  <div id="earth"></div>
+  <section class="demo-panel" aria-label="渐变面材质示例">
+    <h2>渐变面材质</h2>
+    <p class="hint">左侧使用 Entity，右侧使用 Primitive；相同参数展示从中心到边缘的透明度渐变。</p>
+    <div id="gui"></div>
+    <div class="actions">
+      <button id="reload" type="button" disabled>重新加载</button>
+      <button id="remove" type="button" disabled>移除全部</button>
+      <button id="locate" type="button" disabled>定位</button>
+    </div>
+    <p id="status" class="status" role="status" data-state="loading">正在初始化地球…</p>
+  </section>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
+  <script src="/sdk/cesium/Cesium.js"></script>
+  <script src="/sdk/geoearth.js"></script>
+  <script src="/demo-assets/lil-gui.umd.min.js"></script>
+  <script>
+    const C = Cesium;
+    const G = GeoEarth;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false },
+      homeView: { longitude: 110, latitude: 30, height: 25000, pitch: -90 },
+    });
+    const viewer = earth.viewer;
+    const source = new C.CustomDataSource('area-materials');
+    const status = document.getElementById('status');
+    const buttons = Object.fromEntries(['reload', 'remove', 'locate'].map(id => [id, document.getElementById(id)]));
+    const params = { shape: 'polygon', renderer: 'both', color: '#32dcff', centerAlpha: .05, edgeAlpha: .9, radius: 1800, height: 200, outline: true, labels: true, visible: true };
+    const entityGroup = [];
+    const primitiveGroup = [];
+    let primitive;
+    let loaded = false;
+    let disposed = false;
+    const gui = new lil.GUI({ container: document.getElementById('gui'), title: '渐变参数' });
+    gui.add(params, 'shape', { 多边形: 'polygon', 矩形: 'rectangle', 圆形: 'circle' }).name('图形');
+    gui.add(params, 'renderer', { 两种方式对比: 'both', 仅实体: 'entity', 仅图元: 'primitive' }).name('显示方式');
+    gui.addColor(params, 'color').name('填充颜色');
+    gui.add(params, 'centerAlpha', 0, 1, .05).name('中心透明度');
+    gui.add(params, 'edgeAlpha', 0, 1, .05).name('边缘透明度');
+    gui.add(params, 'radius', 800, 2600, 100).name('圆半径（米）');
+    gui.add(params, 'height', 0, 3000, 50).name('椭球高度（米）');
+    gui.add(params, 'outline').name('显示边界');
+    gui.add(params, 'labels').name('显示名称');
+    gui.add(params, 'visible').name('显示面图层');
+    gui.controllersRecursive().forEach(control => control.disable());
+
+    function boundary(longitude) {
+      if (params.shape === 'circle') return G.getCirclePositions({ longitude, latitude: 30, height: params.height }, params.radius, 96);
+      const offsets = params.shape === 'rectangle'
+        ? [[-.025,-.02],[.025,-.02],[.025,.02],[-.025,.02]]
+        : [[-.025,-.018],[.008,-.025],[.028,-.004],[.017,.022],[-.018,.025],[-.029,.004]];
+      return offsets.map(([x, y]) => C.Cartesian3.fromDegrees(longitude+x, 30+y, params.height));
+    }
+
+    function addDetails(longitude, points, group, title) {
+      const border = G.EntityFactory.createLine([...points, points[0]], { width: 2, material: C.Color.fromCssColorString(params.color), arcType: C.ArcType.NONE });
+      border.name = '边界';
+      source.entities.add(border);
+      group.push(border);
+      const label = G.EntityFactory.create({
+        position: C.Cartesian3.fromDegrees(longitude,30.035,params.height),
+        label: { text: title, font: '14px sans-serif', fillColor: C.Color.WHITE,
+          outlineColor: C.Color.BLACK, outlineWidth: 3, style: C.LabelStyle.FILL_AND_OUTLINE, disableDepthTestDistance: Infinity },
+      });
+      source.entities.add(label);
+      group.push(label);
+    }
+
+    function removeGraphics() {
+      source.entities.removeAll();
+      entityGroup.length = primitiveGroup.length = 0;
+      if (primitive) viewer.scene.primitives.remove(primitive);
+      primitive = undefined;
+      loaded = false;
+    }
+
+    function loadAreas() {
+      // 参数变化时重建两种材质；移除旧图元会同时释放其 WebGL 资源。
+      removeGraphics();
+      const materialOptions = { color: C.Color.fromCssColorString(params.color), centerAlpha: params.centerAlpha, edgeAlpha: params.edgeAlpha };
+      const left = boundary(109.95);
+      const entity = params.shape === 'circle'
+        ? G.EntityFactory.createCircle(C.Cartesian3.fromDegrees(109.95,30,params.height), params.radius, { clampToGround: false })
+        : G.EntityFactory.createPolygon(left, { clampToGround: false });
+      entity.name = 'Entity 渐变面';
+      if (entity.ellipse) { entity.ellipse.material = new G.GradientMaterial(materialOptions); entity.ellipse.outline = false; }
+      else { entity.polygon.material = new G.GradientMaterial(materialOptions); entity.polyline = undefined; }
+      source.entities.add(entity);
+      entityGroup.push(entity);
+      addDetails(109.95, left, entityGroup, 'Entity · GradientMaterial');
+
+      const right = boundary(110.045);
+      const vertexFormat = C.MaterialAppearance.MaterialSupport.TEXTURED.vertexFormat;
+      const geometry = params.shape === 'circle'
+        ? new C.CircleGeometry({ center: C.Cartesian3.fromDegrees(110.045,30), radius: params.radius, height: params.height, vertexFormat })
+        : new C.PolygonGeometry({ polygonHierarchy: new C.PolygonHierarchy(right), height: params.height, vertexFormat });
+      primitive = viewer.scene.primitives.add(new C.Primitive({
+        geometryInstances: new C.GeometryInstance({ id: 'gradient-primitive', geometry }),
+        appearance: G.createGradientAppearance(materialOptions),
+        asynchronous: false,
+      }));
+      addDetails(110.045, right, primitiveGroup, 'Primitive · GradientAppearance');
+      loaded = true;
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      source.show = params.visible;
+      for (const [group, enabled] of [[entityGroup, params.renderer !== 'primitive'], [primitiveGroup, params.renderer !== 'entity']]) {
+        for (const entity of group) entity.show = enabled && (entity.label ? params.labels : entity.polyline ? params.outline : true);
+      }
+      if (primitive) primitive.show = params.visible && params.renderer !== 'entity';
+      status.textContent = !loaded ? '面图层已移除，可重新加载' : !params.visible ? '面图层已隐藏' : '中心 ' + params.centerAlpha.toFixed(2) + ' → 边缘 ' + params.edgeAlpha.toFixed(2) + ' · 可反向设置渐变';
+      status.dataset.state = 'ready';
+      buttons.remove.disabled = buttons.locate.disabled = !loaded;
+      viewer.scene.requestRender();
+    }
+
+    function locate() {
+      const extent = {"west":109.91,"south":29.955,"east":110.09,"north":30.055};
+      // 按当前预览宽度为面板预留空间，代码面板展开或收起后也能完整查看图形。
+      const panelWidth = document.querySelector('.demo-panel').getBoundingClientRect().width + 32;
+      const reserved = Math.min(.65, panelWidth / viewer.canvas.clientWidth);
+      extent.east += (extent.east - extent.west) * reserved / (1 - reserved);
+      return earth.camera.flyToExtent(extent, 0);
+    }
+
+    function onResize() { if (loaded && !disposed) void locate(); }
+    window.addEventListener('resize', onResize);
+
+    gui.onChange(({ property }) => {
+      if (['renderer', 'outline', 'labels', 'visible'].includes(property)) updateDisplay();
+      else if (loaded) loadAreas();
+    });
+    buttons.reload.onclick = loadAreas;
+    buttons.remove.onclick = () => { removeGraphics(); updateDisplay(); };
+    buttons.locate.onclick = locate;
+    (async () => {
+      await earth.onReady();
+      if (disposed) return;
+      await viewer.dataSources.add(source);
+      if (disposed) return;
+      loadAreas();
+      await locate();
+      if (disposed) return;
+      gui.controllersRecursive().forEach(control => control.enable());
+      buttons.reload.disabled = false;
+    })().catch(error => { if (!disposed) { status.textContent = error.message; status.dataset.state = 'error'; console.error(error); } });
+    window.addEventListener('pagehide', event => {
+      if (event.persisted) return;
+      disposed = true;
+      window.removeEventListener('resize', onResize);
+      gui.destroy();
+      // Primitive 由 Viewer 销毁统一释放，无需二次 remove。
+      earth.destroy();
+    });
+  </script>
+</body>
+</html>

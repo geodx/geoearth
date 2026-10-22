@@ -11,7 +11,7 @@
     "build:iife": "npm run build:iife -w packages/core",
     "build:example": "npm run build && npm run build -w examples/vue-demo",
     "typecheck": "npm run typecheck -w packages/core",
-    "pack:geoearth": "npm run pack:test -w packages/core",
+    "pack:geoearth": "npm pack --dry-run -w packages/core",
     "format": "prettier --write ."
   }
 }

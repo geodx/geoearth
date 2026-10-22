@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · 点线面样式</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    .demo-panel { width: min(290px, calc(100vw - 32px)); }
+    .demo-panel h2 { margin: 0 0 8px; font-size: 16px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .actions button { padding: 6px 12px; color: #e2e8f0; background: #334155; border: 1px solid #475569; border-radius: 5px; cursor: pointer; }
+    .actions button:disabled { opacity: .45; cursor: default; }
+    
+  </style>
+</head>
+<body>
+  <div id="earth"></div>
+  <section class="demo-panel" aria-label="点线面样式示例">
+    <h2>点线面样式</h2>
+    <p class="hint">展示点、图标、折线、多边形、矩形和圆；修改参数即时生效。高度使用椭球高。</p>
+    <div id="gui"></div>
+    <div class="actions">
+      <button id="reload" type="button" disabled>重新加载</button>
+      <button id="remove" type="button" disabled>移除全部</button>
+      <button id="locate" type="button" disabled>定位</button>
+    </div>
+    <p id="status" class="status" role="status" data-state="loading">正在初始化地球…</p>
+  </section>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
+  <script src="/sdk/cesium/Cesium.js"></script>
+  <script src="/sdk/geoearth.js"></script>
+  <script src="/demo-assets/lil-gui.umd.min.js"></script>
+  <script>
+    const { EntityFactory } = GeoEarth;
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false },
+      homeView: { longitude: 110, latitude: 30, height: 30000, pitch: -90 },
+    });
+    const viewer = earth.viewer;
+    const source = new C.CustomDataSource('basic-shapes');
+    const status = document.getElementById('status');
+    const buttons = Object.fromEntries(['reload', 'remove', 'locate'].map(id => [id, document.getElementById(id)]));
+    const params = {
+      filter: 'all', visible: true, labels: true,
+      pointColor: '#38d9ff', pointSize: 16,
+      lineColor: '#75e2ff', lineWidth: 6,
+      fillColor: '#ffb454', fillAlpha: .5, outlineColor: '#fff0d9',
+      height: 200, radius: 1400,
+    };
+    let loaded = false;
+    let disposed = false;
+    const shapes = [];
+    const gui = new lil.GUI({ container: document.getElementById('gui'), title: '图形样式' });
+    gui.add(params, 'filter', { 全部图形: 'all', 点与图标: 'point', 折线: 'line', 面图形: 'area' }).name('显示类型');
+    gui.add(params, 'visible').name('显示图形');
+    gui.add(params, 'labels').name('显示名称');
+    const points = gui.addFolder('点与图标');
+    points.addColor(params, 'pointColor').name('颜色');
+    points.add(params, 'pointSize', 6, 32, 1).name('点大小（像素）');
+    const lines = gui.addFolder('线与边界');
+    lines.addColor(params, 'lineColor').name('线颜色');
+    lines.add(params, 'lineWidth', 1, 12, 1).name('线宽（像素）');
+    lines.addColor(params, 'outlineColor').name('面边界颜色');
+    const areas = gui.addFolder('面与高度');
+    areas.addColor(params, 'fillColor').name('填充颜色');
+    areas.add(params, 'fillAlpha', 0, 1, .05).name('填充透明度');
+    areas.add(params, 'height', 0, 3000, 50).name('椭球高度（米）');
+    areas.add(params, 'radius', 500, 2000, 100).name('圆半径（米）');
+    gui.controllersRecursive().forEach(control => control.disable());
+
+    const at = (longitude, latitude) => C.Cartesian3.fromDegrees(longitude, latitude, params.height);
+    const positions = coordinates => coordinates.map(([longitude, latitude]) => at(longitude, latitude));
+
+    function addShape(entity, kind, name, center) {
+      entity.name = name;
+      if (!entity.position) entity.position = at(...center);
+      entity.label = new C.LabelGraphics({
+        text: name, font: '14px sans-serif', fillColor: C.Color.WHITE,
+        outlineColor: C.Color.BLACK, outlineWidth: 3, style: C.LabelStyle.FILL_AND_OUTLINE,
+        pixelOffset: new C.Cartesian2(0, -30), disableDepthTestDistance: Infinity,
+      });
+      source.entities.add(entity);
+      shapes.push({ entity, kind });
+    }
+
+    function loadShapes() {
+      source.entities.removeAll();
+      shapes.length = 0;
+      const color = C.Color.fromCssColorString;
+      const areaStyle = { clampToGround: false, fillColor: color(params.fillColor).withAlpha(params.fillAlpha), outlineColor: color(params.outlineColor), width: params.lineWidth };
+      const point = EntityFactory.createPoint(at(109.95, 30.035));
+      point.point.color = color(params.pointColor);
+      point.point.pixelSize = params.pointSize;
+      point.point.outlineColor = C.Color.WHITE;
+      point.point.outlineWidth = 2;
+      addShape(point, 'point', '点', [109.95, 30.035]);
+      addShape(EntityFactory.createLine(positions([[109.983,30.025],[109.995,30.038],[110.007,30.026],[110.02,30.04]]), {
+        width: params.lineWidth, material: color(params.lineColor),
+      }), 'line', '折线', [110, 30.04]);
+      addShape(EntityFactory.createPolygon(positions([[110.035,30.018],[110.057,30.022],[110.069,30.037],[110.052,30.05],[110.032,30.038]]), areaStyle), 'area', '多边形', [110.05,30.04]);
+      // 矩形由四角组成，与多边形共用工厂入口。
+      addShape(EntityFactory.createPolygon(positions([[109.929,29.966],[109.968,29.966],[109.968,29.996],[109.929,29.996]]), areaStyle), 'area', '矩形', [109.95,29.99]);
+      const circle = EntityFactory.createCircle(at(110,29.982), params.radius, areaStyle);
+      // 使用折线绘制圆边界，使边界宽度也能跟随面板调整。
+      circle.ellipse.outline = false;
+      circle.polyline = new C.PolylineGraphics({
+        positions: GeoEarth.getCirclePositions({ longitude: 110, latitude: 29.982, height: params.height }, params.radius, 96),
+        width: params.lineWidth, material: color(params.outlineColor), arcType: C.ArcType.NONE,
+      });
+      addShape(circle, 'area', '圆', [110,29.982]);
+      const pin = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="52" viewBox="0 0 40 52"><path d="M20 50C15 40 3 30 3 20a17 17 0 1 1 34 0c0 10-12 20-17 30Z" fill="' + params.pointColor + '" stroke="white" stroke-width="2"/><circle cx="20" cy="19" r="6" fill="#102238"/></svg>';
+      addShape(EntityFactory.createBillboard(at(110.05,29.98), {
+        image: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(pin), width: 36, height: 46,
+        verticalOrigin: C.VerticalOrigin.BOTTOM,
+      }), 'point', '图标', [110.05,29.98]);
+      shapes.at(-1).entity.label.pixelOffset = new C.Cartesian2(0, -62);
+      loaded = true;
+      updateVisibility();
+    }
+
+    function updateVisibility() {
+      source.show = params.visible;
+      for (const { entity, kind } of shapes) {
+        entity.show = params.filter === 'all' || params.filter === kind;
+        entity.label.show = params.labels;
+      }
+      const count = shapes.filter(({ entity }) => entity.show).length;
+      status.textContent = loaded ? (params.visible ? '已显示 ' + count + ' 个图形 · 高度 ' + params.height + ' 米' : '图形已隐藏') : '图形已移除，可重新加载';
+      status.dataset.state = 'ready';
+      buttons.remove.disabled = buttons.locate.disabled = !loaded;
+      viewer.scene.requestRender();
+    }
+
+    function locate() {
+      const extent = {"west":109.915,"south":29.95,"east":110.085,"north":30.065};
+      // 按当前预览宽度为面板预留空间，代码面板展开或收起后也能完整查看图形。
+      const panelWidth = document.querySelector('.demo-panel').getBoundingClientRect().width + 32;
+      const reserved = Math.min(.65, panelWidth / viewer.canvas.clientWidth);
+      extent.east += (extent.east - extent.west) * reserved / (1 - reserved);
+      return earth.camera.flyToExtent(extent, 0);
+    }
+
+    function onResize() { if (loaded && !disposed) void locate(); }
+    window.addEventListener('resize', onResize);
+
+    gui.onChange(({ property }) => {
+      if (!loaded) return;
+      if (['filter', 'visible', 'labels'].includes(property)) updateVisibility();
+      else loadShapes();
+    });
+    buttons.reload.onclick = loadShapes;
+    buttons.remove.onclick = () => { source.entities.removeAll(); shapes.length = 0; loaded = false; updateVisibility(); };
+    buttons.locate.onclick = locate;
+    (async () => {
+      await earth.onReady();
+      if (disposed) return;
+      await viewer.dataSources.add(source);
+      if (disposed) return;
+      loadShapes();
+      await locate();
+      if (disposed) return;
+      gui.controllersRecursive().forEach(control => control.enable());
+      buttons.reload.disabled = false;
+    })().catch(error => { if (!disposed) { status.textContent = error.message; status.dataset.state = 'error'; console.error(error); } });
+    window.addEventListener('pagehide', event => {
+      if (event.persisted) return;
+      disposed = true;
+      window.removeEventListener('resize', onResize);
+      gui.destroy();
+      earth.destroy();
+    });
+  </script>
+</body>
+</html>

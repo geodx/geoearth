@@ -56,9 +56,8 @@ export {
 
 
 
-export * from './visualization/materials/lines';
-export { EntityFactory } from './visualization/entities';
-export type { EntityLineOptions, EntityAreaOptions } from './visualization/entities';
+export * from './tools/trajectory/index';
+export * from './visualization/index';
 export * from './interaction';
 
 export { ResourceTree } from './widgets/resource-tree';
@@ -72,3 +71,16 @@ export type {
 
 export { LinkedView } from './widgets/linkage'
 export type { LinkedViewOptions } from './widgets/linkage'
+
+export * from './utils'
+
+export * from './effects/weather'
+export * from './effects/particle'
+export * from './effects/water'
+export { LayerSplitAnalysis } from './analysis/layer-split/LayerSplitAnalysis'
+export type { LayerSplitOptions } from './analysis/layer-split/LayerSplitAnalysis'
+export * from './effects/light'
+export { HeightLimitAnalysis } from './analysis/height-limit/HeightLimitAnalysis'
+export type { HeightLimitOptions } from './analysis/height-limit/HeightLimitAnalysis'
+export { SurfaceExcavateAnalysis } from './analysis/surface-excavate/SurfaceExcavateAnalysis'
+export type { SurfaceExcavateOptions } from './analysis/surface-excavate/SurfaceExcavateAnalysis'

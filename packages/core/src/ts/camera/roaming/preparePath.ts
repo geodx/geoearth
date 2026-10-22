@@ -1,4 +1,5 @@
-import { Cartographic, EllipsoidGeodesic, EllipsoidTerrainProvider, Math as CesiumMath, sampleTerrainMostDetailed, type Viewer } from 'cesium'
+import { Cartographic, EllipsoidGeodesic, Math as CesiumMath, type Viewer } from 'cesium'
+import { sampleHeights } from '../../utils/scene/heights'
 import type { WorldDegree } from '../../viewer/types'
 import type { PrepareRoamingPathOptions } from './types'
 
@@ -12,7 +13,7 @@ export function validatePath(path: readonly WorldDegree[]): WorldDegree[] {
     })
 }
 
-/** Sample each position independently, retaining indices when model hits are missing. */
+/** 逐点采样高度；模型表面缺失时按原索引回退到地形高度。 */
 export async function preparePath(viewer: Viewer, path: readonly WorldDegree[], options: PrepareRoamingPathOptions, exclude: object[] = []): Promise<WorldDegree[]> {
     const points = validatePath(path)
     const mode = options.heightMode ?? 'surface'
@@ -40,25 +41,7 @@ export async function preparePath(viewer: Viewer, path: readonly WorldDegree[], 
             samples.push(point)
         }
     })
-    const terrain = samples.map(point => Cartographic.clone(point))
-    if (viewer.terrainProvider instanceof EllipsoidTerrainProvider) {
-        terrain.forEach(point => { point.height = 0 })
-    } else if (viewer.terrainProvider.availability) {
-        await sampleTerrainMostDetailed(viewer.terrainProvider, terrain)
-    } else {
-        terrain.forEach(point => {
-            const height = viewer.scene.globe.getHeight(point)
-            if (!Number.isFinite(height)) throw new Error('Terrain height is unavailable; load terrain or use absolute heights')
-            point.height = height!
-        })
-    }
-    const models = mode === 'surface' && viewer.scene.clampToHeightSupported
-        ? await viewer.scene.clampToHeightMostDetailed(samples.map(point => ellipsoid.cartographicToCartesian(point)), exclude)
-        : []
-    return samples.map((point, index) => {
-        const modelHeight = models[index] && ellipsoid.cartesianToCartographic(models[index]).height
-        const height = Number.isFinite(modelHeight) ? modelHeight! : terrain[index].height
-        if (!Number.isFinite(height)) throw new Error('Unable to sample path elevation')
-        return { longitude: CesiumMath.toDegrees(point.longitude), latitude: CesiumMath.toDegrees(point.latitude), height: height + offset }
-    })
+    const degrees = samples.map(point => ({ longitude: CesiumMath.toDegrees(point.longitude), latitude: CesiumMath.toDegrees(point.latitude), height: point.height }))
+    const heights = await sampleHeights(viewer, degrees, { mode, exclude })
+    return degrees.map((point, index) => ({ ...point, height: heights[index] + offset }))
 }
