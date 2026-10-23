@@ -445,7 +445,7 @@ export const demoTree: DemoNode[] = [
           {
             "id": "visualization-video-projection",
             "title": "demos.visualization-video-projection",
-            "description": "demos.visualizationScaffoldDescription",
+            "description": "demos.visualizationVideoProjectionDescription",
             "path": "demos/visualization/projection/video.html"
           }
         ]

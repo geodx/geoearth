@@ -160,7 +160,8 @@
     "visualizationThematicHeatmapDescription": "Compare three heatmap.js render modes and MapV heatmaps using the same nationwide sample points.",
     "visualization-aggregation": "Grids and honeycombs",
     "visualizationThematicAggregationDescription": "Compare square-grid and honeycomb aggregation using the same nationwide sample points.",
-    "visualizationThematicRegionsDescription": "Display administrative regions with fills, boundaries, gradients, extrusions and textured walls."
+    "visualizationThematicRegionsDescription": "Display administrative regions with fills, boundaries, gradients, extrusions and textured walls.",
+    "visualizationVideoProjectionDescription": "Project a local video onto the ground and building surfaces, with playback, projection visibility and frustum controls."
   },
   "editor": {
     "title": "Example code",

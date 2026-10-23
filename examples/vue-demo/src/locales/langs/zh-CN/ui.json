@@ -160,7 +160,8 @@
     "visualizationThematicHeatmapDescription": "使用相同全国示例点对比 heatmap.js 三种渲染方式与 MapV 热力图。",
     "visualization-aggregation": "网格与蜂窝",
     "visualizationThematicAggregationDescription": "使用相同全国示例点对比方形网格与蜂窝统计。",
-    "visualizationThematicRegionsDescription": "展示全国行政区填色、边界、渐变、立体分区和网格边墙。"
+    "visualizationThematicRegionsDescription": "展示全国行政区填色、边界、渐变、立体分区和网格边墙。",
+    "visualizationVideoProjectionDescription": "将本地视频投射到地面和建筑表面，支持视频播放、投影显隐和视锥范围查看。"
   },
   "editor": {
     "title": "示例代码",

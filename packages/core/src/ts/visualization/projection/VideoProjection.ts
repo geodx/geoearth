@@ -1,5 +1,5 @@
 import {
-    Camera, Color, ColorGeometryInstanceAttribute, FrustumOutlineGeometry, GeometryInstance, Matrix3, Matrix4,
+    Camera, Cartesian3, Color, ColorGeometryInstanceAttribute, FrustumOutlineGeometry, GeometryInstance, Matrix3,
     Math as CesiumMath, PerInstanceColorAppearance, PerspectiveFrustum, PostProcessStage, Primitive, Quaternion,
 } from 'cesium'
 import { OwnedResource } from '../../utils/scene/OwnedResource'
@@ -134,12 +134,17 @@ export class VideoProjection extends OwnedResource {
                 uniforms: projectionUniforms(shadow, () => this.texture, () => this.options.alpha!)
             })
             stage.enabled = this.visible && !!this.texture
+            // 视锥几何以 Z 轴朝向前方，X 轴与相机右方向相反。
+            const rotation = new Matrix3()
+            Matrix3.setColumn(rotation, 0, Cartesian3.negate(camera.rightWC, new Cartesian3()), rotation)
+            Matrix3.setColumn(rotation, 1, camera.upWC, rotation)
+            Matrix3.setColumn(rotation, 2, camera.directionWC, rotation)
             frustum = new Primitive({
                 geometryInstances: new GeometryInstance({
                     geometry: new FrustumOutlineGeometry({
                         origin: camera.positionWC,
                         frustum: camera.frustum as PerspectiveFrustum,
-                        orientation: Quaternion.fromRotationMatrix(Matrix4.getMatrix3(camera.inverseViewMatrix, new Matrix3()))
+                        orientation: Quaternion.fromRotationMatrix(rotation)
                     }),
                     attributes: { color: ColorGeometryInstanceAttribute.fromColor(Color.YELLOW) },
                 }), appearance: new PerInstanceColorAppearance({ flat: true, translucent: false }), asynchronous: false, show: this.visible && !!this.options.debugFrustum
