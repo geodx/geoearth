@@ -261,18 +261,6 @@ export const demoTree: DemoNode[] = [
     ]
   },
   {
-    "id": "group-trajectory",
-    "title": "groups.trajectory",
-    "children": [
-      {
-        "id": "visualization-trajectory",
-        "title": "demos.visualization-trajectory",
-        "description": "demos.visualizationScaffoldDescription",
-        "path": "demos/tools/trajectory/index.html"
-      }
-    ]
-  },
-  {
     "id": "group-camera",
     "title": "groups.camera",
     "children": [
@@ -459,7 +447,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "effect-weather",
         "title": "demos.effect-weather",
-        "description": "demos.visualizationScaffoldDescription",
+        "description": "demos.weatherDescription",
         "path": "demos/effects/weather.html"
       },
       {

@@ -1,28 +1,185 @@
 <!doctype html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 天气特效</title>
   <style>
-    html, body, #earth { width: 100%; height: 100%; margin: 0; }
-    .scaffold-note { position: absolute; top: 12px; left: 12px; z-index: 2; padding: 8px 12px; background: #071a2edd; color: white; font: 14px sans-serif; pointer-events: none; }
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { font: 14px/1.6 system-ui, sans-serif; }
+
+    .toolbar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      z-index: 2;
+      color: #e7f7ff;
+      pointer-events: none;
+    }
+
+    h1 { margin: 0 0 6px; font-size: 18px; text-shadow: 0 1px 4px #000; }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+
+    select, button, .toggle {
+      padding: 5px 10px;
+      color: #e7f7ff;
+      background: #102a40ed;
+      border: 1px solid #52758e;
+      border-radius: 4px;
+      font: inherit;
+      pointer-events: auto;
+    }
+
+    .toggle { display: inline-flex; align-items: center; gap: 6px; }
+    button { cursor: pointer; }
+    :disabled { opacity: .5; }
+
+    #status {
+      position: absolute;
+      left: 12px;
+      bottom: 32px;
+      z-index: 2;
+      max-width: calc(100% - 48px);
+      margin: 0;
+      padding: 6px 10px;
+      color: #e7f7ff;
+      background: #071a2ee8;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    #status[data-state="error"] { color: #ffb0a4; }
   </style>
 </head>
+
 <body>
   <div id="earth"></div>
-  <div class="scaffold-note">示例骨架：具体效果待实现。</div>
+  <header class="toolbar">
+    <h1>天气特效</h1>
+    <div class="controls">
+      <select id="weather" aria-label="天气类型" disabled>
+        <option value="rain">下雨</option>
+        <option value="snow">下雪</option>
+        <option value="fog">雾天</option>
+      </select>
+      <label class="toggle"><input id="enabled" type="checkbox" checked disabled />显示效果</label>
+      <button id="locate" type="button" disabled>定位场景</button>
+    </div>
+  </header>
+  <p id="status" role="status" data-state="loading">正在加载天气场景…</p>
   <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    const earth = new GeoEarth('earth');
-    // 入口：GeoEarth.WeatherEffect
-    // TODO 1：准备本示例使用的数据和配置。
-    // TODO 2：await earth.onReady() 后创建对应展示对象；传 earth 可自动绑定销毁。
-    // TODO 3：补充更新、显隐、清理等交互，并检查实际效果。
-    // 通过 type 选择 rain、snow、fog；传 earth 绑定销毁。
-    window.addEventListener('pagehide', () => earth.destroy(), { once: true });
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false, globeBaseColor: '#263e45' },
+      homeView: { longitude: 110, latitude: 30, height: 1500, pitch: -30 },
+    });
+    const viewer = earth.viewer;
+    const weatherSelect = document.getElementById('weather');
+    const enabled = document.getElementById('enabled');
+    const status = document.getElementById('status');
+    const center = C.Cartesian3.fromDegrees(110, 30);
+    const frame = C.Transforms.eastNorthUpToFixedFrame(center);
+    const orientation = C.Transforms.headingPitchRollQuaternion(center, new C.HeadingPitchRoll());
+    const at = (east, north, height) => C.Matrix4.multiplyByPoint(frame, new C.Cartesian3(east, north, height), new C.Cartesian3());
+    const presets = {
+      rain: { intensity: .85, speed: .65, color: C.Color.fromCssColorString('#bad6ed'), text: '雨丝随时间连续下落，可拖动地图观察。' },
+      snow: { intensity: .9, speed: .5, color: C.Color.WHITE, text: '多层雪花随时间飘落，可关闭效果对比场景。' },
+      fog: { intensity: .9, near: 250, far: 2200, color: C.Color.fromCssColorString('#c6d2dc'), text: '雾随视距加深，远处建筑比近处更模糊。' },
+    };
+    let effect;
+    let disposed = false;
+    let resizeFrame;
+
+    function locate() {
+      viewer.camera.lookAt(at(0, 650, 0), new C.HeadingPitchRange(0, C.Math.toRadians(-16), 1800));
+      viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+      viewer.scene.requestRender();
+    }
+
+    function addBox(name, east, north, height, width, depth, color) {
+      viewer.entities.add({
+        name, position: at(east, north, height / 2), orientation,
+        box: { dimensions: new C.Cartesian3(width, depth, height), material: C.Color.fromCssColorString(color) },
+      });
+    }
+
+    function updateStatus() {
+      if (disposed || status.dataset.state === 'error') return;
+      status.textContent = enabled.checked ? presets[weatherSelect.value].text : '天气效果已关闭，可对比原始场景。';
+    }
+
+    function changeWeather() {
+      const { text, ...options } = presets[weatherSelect.value];
+      // 切换天气时释放前一个后处理实例，场景中只保留当前效果。
+      effect?.destroy();
+      effect = new GeoEarth.WeatherEffect(earth, { type: weatherSelect.value, ...options });
+      effect.show = enabled.checked;
+      updateStatus();
+    }
+
+    weatherSelect.addEventListener('change', changeWeather);
+    enabled.addEventListener('change', () => { effect.show = enabled.checked; updateStatus(); });
+    document.getElementById('locate').addEventListener('click', locate);
+
+    function onResize() {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => { if (effect && !disposed) locate(); });
+    }
+
+    window.addEventListener('resize', onResize);
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      window.removeEventListener('resize', onResize);
+      cancelAnimationFrame(resizeFrame);
+      effect?.destroy();
+      earth.destroy();
+    });
+
+    viewer.scene.renderError.addEventListener((scene, error) => {
+      status.dataset.state = 'error';
+      status.textContent = '场景渲染失败：' + error.message;
+      console.error(error);
+    });
+
+    async function main() {
+      await earth.onReady();
+      if (disposed) return;
+      for (let index = 0; index < viewer.imageryLayers.length; index++) viewer.imageryLayers.get(index).show = false;
+      // 关闭场景自带的距离雾，便于单独观察天气后处理的雾效。
+      viewer.scene.fog.enabled = false;
+      viewer.scene.globe.depthTestAgainstTerrain = true;
+      // 不同距离的建筑提供深度参照；雨、雪覆盖画面，雾按场景深度衰减。
+      addBox('街区地面', 0, 1100, 2, 2200, 5000, '#435560');
+      addBox('主干道', 0, 1100, 3, 140, 5000, '#26333f');
+      const rows = [0, 400, 800, 1300, 1900];
+      const columns = [-650, -390, -150, 150, 390, 650];
+      rows.forEach((north, row) => {
+        addBox('横向道路', 0, north - 150, 3, 2200, 70, '#26333f');
+        columns.forEach((east, column) => {
+          const height = 70 + ((row * 7 + column * 3) % 5) * 30;
+          addBox('街区建筑', east, north, height, 110, 150, (row + column) % 2 ? '#8095a7' : '#627c91');
+        });
+      });
+      locate();
+      changeWeather();
+      status.dataset.state = 'ready';
+      document.querySelectorAll('.controls button, .controls input, .controls select').forEach(control => { control.disabled = false; });
+      updateStatus();
+    }
+
+    main().catch(error => {
+      if (disposed) return;
+      status.dataset.state = 'error';
+      status.textContent = '加载失败：' + error.message;
+      console.error(error);
+    });
   </script>
 </body>
+
 </html>

@@ -7,7 +7,9 @@ export interface WeatherOptions {
     intensity?: number
     speed?: number
     color?: Color
+    /** 雾开始出现的视距，单位：米。 */
     near?: number
+    /** 雾达到设定强度的视距，单位：米。 */
     far?: number
 }
 
@@ -27,7 +29,8 @@ void main() {
     vec4 sceneColor = texture(colorTexture, uv);
     float amount = 0.0;
     if (effectType > 1.5) {
-        float depth = czm_readDepth(depthTexture, uv);
+        // 从原始深度恢复视空间距离，雾浓度随观察距离递增。
+        float depth = texture(depthTexture, uv).r;
         vec4 eye = czm_windowToEyeCoordinates(gl_FragCoord.xy, depth);
         amount = smoothstep(fogNear, fogFar, max(0.0, -eye.z / eye.w));
     } else if (effectType < 0.5) {
