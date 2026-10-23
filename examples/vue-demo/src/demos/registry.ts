@@ -367,62 +367,38 @@ export const demoTree: DemoNode[] = [
           {
             "id": "visualization-labels-icons",
             "title": "demos.visualization-labels-icons",
-            "description": "demos.visualizationScaffoldDescription",
+            "description": "demos.visualizationMarkersDescription",
             "path": "demos/visualization/markers/labels-icons.html"
-          },
-          {
-            "id": "visualization-html-overlay",
-            "title": "demos.visualization-html-overlay",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/markers/base.html"
           },
           {
             "id": "visualization-html-labels",
             "title": "demos.visualization-html-labels",
-            "description": "demos.visualizationScaffoldDescription",
+            "description": "demos.visualizationHtmlLabelsDescription",
             "path": "demos/visualization/markers/labels.html"
           },
           {
             "id": "visualization-popup",
             "title": "demos.visualization-popup",
-            "description": "demos.visualizationScaffoldDescription",
+            "description": "demos.visualizationPopupsDescription",
             "path": "demos/visualization/markers/popup.html"
           },
           {
-            "id": "visualization-panel",
-            "title": "demos.visualization-panel",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/markers/panel.html"
-          },
-          {
-            "id": "visualization-liquid-fill",
-            "title": "demos.visualization-liquid-fill",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/markers/liquid-fill.html"
+            "id": "visualization-bounce",
+            "title": "demos.visualization-bounce",
+            "description": "demos.visualizationMotionMarkersDescription",
+            "path": "demos/visualization/markers/motion.html"
           },
           {
             "id": "visualization-video-overlay",
             "title": "demos.visualization-video-overlay",
-            "description": "demos.visualizationScaffoldDescription",
+            "description": "demos.visualizationVideoMarkersDescription",
             "path": "demos/visualization/markers/video.html"
           },
           {
             "id": "visualization-clustering",
             "title": "demos.visualization-clustering",
-            "description": "demos.visualizationScaffoldDescription",
+            "description": "demos.visualizationClustersDescription",
             "path": "demos/visualization/markers/clustering.html"
-          },
-          {
-            "id": "visualization-bounce",
-            "title": "demos.visualization-bounce",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/markers/bounce.html"
-          },
-          {
-            "id": "visualization-floating",
-            "title": "demos.visualization-floating",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/markers/floating.html"
           }
         ]
       },

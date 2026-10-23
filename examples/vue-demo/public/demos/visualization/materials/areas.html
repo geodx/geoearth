@@ -143,7 +143,11 @@
       return earth.camera.flyToExtent(extent, 0);
     }
 
-    function onResize() { if (loaded && !disposed) void locate(); }
+    let resizeFrame;
+    function onResize() {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => { if (loaded && !disposed) void locate(); });
+    }
     window.addEventListener('resize', onResize);
 
     gui.onChange(({ property }) => {
@@ -165,9 +169,10 @@
       buttons.reload.disabled = false;
     })().catch(error => { if (!disposed) { status.textContent = error.message; status.dataset.state = 'error'; console.error(error); } });
     window.addEventListener('pagehide', event => {
-      if (event.persisted) return;
+      if (event.persisted || disposed) return;
       disposed = true;
       window.removeEventListener('resize', onResize);
+      cancelAnimationFrame(resizeFrame);
       gui.destroy();
       // Primitive 由 Viewer 销毁统一释放，无需二次 remove。
       earth.destroy();

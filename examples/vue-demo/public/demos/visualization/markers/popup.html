@@ -1,28 +1,195 @@
 <!doctype html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GeoEarth · 地理位置弹窗</title>
+  <title>GeoEarth · 弹窗与面板</title>
   <style>
-    html, body, #earth { width: 100%; height: 100%; margin: 0; }
-    .scaffold-note { position: absolute; top: 12px; left: 12px; z-index: 2; padding: 8px 12px; background: #071a2edd; color: white; font: 14px sans-serif; pointer-events: none; }
+    html,
+    body,
+    #earth {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    body {
+      font: 14px/1.6 system-ui, sans-serif;
+    }
+
+    .intro {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      z-index: 2;
+      pointer-events: none;
+      color: #edfaff;
+    }
+
+    .intro h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .intro p {
+      margin: 4px 0 8px;
+      text-shadow: 0 1px 4px #000;
+    }
+
+    .intro button {
+      pointer-events: auto;
+      padding: 5px 12px;
+      margin-right: 6px;
+      color: #edfaff;
+      background: #102a40e8;
+      border: 1px solid #53758c;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .intro button:disabled {
+      opacity: .5;
+      cursor: default;
+    }
+
+    #status {
+      position: absolute;
+      bottom: 32px;
+      left: 12px;
+      z-index: 2;
+      max-width: calc(100% - 24px);
+      margin: 0;
+      padding: 4px 10px;
+      color: #edfaff;
+      background: #071a2edd;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    #status[data-state="error"] {
+      color: #ffb0a4;
+    }
+
+    min-width: 160px;
+    padding: 12px;
+    color: #e8fbff;
+    border-left: 3px solid #4ee6b0;
+    border-radius: 5px;
+    background: #102b39ee;
+    box-shadow: 0 5px 20px #0005;
+    }
+
+    display: block;
+    color: #4ee6b0;
+    }
+
+    color: #b6ccd6;
+    }
+
+    .geoearth-html-overlay {
+      max-width: 260px;
+    }
   </style>
 </head>
+
 <body>
   <div id="earth"></div>
-  <div class="scaffold-note">示例骨架：具体效果待实现。</div>
+  <header class="intro">
+    <h1>弹窗与面板</h1>
+    <button id="locate" type="button" disabled>定位全部</button> <button id="restore" type="button" disabled>恢复全部</button>
+  </header>
+  <p id="status" role="status" data-state="loading">正在加载…</p>
   <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    const earth = new GeoEarth('earth');
-    // 入口：GeoEarth.PopupMarker
-    // TODO 1：准备本示例使用的数据和配置。
-    // TODO 2：await earth.onReady() 后创建对应展示对象；传 earth 可自动绑定销毁。
-    // TODO 3：补充更新、显隐、清理等交互，并检查实际效果。
-    // 字符串作为纯文本；自定义富内容传 HTMLElement，销毁时恢复借用节点。
-    window.addEventListener('pagehide', () => earth.destroy(), { once: true });
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false },
+      homeView: { longitude: 110, latitude: 30, height: 45000, pitch: -90 },
+    });
+    const viewer = earth.viewer;
+    const status = document.getElementById('status');
+    let disposed = false;
+    let resizeFrame;
+    const at = (column, row, height = 50) => C.Cartesian3.fromDegrees(109.92 + column * .08, 30.065 - row * .05, height);
+    function locate() {
+      return earth.camera.flyToExtent({ west: 109.87, east: 110.13, north: 30.11, south: 29.975 }, 0);
+    }
+    function caption(position, text, offset = 24) {
+      return viewer.entities.add({
+        position, label: {
+          text, font: '14px sans-serif', fillColor: C.Color.WHITE,
+          outlineColor: C.Color.BLACK, outlineWidth: 3, style: C.LabelStyle.FILL_AND_OUTLINE,
+          pixelOffset: new C.Cartesian2(0, offset), disableDepthTestDistance: Infinity,
+        }
+      });
+    }
+    function content(html) {
+      const element = document.createElement('div');
+      element.innerHTML = html; // 此处只使用示例内的固定内容。
+      return element;
+    }
+    document.getElementById('locate').addEventListener('click', locate);
+    function onResize() {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => { if (!disposed && status.dataset.state === 'ready') void locate(); });
+    }
+    window.addEventListener('resize', onResize);
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      window.removeEventListener('resize', onResize);
+      cancelAnimationFrame(resizeFrame);
+
+      earth.destroy();
+    });
+    const popups = [], panels = [];
+    document.getElementById('restore').addEventListener('click', () => {
+      popups.forEach(marker => { marker.show = true; });
+      panels.forEach(marker => marker.setExpanded(true));
+    });
+    async function main() {
+      await earth.onReady();
+      if (disposed) return;
+      const themes = ['panel', 'hud', 'angular'];
+      for (let column = 0; column < themes.length; column++) {
+        const position = at(column, -.15);
+        const popup = new GeoEarth.PopupMarker(earth, {
+          position, anchor: 'center', theme: themes[column],
+          title: ['普通弹窗', 'HUD 弹窗', '切角弹窗'][column],
+          content: content('监测站点 ' + (column + 1) + '<br>状态：运行正常<br>温度：26℃')
+        });
+        popups.push(popup);
+        caption(position, '弹窗 · ' + themes[column], 90);
+      }
+      for (const [column, theme] of ['panel', 'sample', 'hud'].entries()) {
+        const position = at(column - .35, 1.75);
+        const panel = new GeoEarth.PanelMarker(earth, {
+          position, anchor: 'center', theme,
+          title: ['普通面板', '信息面板', 'HUD 面板'][column],
+          content: content('设备编号：GE-00' + (column + 1) + '<br>在线设备：128 台<br>点击关闭按钮可折叠')
+        });
+        panels.push(panel);
+        caption(position, '面板 · ' + theme);
+      }
+      await Promise.all([...popups, ...panels].map(marker => marker.ready));
+      status.textContent = '已加载 3 种弹窗与 3 种可折叠面板';
+      await locate();
+      if (disposed) return;
+      status.dataset.state = 'ready';
+      document.querySelectorAll('.intro button').forEach(button => { button.disabled = false; });
+    }
+    main().catch(error => {
+      if (disposed) return;
+      status.dataset.state = 'error';
+      status.textContent = '加载失败：' + error.message;
+      console.error(error);
+    });
   </script>
 </body>
+
 </html>

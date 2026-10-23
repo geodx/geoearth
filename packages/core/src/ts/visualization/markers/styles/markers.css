@@ -38,12 +38,14 @@
 .geoearth-label--dynamic::after { animation-delay: -4s; }
 .geoearth-label--led > div { background: linear-gradient(0deg, #ff3030, #fd8403, #ffe600); color: transparent; background-clip: text; }
 .geoearth-label--frame { min-width: 180px; min-height: 100px; padding: 22px; border-radius: 0; clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px); background: linear-gradient(135deg, #143b59ed, #28bbf04d); border: 2px solid var(--geoearth-accent); }
-.geoearth-panel-marker { --geoearth-accent: #22d3ee; padding-bottom: 8px; }
+.geoearth-panel-marker { --geoearth-accent: #22d3ee; width: max-content; }
+/* 只有按钮参与锚点尺寸计算，面板和黄线相对按钮中心向右上方展开。 */
+.geoearth-panel-board { position: absolute; left: 50%; bottom: 50%; width: max-content; }
 .geoearth-panel-marker .geoearth-popup { position: relative; margin-left: 20px; overflow: visible; }
 .geoearth-panel-marker--sample .geoearth-popup { border-color: #ffffff4f; background: linear-gradient(0deg, #1e202af5, #0d1013f5); }
 .geoearth-panel-marker--hud .geoearth-popup { border-radius: 0; border-width: 2px 0; box-shadow: 0 0 18px color-mix(in srgb, var(--geoearth-accent) 45%, transparent); }
 .geoearth-panel-toggle { display: block; width: 18px; height: 18px; border: 0; padding: 0; margin: 0; background: transparent center / contain no-repeat; cursor: pointer; }
-.geoearth-panel-pedestal { height: 30px; margin-left: -20px; background: url('../assets/images/panel-pedestal.png') center / 100% 100% no-repeat; }
+.geoearth-panel-pedestal { height: 30px; background: url('../assets/images/panel-pedestal.png') center / 100% 100% no-repeat; }
 .geoearth-popup--angular { border-radius: 0 18px 0 18px; border-width: 2px; background: linear-gradient(135deg, #063155f5, #071a2ef5); }
 .geoearth-popup--hud { box-shadow: 0 0 20px color-mix(in srgb, var(--geoearth-accent) 35%, transparent); }
 .geoearth-video .geoearth-panel-toggle { width: 30px; height: 30px; }

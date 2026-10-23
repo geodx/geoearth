@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · 动态标记</title>
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { font: 14px/1.6 system-ui, sans-serif; }
+    .intro { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 2; pointer-events: none; color: #edfaff; }
+    .intro h1 { margin: 0; font-size: 18px; }
+    .intro p { margin: 4px 0 8px; text-shadow: 0 1px 4px #000; }
+    .intro button { pointer-events: auto; padding: 5px 12px; margin-right: 6px; color: #edfaff; background: #102a40e8; border: 1px solid #53758c; border-radius: 4px; cursor: pointer; }
+    .intro button:disabled { opacity: .5; cursor: default; }
+    #status { position: absolute; bottom: 32px; left: 12px; z-index: 2; max-width: calc(100% - 24px); margin: 0; padding: 4px 10px; color: #edfaff; background: #071a2edd; border-radius: 4px; pointer-events: none; }
+    #status[data-state="error"] { color: #ffb0a4; }
+    .geoearth-html-overlay { max-width: 260px; }
+  </style>
+</head>
+<body>
+  <div id="earth"></div>
+  <header class="intro">
+    <h1>动态标记</h1>
+    <p>并排展示往复弹跳、衰减回弹与三维漂浮；动画沿地理位置的竖直方向运动。</p>
+    <button id="locate" type="button" disabled>定位全部</button> <button id="pause" type="button" disabled>暂停</button><button id="replay" type="button" disabled>重新播放</button>
+  </header>
+  <p id="status" role="status" data-state="loading">正在加载…</p>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
+  <script src="/sdk/cesium/Cesium.js"></script>
+  <script src="/sdk/geoearth.js"></script>
+  <script>
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false },
+      homeView: { longitude: 110, latitude: 30, height: 45000, pitch: -90 },
+    });
+    const viewer = earth.viewer;
+    const status = document.getElementById('status');
+    let disposed = false;
+    let resizeFrame;
+    const at = (column, row, height = 50) => C.Cartesian3.fromDegrees(109.92 + column * .08, 30.065 - row * .05, height);
+    function locate() {
+      viewer.camera.lookAt(at(1, 0), new C.HeadingPitchRange(0, C.Math.toRadians(-45), 30000));
+      viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+      viewer.scene.requestRender();
+    }
+    function caption(position, text, offset = 24) {
+      return viewer.entities.add({ position, label: {
+        text, font: '14px sans-serif', fillColor: C.Color.WHITE,
+        outlineColor: C.Color.BLACK, outlineWidth: 3, style: C.LabelStyle.FILL_AND_OUTLINE,
+        pixelOffset: new C.Cartesian2(0, offset), disableDepthTestDistance: Infinity,
+      } });
+    }
+    document.getElementById('locate').addEventListener('click', locate);
+    function onResize() {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => { if (!disposed && status.dataset.state === 'ready') void locate(); });
+    }
+    window.addEventListener('resize', onResize);
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      window.removeEventListener('resize', onResize);
+      cancelAnimationFrame(resizeFrame);
+
+      earth.destroy();
+    });
+    const motions = [];
+    let paused = false;
+    document.getElementById('pause').addEventListener('click', event => {
+      paused = !paused;
+      motions.forEach(marker => paused ? marker.pause() : marker.play());
+      event.target.textContent = paused ? '继续' : '暂停';
+    });
+    document.getElementById('replay').addEventListener('click', () => {
+      motions.forEach(marker => { marker.stop(); marker.play(); });
+      paused = false;
+      document.getElementById('pause').textContent = '暂停';
+    });
+    async function main() {
+      await earth.onReady();
+      if (disposed) return;
+      const repeat = new GeoEarth.BounceMarker(earth, { position: at(0, 0), height: 900, duration: 2,
+        billboard: { width: 44, height: 60, disableDepthTestDistance: Infinity } });
+      const settle = new GeoEarth.BounceMarker(earth, { position: at(1, 0), mode: 'settle', height: 1500, duration: .8,
+        billboard: { width: 44, height: 60, disableDepthTestDistance: Infinity } });
+      const floating = new GeoEarth.FloatingMarker(earth, { position: at(2, 0), lineHeight: 2200, bounceHeight: 400, duration: 3,
+        billboard: { width: 42, height: 78, disableDepthTestDistance: Infinity } });
+      motions.push(repeat, settle, floating);
+      repeat.play();
+      settle.play();
+      await floating.ready;
+      caption(at(0, 0), '往复弹跳');
+      caption(at(1, 0), '衰减回弹');
+      caption(at(2, 0), '三维漂浮 + 引线');
+      status.textContent = '已加载 3 种动态标记';
+      await locate();
+      if (disposed) return;
+      status.dataset.state = 'ready';
+      document.querySelectorAll('.intro button').forEach(button => { button.disabled = false; });
+    }
+    main().catch(error => {
+      if (disposed) return;
+      status.dataset.state = 'error';
+      status.textContent = '加载失败：' + error.message;
+      console.error(error);
+    });
+  </script>
+</body>
+</html>

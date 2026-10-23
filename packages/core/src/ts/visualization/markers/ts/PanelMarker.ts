@@ -12,9 +12,9 @@ export interface PanelMarkerOptions extends DomMarkerOptions {
     onExpandedChange?: (expanded: boolean) => void
 }
 
-/** 可折叠的地理面板；收起内容后仍保留标记按钮。 */
+/** 可折叠的地理面板；锚点定位标记按钮，展开内容不改变按钮的位置。 */
 export class PanelMarker extends DomMarkerBase {
-    private readonly panel: HTMLDivElement
+    private readonly board: HTMLDivElement
     private readonly toggle: HTMLButtonElement
     private readonly onExpandedChange?: (expanded: boolean) => void
 
@@ -39,17 +39,20 @@ export class PanelMarker extends DomMarkerBase {
         panel.append(header, this.contentElement)
         const pedestal = doc.createElement('div')
         pedestal.className = 'geoearth-panel-pedestal'
-        panel.append(pedestal)
+        // 面板和底座整体向上展开，底座位于面板外部，按钮始终留在地理锚点。
+        const board = doc.createElement('div')
+        board.className = 'geoearth-panel-board'
+        board.append(panel, pedestal)
         const toggle = doc.createElement('button')
         toggle.type = 'button'
         toggle.textContent = options.markerText ?? ''
         toggle.className = 'geoearth-panel-toggle'
         toggle.style.backgroundImage = `url("${options.markerImage ?? MarkerAssets.panelPoint}")`
         toggle.setAttribute('aria-label', '展开或收起面板')
-        this.element.append(panel, toggle)
-        this.panel = panel
+        this.element.append(board, toggle)
+        this.board = board
         this.toggle = toggle
-        const togglePanel = () => this.setExpanded(panel.hidden === true)
+        const togglePanel = () => this.setExpanded(board.hidden === true)
         const closePanel = () => this.setExpanded(false)
         toggle.addEventListener('click', togglePanel)
         close.addEventListener('click', closePanel)
@@ -63,11 +66,11 @@ export class PanelMarker extends DomMarkerBase {
     setExpanded(expanded: boolean): void {
         this.assertAlive()
         const changed = this.toggle.getAttribute('aria-expanded') !== String(expanded)
-        this.panel.hidden = !expanded
+        this.board.hidden = !expanded
         this.toggle.setAttribute('aria-expanded', String(expanded))
         if (changed) this.onExpandedChange?.(expanded)
         this.requestRender()
     }
 
-    get expanded(): boolean { return !this.panel.hidden }
+    get expanded(): boolean { return !this.board.hidden }
 }
