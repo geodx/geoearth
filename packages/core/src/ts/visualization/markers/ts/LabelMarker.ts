@@ -11,7 +11,7 @@ export interface LabelMarkerOptions extends Omit<DomMarkerOptions, 'content'> {
     theme?: LabelTheme
 }
 
-/** 合并相同定位和生命周期的文字/富内容标牌，通过主题保留各自的展示效果。 */
+/** 显示文字或富内容标牌，通过主题设置外观和动画效果。 */
 export class LabelMarker extends DomMarkerBase {
     constructor(host: VisualizationHost, options: LabelMarkerOptions) {
         super(host, { ...options, content: options.content ?? options.text ?? '' })

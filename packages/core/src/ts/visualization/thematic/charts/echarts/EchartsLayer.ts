@@ -67,7 +67,7 @@ class GeoEarthCoordinateSystem {
 }
 echarts.registerCoordinateSystem('geoearth', GeoEarthCoordinateSystem as any)
 
-/** 保留 ECharts 配置方式；地理坐标系使用 'geoearth'，兼容转换旧的 'cesium' 配置。 */
+/** 在地球上绘制 ECharts 图表；坐标系使用 'geoearth'，传入 'cesium' 时自动转换。 */
 export class EchartsLayer extends OwnedResource {
     readonly element: HTMLDivElement
     readonly chart: echarts.ECharts

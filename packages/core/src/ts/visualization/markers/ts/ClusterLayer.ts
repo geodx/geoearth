@@ -3,6 +3,7 @@ import {
     type Billboard, type Label, type PointPrimitive, type DataSource,
 } from 'cesium'
 import { OwnedResource } from '../../../utils/scene/OwnedResource'
+import { throttle } from '../../../utils/common/async'
 import type { VisualizationHost } from '../../types'
 import { clusterImage, MarkerAssets } from './assets'
 
@@ -17,7 +18,7 @@ export interface ClusterLayerOptions {
     source?: DataSource
     pixelRange?: number
     minimumClusterSize?: number
-    /** image 使用旧工程的数量分档贴图，point 使用简洁的点与数量。 */
+    /** image 显示数量分档图标，point 显示圆点和数量。 */
     theme?: 'point' | 'image'
     billboardImage?: string
     style?: (entities: Entity[], graphics: ClusterGraphics) => void
@@ -70,7 +71,36 @@ export class ClusterLayer extends OwnedResource {
         if (this.borrowed) this.own(() => {
             if (!this.viewer.isDestroyed()) Object.assign(cluster, previous)
         })
+        this.bindCameraRefresh()
         this.ready = this.borrowed ? Promise.resolve() : this.attachDataSource(this.dataSource)
+    }
+
+    private bindCameraRefresh(): void {
+        const camera = this.viewer.camera
+        const refresh = throttle(() => this.refreshClusters(), 100)
+        this.own(camera.changed.addEventListener((amount: number) => {
+            // 小幅相机变化按 100ms 节流刷新，较大变化由原生聚合直接处理。
+            if (amount < 0.05) refresh()
+            else refresh.cancel()
+        }))
+        this.own(camera.moveEnd.addEventListener(() => {
+            // 移动结束时立即刷新最终视角，并取消待执行的节流刷新。
+            refresh.cancel()
+            this.refreshClusters()
+        }))
+        // 与相机监听一起释放，避免销毁后仍有延迟刷新访问数据源。
+        this.own(refresh.cancel)
+    }
+
+    private refreshClusters(): void {
+        if (this.destroyed || this.viewer.isDestroyed()) return
+        const cluster = this.dataSource.clustering
+        if (!cluster.enabled) return
+        // 通过调整聚合范围标记下一帧重算，随后同步恢复配置值，保持实际聚合距离不变。
+        const pixelRange = cluster.pixelRange
+        cluster.pixelRange = pixelRange + 1
+        cluster.pixelRange = pixelRange
+        this.requestRender()
     }
 
     get show(): boolean {

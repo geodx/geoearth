@@ -2,7 +2,7 @@ import { Cartesian3 } from 'cesium'
 import type { WorldDegree } from '../../viewer/types'
 import { toCartesian } from './positions'
 
-/** 保留旧方法名；所有经纬度输入均以度计，高度以米计。 */
+/** 将经纬度对象或数组转换为笛卡尔坐标；经纬度以度计，高度以米计。 */
 export const Cartesian3Tool = {
     formCartographicObj(position: WorldDegree): Cartesian3 { return toCartesian(position) },
     formCartographicObjS(positions: readonly WorldDegree[]): Cartesian3[] { return positions.map(position => toCartesian(position)) },

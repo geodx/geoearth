@@ -38,13 +38,11 @@ export class TilesetManager extends CesiumData<Cesium3DTileset> {
             // 特别重要的 优化参数，默认为 8，最精细为 1
             maximumScreenSpaceError: prop.maximumScreenSpaceError ?? 8,//	可选的 用于驱动细节细化级别的最大屏幕空间误差。
             //
-            // // 优化项目，改为 4000
             // maximumMemoryUsage: 8192//可选的 ,//图块集可以使用的最大内存量（以 MB 为单位）。
             // cullWithChildrenBounds: true,//可选的 优化选项。 是否使用其子边界体积的并集来剔除瓷砖。
             // cullRequestsWhileMoving: false,//可选的 优化选项。 不要请求由于相机移动而返回时可能不会使用的图块。 此优化仅适用于固定的瓦片集。
             // cullRequestsWhileMovingMultiplier: 60.0,//可选的 优化选项。 移动时用于剔除请求的乘数。 较大的是更积极的剔除，较小的则是较不积极的剔除。
             //
-            // // 优化项目，改为 true
             // preloadWhenHidden: true,//	可选的 预加载瓷砖时 tileset.show是 false. 加载图块，就好像图块集是可见的，但不渲染它们。
             // preloadFlightDestinations: true,//可选的 优化选项。 在相机飞行时在相机的飞行目的地预加载图块。
             // preferLeaves: true,//可选的 优化选项。 最好先装载叶子。

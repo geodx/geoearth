@@ -4,7 +4,7 @@ import { registerMaterial } from './base/MaterialRegistry'
 
 export type PolylineTextureEffect = 'energy' | 'link-pulse' | 'migrate' | 'sprite' | 'super' | 'volume'
 
-/** 同一效果可选择不同旧贴图，不再为每张贴图建立一个材质类。 */
+/** 线材质的可选纹理，可通过 image 参数设置。 */
 export const PolylineTextureImages = {
     sprite1: new URL('../assets/sprite-1.png', import.meta.url).href,
     sprite2: new URL('../assets/sprite-2.png', import.meta.url).href,

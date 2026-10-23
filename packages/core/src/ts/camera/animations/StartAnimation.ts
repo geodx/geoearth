@@ -211,7 +211,7 @@ export class StartAnimation {
     }
 
     /**
-     * 兼容旧项目的 deactivate 命名。
+     * 停止当前开场动画。
      */
     deactivate(): void {
         this.stop()

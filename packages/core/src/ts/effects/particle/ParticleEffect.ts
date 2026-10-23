@@ -17,7 +17,7 @@ const images = {
     fountain: new URL('./assets/fountain.png', import.meta.url).href,
 }
 
-/** 合并火焰、烟雾、喷泉的粒子管理；时间推进沿用 Cesium 场景时钟。 */
+/** 创建和管理火焰、烟雾、喷泉粒子效果，动画由 Cesium 场景时钟驱动。 */
 export class ParticleEffect extends OwnedResource {
     readonly system: ParticleSystem
     private readonly orientation: HeadingPitchRoll

@@ -17,7 +17,7 @@ export interface FloatingMarkerOptions {
     show?: boolean
 }
 
-/** 三维漂浮图标与固定虚线引线；位置采样和弹跳共用已有工具。 */
+/** 显示带竖直虚线引线的漂浮图标，支持高度采样和弹跳动画。 */
 export class FloatingMarker extends OwnedResource {
     readonly entity: Entity
     readonly ready: Promise<void>

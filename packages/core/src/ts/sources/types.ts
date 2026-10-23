@@ -277,7 +277,7 @@ export interface ModelProperties {
     /** 模型显示的最小像素尺寸。 */
     minimumPixelSize?: number;
 
-    /** 可见距离范围，单位米，沿用当前管理器的字段名。 */
+    /** 可见距离范围，单位：米。 */
     DistanceDisplayCondition?: {
         near: number;
         far: number;

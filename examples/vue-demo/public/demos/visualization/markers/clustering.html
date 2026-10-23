@@ -78,12 +78,12 @@
         });
         await layer.ready;
         if (disposed) return;
-        // 固定分布便于对比两种样式，放大后自然拆分，不依赖外部数据。
+        // 两组使用相同分布；点间距保留在几十米，正常放大即可看到逐步拆分。
         for (let group = 0; group < 6; group++) {
           const count = [8, 18, 35, 60, 90, 160][group];
           for (let index = 0; index < count; index++) {
             const angle = index * 2.399963;
-            const radius = .00013 * Math.sqrt(index);
+            const radius = .0008 * Math.sqrt(index);
             layer.add({ position: C.Cartesian3.fromDegrees(
               109.91 + column * .14 + (group % 2) * .032 + Math.cos(angle) * radius,
               30.07 - Math.floor(group / 2) * .032 + Math.sin(angle) * radius, 20),

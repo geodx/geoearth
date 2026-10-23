@@ -79,7 +79,7 @@ export class BookmarkManager {
         return JSON.stringify({ version: 1, bookmarks: this.getAll() }, null, 2)
     }
 
-    /** Validate the whole document before committing. Reads legacy VGE arrays too. */
+    /** 导入书签集合或相机视角数组；全部数据校验通过后统一写入。 */
     importJSON(json: string, replace = true): Bookmark[] {
         this.assertAlive()
         const data = JSON.parse(json.replace(/^\uFEFF/, ''))

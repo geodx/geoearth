@@ -17,7 +17,7 @@
 @keyframes geoearth-wave { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .geoearth-label, .geoearth-liquid .geoearth-water { animation: none; } }
 
-/* 旧标牌的可见特征统一作用在模块前缀下，避免全局样式和动画名冲突。 */
+/* 标牌样式使用模块前缀，隔离页面样式和动画名称。 */
 .geoearth-label--gradient, .geoearth-label--erect, .geoearth-label--hotspot { border: 0; border-radius: 0; background: transparent; box-shadow: none; padding: 0; }
 .geoearth-label--gradient > :not(.geoearth-marker-stem) { padding: 5px 20px; background: linear-gradient(#070acbbf, #10eedc); }
 .geoearth-label--gradient > strong { border-radius: 5px 5px 0 0; }

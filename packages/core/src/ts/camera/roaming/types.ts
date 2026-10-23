@@ -2,7 +2,7 @@ import type { WorldDegree } from '../../viewer/types'
 import type { TrajectoryState } from '../../tools/trajectory/types'
 
 export type RoamingView = 'thirdPerson' | 'firstPerson' | 'none'
-/** 漫游状态由轨迹播放器统一维护，保留原有公共类型名。 */
+/** 路径漫游的播放状态。 */
 export type RoamingState = TrajectoryState
 
 export interface PathRoamingOptions {

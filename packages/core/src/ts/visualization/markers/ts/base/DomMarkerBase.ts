@@ -109,7 +109,7 @@ export class DomMarkerBase extends OwnedResource {
     }
 
     private restoreContent(): void {
-        // 借用已有节点时，卸载后恢复原位置；调用方主动移走的节点不再干预。
+        // 借用节点在内容替换或销毁时恢复挂载位置；外部已移走的节点维持当前归属。
         if (!this.mounted) return
         const { node, parent, next } = this.mounted
         if (node.parentNode === this.contentElement) {
