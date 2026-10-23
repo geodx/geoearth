@@ -144,6 +144,7 @@
     "effect-particle": "粒子特效",
     "particleDescription": "同时展示火焰、烟雾和喷泉粒子，支持单独查看、暂停继续与场景定位。",
     "effect-water": "水面",
+    "waterDescription": "展示天空大气与建筑倒影、真实太阳高光和多层波纹，提供水体参数面板、日期时间与 Bing 影像及世界地形。",
     "effect-point-lights": "模型点光源",
     "visualizationBasicsDescription": "展示点、图标、折线、多边形、矩形和圆，调整颜色、大小、高度与透明度，支持筛选、显隐、移除和重新加载。",
     "visualizationLinesDescription": "比较 14 种原生与动态线材质，调整颜色、宽度、周期、重复次数及方向，支持暂停与单独查看。",

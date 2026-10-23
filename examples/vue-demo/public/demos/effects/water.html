@@ -1,28 +1,436 @@
 <!doctype html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 水面</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
   <style>
-    html, body, #earth { width: 100%; height: 100%; margin: 0; }
-    .scaffold-note { position: absolute; top: 12px; left: 12px; z-index: 2; padding: 8px 12px; background: #071a2edd; color: white; font: 14px sans-serif; pointer-events: none; }
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { font: 14px/1.6 system-ui, sans-serif; }
+
+    .toolbar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      z-index: 2;
+      color: #e7f7ff;
+      pointer-events: none;
+    }
+
+    h1 { margin: 0 0 6px; font-size: 18px; text-shadow: 0 1px 4px #000; }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+
+    select, button, .toggle {
+      padding: 5px 10px;
+      color: #e7f7ff;
+      background: #102a40ed;
+      border: 1px solid #52758e;
+      border-radius: 4px;
+      font: inherit;
+      pointer-events: auto;
+    }
+
+    .toggle { display: inline-flex; align-items: center; gap: 6px; }
+    button { cursor: pointer; }
+    :disabled { opacity: .5; }
+
+    #status {
+      position: absolute;
+      left: 12px;
+      bottom: 32px;
+      z-index: 2;
+      max-width: calc(100% - 48px);
+      margin: 0;
+      padding: 6px 10px;
+      color: #e7f7ff;
+      background: #071a2ee8;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    #status[data-state="error"] { color: #ffb0a4; }
+    .demo-panel { width: 305px; }
+    .toolbar { right: 325px; }
+    #status { max-width: calc(100% - 360px); }
+    #resource-status { font-size: 12px; color: #b3c8d7; }
+    @media (max-width: 800px) {
+      .demo-panel { top: 125px; width: 260px; max-height: calc(100vh - 165px); }
+      .toolbar { right: 12px; }
+      #status { max-width: calc(100% - 48px); font-size: 12px; }
+    }
   </style>
 </head>
+
 <body>
   <div id="earth"></div>
-  <div class="scaffold-note">示例骨架：具体效果待实现。</div>
+  <header class="toolbar">
+    <h1>湖畔 · 太阳与水</h1>
+    <div class="controls">
+      <select id="style" aria-label="水面样式" disabled>
+        <option value="lake">湖面</option>
+        <option value="sea">海面</option>
+        <option value="shallow">浅水</option>
+      </select>
+      <label class="toggle"><input id="enabled" type="checkbox" checked disabled />显示水面</label>
+      <label class="toggle"><input id="reflection" type="checkbox" checked disabled />场景倒影</label>
+      <button id="pause" type="button" disabled>暂停波纹</button>
+      <button id="locate" type="button" disabled>定位场景</button>
+      <button id="sun-view" type="button" disabled>追光视角</button>
+    </div>
+  </header>
+  <aside class="demo-panel" aria-label="水体参数面板">
+    <div id="gui"></div>
+    <p id="resource-status" role="status">准备加载 Bing 影像与世界地形…</p>
+    <p class="hint">细浪法线由波形与噪声导数生成，可切换法线观察视图。太阳由日期、时间与位置计算。湖岸设施为示意，周边使用在线影像与地形。</p>
+  </aside>
+  <p id="status" role="status" data-state="loading">正在加载水面场景…</p>
   <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
+  <script src="/demo-assets/lil-gui.umd.min.js"></script>
   <script>
-    const earth = new GeoEarth('earth');
-    // 入口：GeoEarth.WaterEffect
-    // TODO 1：准备本示例使用的数据和配置。
-    // TODO 2：await earth.onReady() 后创建对应展示对象；传 earth 可自动绑定销毁。
-    // TODO 3：补充更新、显隐、清理等交互，并检查实际效果。
-    // 准备水域边界，可配置普通水面的颜色与波纹，不含反射效果。
-    window.addEventListener('pagehide', () => earth.destroy(), { once: true });
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false, globeBaseColor: '#293f45' },
+      homeView: { longitude: 6.17, latitude: 45.87, height: 2000, pitch: -45 },
+    });
+    const viewer = earth.viewer;
+    const styleSelect = document.getElementById('style');
+    const enabled = document.getElementById('enabled');
+    const status = document.getElementById('status');
+    // 场景整体抬高，避免展示地面与地球表面重叠闪烁。
+    const groundHeight = 497;
+    const center = C.Cartesian3.fromDegrees(6.17, 45.87, groundHeight);
+    const frame = C.Transforms.eastNorthUpToFixedFrame(center);
+    const orientation = C.Transforms.headingPitchRollQuaternion(center, new C.HeadingPitchRoll());
+    const at = (east, north, height = 0) => C.Matrix4.multiplyByPoint(frame, new C.Cartesian3(east, north, height), new C.Cartesian3());
+    const presets = {
+      lake: { waveHeight: .35, waveSteepness: .35, refractionStrength: .65, foamWidth: 1.2, color: new C.Color(.025, .16, .18, .97), waveLength: 85, frequency: 100, animationSpeed: .65, amplitude: .35, rippleStrength: .16, roughness: .22, scattering: .65, distortionScale: 9, specularIntensity: 1, text: '湖面 · 天空与岸边倒影，太阳高光随日期时间变化。' },
+      sea: { waveHeight: 1.1, waveSteepness: .65, refractionStrength: .8, foamWidth: 1.5, color: new C.Color(.015, .09, .15, .99), waveLength: 100, frequency: 100, animationSpeed: 1.2, amplitude: 1.15, rippleStrength: .4, roughness: .25, scattering: .8, distortionScale: 18, specularIntensity: 1.3, text: '海面 · 长波与细波纹叠加，粗糙度控制太阳亮斑和倒影。' },
+      shallow: { waveHeight: .12, waveSteepness: .2, refractionStrength: .8, foamWidth: .8, color: new C.Color(.04, .32, .25, .6), waveLength: 35, frequency: 100, animationSpeed: .45, amplitude: .4, rippleStrength: .2, roughness: .15, scattering: .85, distortionScale: 6, specularIntensity: .8, text: '浅水 · 真实水下颜色与深度，折射和吸收随光程变化，浅滩产生泡沫。' },
+    };
+    let water;
+    let disposed = false;
+    let resizeFrame;
+    let paused = false;
+    const offline = new URLSearchParams(location.search).has('offline');
+    const params = {
+      waveHeight: .35, waveSteepness: .35, shoreFadeDistance: 12, refraction: true, refractionStrength: .65,
+      absorptionR: .28, absorptionG: .09, absorptionB: .045, foam: true, foamWidth: 1.2, foamOpacity: .7, debugView: 'surface', depthRange: 5,
+      color: '#06292e', opacity: .97, waveLength: 55, frequency: 100, waveDirection: 25, amplitude: .65,
+      rippleStrength: .3, roughness: .18, scattering: .65, distortionScale: 9,
+      specularIntensity: 1, reflectionStrength: 1, animationSpeed: .65, skyReflection: true,
+      date: '2026-06-21', hour: 15, online: !offline, lighting: true, sunElevation: '',
+      reset: () => changeStyle(),
+    };
+    const gui = new lil.GUI({ container: document.getElementById('gui'), title: '水体 · 实时调节' });
+    gui.domElement.style.pointerEvents = 'none';
+    gui.domElement.style.opacity = '.5';
+    const waterFolder = gui.addFolder('水色与光照');
+    waterFolder.addColor(params, 'color').name('水体颜色').onChange(applyParameters);
+    waterFolder.add(params, 'opacity', .1, 1, .01).name('不透明度').onChange(applyParameters);
+    for (const [key, name, min, max, step] of [
+      ['roughness', '粗糙度', .03, .8, .01], ['scattering', '水色散射', 0, 2, .05],
+      ['specularIntensity', '太阳高光', 0, 4, .05], ['reflectionStrength', '反射强度', 0, 1, .01],
+    ]) waterFolder.add(params, key, min, max, step).name(name).onChange(applyParameters);
+    waterFolder.add(params, 'skyReflection').name('天空大气倒影').onChange(applyParameters);
+    const waveFolder = gui.addFolder('波纹 · 米制尺度');
+    for (const [key, name, min, max, step] of [
+      ['waveHeight', '几何振幅（米）', 0, 2, .01], ['waveSteepness', '波峰陡峭度', 0, 1, .01],
+      ['shoreFadeDistance', '岸边波浪衰减（米）', 1, 30, 1],
+      ['waveLength', '波长尺度（米）', 5, 200, 1], ['frequency', '细浪密度', 0, 300, 5], ['waveDirection', '风浪方向（度）', 0, 360, 1],
+      ['amplitude', '程序细浪强度', 0, 2, .01], ['rippleStrength', '微波纹强度', 0, 1, .01],
+      ['distortionScale', '倒影扰动', 0, 30, .1], ['animationSpeed', '流动速度', 0, 3, .05],
+    ]) waveFolder.add(params, key, min, max, step).name(name).onChange(applyParameters);
+    const depthFolder = gui.addFolder('水下 · 折射与吸收');
+    depthFolder.add(params, 'refraction').name('折射与吸收').onChange(applyParameters);
+    depthFolder.add(params, 'refractionStrength', 0, 1, .01).name('折射偏移').onChange(applyParameters);
+    for (const [key, name] of [['absorptionR', '红光吸收 / 米'], ['absorptionG', '绿光吸收 / 米'], ['absorptionB', '蓝光吸收 / 米']])
+      depthFolder.add(params, key, 0, 1, .005).name(name).onChange(applyParameters);
+    const foamFolder = gui.addFolder('岸边泡沫与观察');
+    foamFolder.add(params, 'foam').name('岸边泡沫').onChange(applyParameters);
+    foamFolder.add(params, 'foamWidth', .1, 3, .05).name('泡沫水深（米）').onChange(applyParameters);
+    foamFolder.add(params, 'foamOpacity', 0, 1, .01).name('泡沫强度').onChange(applyParameters);
+    foamFolder.add(params, 'debugView', { '水面成像': 'surface', '水深：浅黄深蓝': 'depth', '水下折射原色': 'refraction', '泡沫遮罩': 'foam', '波面法线': 'normals' }).name('观察视图').onChange(applyParameters);
+    foamFolder.add(params, 'depthRange', 1, 20, .5).name('水深显示量程').onChange(applyParameters);
+    depthFolder.close(); foamFolder.close();
+    const environmentFolder = gui.addFolder('太阳与地理环境 · UTC');
+    environmentFolder.add(params, 'date').name('日期 YYYY-MM-DD').onFinishChange(updateSun);
+    environmentFolder.add(params, 'hour', 0, 23.99, .05).name('时间（UTC）').onChange(updateSun);
+    environmentFolder.add(params, 'sunElevation').name('太阳高度角').listen().disable();
+    environmentFolder.add(params, 'lighting').name('地表日照').onChange(value => {
+      viewer.scene.globe.enableLighting = value; viewer.scene.requestRender();
+    });
+    environmentFolder.add(params, 'online').name('Bing 与世界地形').onChange(loadOnline);
+    gui.add(params, 'reset').name('恢复当前水面预设');
+
+    function applyParameters() {
+      if (!water || disposed) return;
+      const { color, opacity, waveLength, frequency, waveDirection, amplitude, rippleStrength, roughness,
+        scattering, distortionScale, specularIntensity, reflectionStrength, animationSpeed, skyReflection } = params;
+      water.update({ color: C.Color.fromCssColorString(color).withAlpha(opacity), waveLength, frequency, waveDirection,
+        amplitude, rippleStrength, roughness, scattering, distortionScale, specularIntensity,
+        reflectionStrength, animationSpeed: paused ? 0 : animationSpeed, skyReflection,
+        waveHeight: params.waveHeight, waveSteepness: params.waveSteepness, shoreFadeDistance: params.shoreFadeDistance,
+        refraction: params.refraction, refractionStrength: params.refractionStrength,
+        absorption: new C.Cartesian3(params.absorptionR, params.absorptionG, params.absorptionB),
+        foam: params.foam, foamWidth: params.foamWidth, foamOpacity: params.foamOpacity,
+        debugView: params.debugView, depthRange: params.depthRange });
+    }
+
+    function updateSun() {
+      const date = new Date(params.date + 'T00:00:00Z');
+      if (!Number.isFinite(date.getTime()) || !/^\d{4}-\d{2}-\d{2}$/.test(params.date)) return;
+      viewer.clock.currentTime = C.JulianDate.addSeconds(C.JulianDate.fromDate(date), params.hour * 3600, new C.JulianDate());
+      viewer.clock.shouldAnimate = false;
+      viewer.scene.requestRender();
+    }
+
+    let onlineLoading = false;
+    let onlineImagery;
+    let onlineTerrain;
+    async function loadOnline() {
+      if (disposed || onlineLoading) return;
+      const resourceStatus = document.getElementById('resource-status');
+      if (!params.online) {
+        if (onlineImagery) onlineImagery.show = false;
+        viewer.terrainProvider = new C.EllipsoidTerrainProvider();
+        resourceStatus.textContent = '离线演示 · 本地全球底图与椭球地面';
+        viewer.scene.requestRender();
+        return;
+      }
+      onlineLoading = true;
+      resourceStatus.textContent = '正在请求 Bing 影像与 Cesium World Terrain…';
+      const results = await Promise.allSettled([
+        onlineImagery ? Promise.resolve(onlineImagery) : earth.sources.presets.addBingImagery(),
+        onlineTerrain ? Promise.resolve(onlineTerrain) : earth.sources.presets.addWorldTerrain(),
+      ]);
+      onlineLoading = false;
+      if (disposed) return;
+      const names = ['Bing 影像', '世界地形'];
+      const messages = results.map((result, index) => {
+        if (result.status === 'rejected') return names[index] + '加载失败（检查网络或 Token）';
+        if (index === 0) { onlineImagery = result.value; onlineImagery.show = params.online; }
+        else { onlineTerrain = result.value; if (params.online) viewer.terrainProvider = onlineTerrain; }
+        return names[index] + '已接入';
+      });
+      if (!params.online) viewer.terrainProvider = new C.EllipsoidTerrainProvider();
+      resourceStatus.textContent = messages.join(' · ');
+      viewer.scene.requestRender();
+    }
+
+    function locate() {
+      viewer.camera.lookAt(at(0, 30, 15), new C.HeadingPitchRange(C.Math.toRadians(8), C.Math.toRadians(-18), 1120));
+      viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+      viewer.scene.requestRender();
+    }
+
+    function updateStatus() {
+      if (disposed || status.dataset.state === 'error') return;
+      status.textContent = enabled.checked ? presets[styleSelect.value].text : '水面已隐藏，可查看水底和小岛范围。';
+    }
+
+    function changeStyle() {
+      const { color, text, ...uniforms } = presets[styleSelect.value];
+      // 复用水面图元，只更新材质的颜色、波纹和高光参数。
+      Object.assign(params, {
+        shoreFadeDistance: 12, refraction: true, absorptionR: .28, absorptionG: .09, absorptionB: .045,
+        foam: true, foamOpacity: .7, debugView: 'surface', depthRange: 5,
+      }, uniforms, { color: color.toCssHexString(), opacity: color.alpha });
+      applyParameters();
+      gui.controllersRecursive().forEach(controller => controller.updateDisplay());
+      viewer.scene.requestRender();
+      updateStatus();
+    }
+
+    styleSelect.addEventListener('change', changeStyle);
+    enabled.addEventListener('change', () => { water.show = enabled.checked; updateStatus(); });
+    document.getElementById('reflection').addEventListener('change', event => water.update({ reflection: event.target.checked }));
+    document.getElementById('pause').addEventListener('click', event => {
+      paused = !paused;
+      water.update({ animationSpeed: paused ? 0 : params.animationSpeed });
+      event.target.textContent = paused ? '继续波纹' : '暂停波纹';
+    });
+    document.getElementById('locate').addEventListener('click', locate);
+    document.getElementById('sun-view').addEventListener('click', () => {
+      const sun = viewer.scene.context.uniformState.sunDirectionWC;
+      const localSun = C.Matrix4.multiplyByPointAsVector(C.Matrix4.inverseTransformation(frame, new C.Matrix4()), sun, new C.Cartesian3());
+      const heading = Math.atan2(localSun.x, localSun.y);
+      const elevation = C.Math.toDegrees(Math.asin(C.Math.clamp(localSun.z, -1, 1)));
+      viewer.camera.lookAt(at(0, 0, 2.5), new C.HeadingPitchRange(heading, C.Math.toRadians(-C.Math.clamp(elevation, 8, 55)), 1000));
+      viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+      viewer.scene.requestRender();
+    });
+
+    function onResize() {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => { if (water && !disposed) locate(); });
+    }
+
+    window.addEventListener('resize', onResize);
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      window.removeEventListener('resize', onResize);
+      cancelAnimationFrame(resizeFrame);
+      water?.destroy();
+      gui.destroy();
+      earth.destroy();
+    });
+
+    viewer.scene.renderError.addEventListener((scene, error) => {
+      status.dataset.state = 'error';
+      status.textContent = '场景渲染失败：' + error.message;
+      console.error(error);
+    });
+
+    async function main() {
+      await earth.onReady();
+      if (disposed) return;
+      viewer.scene.globe.depthTestAgainstTerrain = true;
+      viewer.scene.screenSpaceCameraController.enableCollisionDetection = false;
+      viewer.scene.light = new C.SunLight();
+      viewer.scene.globe.enableLighting = true;
+      viewer.scene.globe.dynamicAtmosphereLighting = true;
+      viewer.scene.globe.dynamicAtmosphereLightingFromSun = true;
+      viewer.scene.highDynamicRange = false;
+      viewer.scene.postProcessStages.fxaa.enabled = true;
+      viewer.scene.skyAtmosphere.perFragmentAtmosphere = false;
+      updateSun();
+      viewer.scene.postRender.addEventListener(() => {
+        if (disposed) return;
+        const sun = viewer.scene.context.uniformState.sunDirectionWC;
+        const up = C.Matrix4.getColumn(frame, 2, new C.Cartesian4());
+        params.sunElevation = C.Math.toDegrees(Math.asin(C.Math.clamp(sun.x * up.x + sun.y * up.y + sun.z * up.z, -1, 1))).toFixed(1) + '°';
+      });
+
+      viewer.entities.add({
+        name: '水域周边地面', polygon: {
+          hierarchy: Array.from({ length: 48 }, (_, i) => {
+            const angle = i / 48 * Math.PI * 2;
+            const radius = 1 + Math.sin(angle * 3) * .04;
+            return at(Math.cos(angle) * 640 * radius, Math.sin(angle) * 480 * radius);
+          }),
+          height: groundHeight, material: C.Color.fromCssColorString('#708267'),
+        },
+      });
+      const boundary = [[-390, -200], [-280, -300], [-40, -260], [200, -300], [380, -160], [340, 80], [160, 260], [-120, 290], [-340, 180], [-400, -20]];
+      const positions = boundary.map(([east, north]) => at(east, north));
+      const island = Array.from({ length: 32 }, (_, index) => {
+        const angle = index / 32 * Math.PI * 2;
+        return at(-50 + Math.cos(angle) * 65, 30 + Math.sin(angle) * 55);
+      });
+      viewer.entities.add({
+        name: '水底', polygon: {
+          hierarchy: new C.PolygonHierarchy(positions), height: groundHeight + .5,
+          material: C.Color.fromCssColorString('#a18e69'),
+        },
+      });
+      // Variable-depth sandy slopes expose real depth gradients around both banks and the island.
+      const addSlope = (outer, inner) => outer.forEach((a, i) => {
+        const j = (i + 1) % outer.length;
+        viewer.entities.add({ name: '水下浅滩', polygon: {
+          hierarchy: [a, outer[j], inner[j], inner[i]], perPositionHeight: true,
+          material: C.Color.fromCssColorString('#b9a57b'),
+        } });
+      });
+      addSlope(boundary.map(([x, y]) => at(x, y, 2.46)), boundary.map(([x, y]) => at(x * .86, y * .86, .55)));
+      const islandRing = (scale, height) => Array.from({ length: 32 }, (_, i) => {
+        const a = i / 32 * Math.PI * 2;
+        return at(-50 + Math.cos(a) * 65 * scale, 30 + Math.sin(a) * 55 * scale, height);
+      });
+      addSlope(islandRing(1, 2.46), islandRing(1.35, .55));
+      // 水下石块提供参照，便于观察不同透明度下的水底细节。
+      for (let index = 0; index < 7; index++) {
+        viewer.entities.add({
+          name: '水底石块', position: at(140 + index * 24, -80 + index % 3 * 28, 1), orientation,
+          ellipsoid: { radii: new C.Cartesian3(12, 8, .5), material: C.Color.fromCssColorString('#645f4e') },
+        });
+      }
+      viewer.entities.add({
+        name: '岸线', polygon: {
+          hierarchy: new C.PolygonHierarchy(boundary.map(([east, north]) => at(east * 1.05, north * 1.05)), [new C.PolygonHierarchy(positions)]),
+          height: groundHeight + 3.5, extrudedHeight: groundHeight, material: C.Color.fromCssColorString('#c5b58a'),
+        },
+      });
+      viewer.entities.add({
+        name: '小岛', polygon: {
+          hierarchy: new C.PolygonHierarchy(island), height: groundHeight + 3.5, extrudedHeight: groundHeight + .5,
+          material: C.Color.fromCssColorString('#8d9b61'),
+        },
+      });
+      // 不同颜色和高度的岸边建筑，用于辨认倒影方向、裁剪与遮挡。
+      for (const [index, color] of ['#d88860', '#e8ddbd', '#6992a5'].entries()) {
+        const height = 45 + index * 20;
+        const east = -210 + index * 190;
+        viewer.entities.add({
+          name: '岸边建筑' + (index + 1), position: at(east, 340, height / 2), orientation,
+          box: { dimensions: new C.Cartesian3(76, 56, height), material: C.Color.fromCssColorString(color) },
+        });
+        viewer.entities.add({
+          name: '建筑屋顶', position: at(east, 340, height + 1), orientation,
+          box: { dimensions: new C.Cartesian3(80, 60, 2), material: C.Color.fromCssColorString('#4f5a5d') },
+        });
+        for (let floor = 0; floor < Math.floor(height / 12); floor++) {
+          for (let column = 0; column < 5; column++) viewer.entities.add({
+            name: '湖景窗', position: at(east - 28 + column * 14, 311.8, 9 + floor * 12), orientation,
+            box: { dimensions: new C.Cartesian3(8, .35, 6), material: C.Color.fromCssColorString('#344f62') },
+          });
+        }
+      }
+      const addBox = (name, x, y, z, width, length, height, color) => viewer.entities.add({
+        name, position: at(x, y, z), orientation,
+        box: { dimensions: new C.Cartesian3(width, length, height), material: C.Color.fromCssColorString(color) },
+      });
+      // 木栈道、码头、系泊帆船和树冠，提供高低、明暗不同的反射参照。
+      addBox('滨水栈道', 0, 300, 4.5, 570, 13, 1.2, '#a78b67');
+      addBox('伸入水面的码头', 250, 200, 4.5, 15, 180, 1.2, '#9c7956');
+      for (let i = 0; i < 8; i++) addBox('码头木桩', 250 + (i % 2 ? 6 : -6), 125 + Math.floor(i / 2) * 45, 2.8, 2, 2, 8, '#75634c');
+      for (let i = 0; i < 3; i++) {
+        const x = 280 + i * 19, y = 145 + i * 38;
+        viewer.entities.add({ name: '帆船船体', position: at(x, y, 3.2), orientation,
+          ellipsoid: { radii: new C.Cartesian3(7, 19, 2.3), material: C.Color.fromCssColorString(['#e6ded0', '#577c8c', '#d1ac73'][i]) } });
+        addBox('帆船桅杆', x, y, 17, .7, .7, 28, '#d5d0bb');
+        viewer.entities.add({ name: '帆船船帆', polygon: { hierarchy: [at(x, y, 30), at(x, y, 7), at(x, y + 14, 7)],
+          perPositionHeight: true, material: C.Color.fromCssColorString('#f4ead2') } });
+      }
+      const addTree = (x, y, size) => {
+        addBox('树干', x, y, size * .4, size * .14, size * .14, size * .8, '#695641');
+        viewer.entities.add({ name: '树冠', position: at(x, y, size), orientation,
+          ellipsoid: { radii: new C.Cartesian3(size * .55, size * .5, size * .8), material: C.Color.fromCssColorString('#385b47') } });
+      };
+      for (let i = 0; i < 27; i++) {
+        const angle = i / 27 * Math.PI * 2;
+        if (Math.sin(angle) < -.3) continue;
+        addTree(Math.cos(angle) * 455, Math.sin(angle) * 360, 13 + (i % 5) * 3);
+      }
+      for (let i = 0; i < 5; i++) addTree(-75 + i * 12, 30 + Math.sin(i * 2) * 18, 12 + i % 3 * 4);
+      // 水域外环确定岸线，小岛作为孔洞，避免水面覆盖岛屿。
+      water = new GeoEarth.WaterEffect(earth, {
+        hierarchy: new C.PolygonHierarchy(positions, [new C.PolygonHierarchy(island)]),
+        height: groundHeight + 2.5,
+        reflectionSize: 1024, refractionSize: 1024, meshSize: 8,
+      });
+      changeStyle();
+      locate();
+      status.dataset.state = 'ready';
+      gui.domElement.style.pointerEvents = '';
+      gui.domElement.style.opacity = '';
+      document.querySelectorAll('.controls button, .controls input, .controls select').forEach(control => { control.disabled = false; });
+      updateStatus();
+      void loadOnline();
+    }
+
+    main().catch(error => {
+      if (disposed) return;
+      status.dataset.state = 'error';
+      status.textContent = '加载失败：' + error.message;
+      console.error(error);
+    });
   </script>
 </body>
+
 </html>

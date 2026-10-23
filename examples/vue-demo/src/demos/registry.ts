@@ -459,7 +459,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "effect-water",
         "title": "demos.effect-water",
-        "description": "demos.visualizationScaffoldDescription",
+        "description": "demos.waterDescription",
         "path": "demos/effects/water.html"
       },
       {

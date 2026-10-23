@@ -144,6 +144,7 @@
     "effect-particle": "Particle effects",
     "particleDescription": "Display fire, smoke and fountain particles together, or view each effect separately, with pause, resume and scene positioning controls.",
     "effect-water": "Water",
+    "waterDescription": "Sky and atmosphere reflections, Cesium solar lighting and layered waves, with live water controls, date/time, Bing imagery and World Terrain.",
     "effect-point-lights": "Model point lights",
     "visualizationBasicsDescription": "Display points, billboards, polylines, polygons, rectangles and circles with live style controls, filtering and layer lifecycle actions.",
     "visualizationLinesDescription": "Compare 14 built-in and animated line materials; adjust color, width, duration, repetition and direction, pause playback or inspect one material.",

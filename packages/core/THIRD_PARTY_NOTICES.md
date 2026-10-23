@@ -1,4 +1,4 @@
-# Third-party notices for optional visualization modules
+# Third-party notices for visualization modules and effects
 
 The MapV 2.0.62 and heatmap.js 2.0.5 sources were migrated from the local
 CesiumEarth project. Their original author comments remain in the source.
@@ -73,5 +73,38 @@ redistribution rights before a public package release. Local migration does not
 establish new rights to those assets.
 
 The region SVGs (region-grid.svg and wall-gradient.svg) were authored for
-GeoEarth. WaterEffect uses the waterNormals.jpg asset already distributed with
-Cesium, subject to Cesium's bundled notices.
+GeoEarth. WaterEffect now generates its fine-wave normals procedurally and
+does not load a normal-map image. Cesium's own distributed assets remain
+subject to Cesium's bundled notices.
+
+## Three.js Water — MIT
+
+Upstream: https://github.com/mrdoob/three.js/blob/dev/examples/jsm/objects/Water.js
+
+WaterEffect's Fresnel mixing and view-distance-dependent reflection distortion
+are adapted from Three.js Water. The earlier layered normal-map sampling has
+been replaced with GeoEarth's directional wave functions and analytic noise
+derivatives. The geometry waves, camera, clipping and offscreen command adapter
+are implemented for Cesium. No Three.js runtime is included.
+
+The MIT License
+
+Copyright © 2010-2026 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
