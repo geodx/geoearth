@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoEarth · 区域专题</title>
+  <style>
+    html,
+    body,
+    #earth {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    body {
+      font: 14px/1.6 system-ui, sans-serif;
+    }
+
+    .intro {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      z-index: 300;
+      color: #e5f6ff;
+      pointer-events: none;
+    }
+
+    .intro h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .intro p {
+      margin: 4px 0 8px;
+      color: #a9c7da;
+      text-shadow: 0 1px 4px #000;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .controls select,
+    .controls button {
+      pointer-events: auto;
+      font: inherit;
+      padding: 5px 10px;
+      color: #e5f6ff;
+      background: #102a40ed;
+      border: 1px solid #52758e;
+      border-radius: 4px;
+    }
+
+    .controls button {
+      cursor: pointer;
+    }
+
+    .controls :disabled {
+      opacity: .5;
+    }
+
+    #status {
+      position: absolute;
+      bottom: 32px;
+      left: 12px;
+      z-index: 300;
+      margin: 0;
+      max-width: calc(100% - 24px);
+      padding: 4px 10px;
+      border-radius: 4px;
+      color: #e5f6ff;
+      background: #071a2ee8;
+      pointer-events: none;
+    }
+
+    #status[data-state="error"] {
+      color: #ffb0a4;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="earth"></div>
+  <header class="intro">
+    <h1>区域专题</h1>
+    <div class="controls">
+      <select id="effect" aria-label="展示效果" disabled>
+        <option value="fill">分区填色</option>
+        <option value="boundary">行政边界</option>
+        <option value="gradient">渐变填充</option>
+        <option value="extruded">立体分区</option>
+        <option value="wall">网格与边墙</option>
+      </select>
+      <button id="locate" type="button" disabled>定位全国</button>
+    </div>
+  </header>
+  <p id="status" role="status" data-state="loading">正在加载数据…</p>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
+  <script src="/sdk/cesium/Cesium.js"></script>
+  <script src="/sdk/geoearth.js"></script>
+
+  <script>
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false, globeBaseColor: '#071625' },
+      homeView: { longitude: 104, latitude: 35, height: 10000000, pitch: -90 },
+    });
+    const viewer = earth.viewer;
+    const effect = document.getElementById('effect');
+    const status = document.getElementById('status');
+    let activeLayers = [];
+    let disposed = false;
+    let switchId = 0;
+    let resizeFrame;
+    let china;
+    async function loadData(name) {
+      const response = await fetch('/demo-assets/thematic/' + name + '.json');
+      if (!response.ok) throw new Error('数据加载失败：' + name);
+      return response.json();
+    }
+    function locate() {
+      viewer.camera.lookAt(C.Cartesian3.fromDegrees(104, 33), new C.HeadingPitchRange(0, C.Math.toRadians(-70), 6500000));
+      viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+      viewer.scene.requestRender();
+    }
+    function clearLayers() {
+      activeLayers.forEach(layer => layer.destroy());
+      activeLayers = [];
+    }
+    async function showEffect() {
+      const task = ++switchId;
+      clearLayers();
+      status.dataset.state = 'loading';
+      status.textContent = '正在加载效果…';
+      try {
+        // 切换时释放上一组图层，异步完成的过期任务不更新页面状态。
+        const result = createLayers(effect.value);
+        activeLayers = result.layers;
+        await Promise.all(result.layers.map(layer => layer.ready));
+        if (disposed || task !== switchId) return;
+        viewer.scene.requestRender();
+        status.dataset.state = 'ready';
+        status.textContent = result.description;
+      } catch (error) {
+        if (disposed || task !== switchId) return;
+        clearLayers();
+        status.dataset.state = 'error';
+        status.textContent = '加载失败：' + error.message;
+        console.error(error);
+      }
+    }
+    effect.addEventListener('change', showEffect);
+    document.getElementById('locate').addEventListener('click', locate);
+    function onResize() {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => {
+        if (disposed) return;
+        activeLayers.forEach(layer => layer.resize?.());
+        viewer.scene.requestRender();
+      });
+    }
+    window.addEventListener('resize', onResize);
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      ++switchId;
+      window.removeEventListener('resize', onResize);
+      cancelAnimationFrame(resizeFrame);
+      clearLayers();
+      earth.destroy();
+    });
+
+    function createLayers(mode) {
+      const colors = ['#32b9e9', '#40d4bd', '#a3b85d', '#ecb65f', '#668dea', '#b27dca'];
+      const layer = new GeoEarth.RegionLayer(earth, {
+        data: china, theme: mode === 'wall' ? 'administrative' : 'plain',
+        showLabels: true, labelProperty: 'name',
+        style: (feature, index) => ({
+          fillColor: C.Color.fromCssColorString(colors[index % colors.length]).withAlpha(mode === 'boundary' ? 0 : .65),
+          gradient: mode === 'gradient', outlineColor: C.Color.fromCssColorString('#83def9'), outlineWidth: 1.5,
+          height: 0, extrudedHeight: ['extruded', 'wall'].includes(mode) ? 40000 + (index % 6) * 24000 : 0,
+          wallColor: C.Color.fromCssColorString('#30cfff'), fillRepeat: new C.Cartesian2(10, 10),
+          label: { font: '12px sans-serif', fillColor: C.Color.fromCssColorString('#e6faff'), disableDepthTestDistance: Infinity },
+        }),
+      });
+      return { layers: [layer], description: china.features.length + ' 个行政区 · ' + effect.selectedOptions[0].textContent };
+    }
+    async function main() {
+      await earth.onReady();
+      if (disposed) return;
+      // 深色地球与行政边界突出专题图层的颜色和分布。
+      for (let index = 0; index < viewer.imageryLayers.length; index++) viewer.imageryLayers.get(index).show = false;
+      china = await loadData('china');
+      if (disposed) return;
+      await locate();
+
+      if (disposed) return;
+      await showEffect();
+      effect.disabled = false;
+      document.getElementById('locate').disabled = false;
+    }
+    main().catch(error => {
+      if (disposed) return;
+      status.dataset.state = 'error';
+      status.textContent = '加载失败：' + error.message;
+      console.error(error);
+    });
+  </script>
+</body>
+
+</html>

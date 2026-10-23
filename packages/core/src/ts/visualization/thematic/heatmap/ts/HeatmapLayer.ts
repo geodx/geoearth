@@ -131,7 +131,8 @@ export class HeatmapLayer extends OwnedResource {
                     geometry: new RectangleGeometry({ rectangle, height: this.options.height, vertexFormat: EllipsoidSurfaceAppearance.VERTEX_FORMAT })
                 }),
                 appearance: new EllipsoidSurfaceAppearance({
-                    material: new Material({ fabric: { type: 'Image', uniforms: { image } } }),
+                    // 热力纹理包含透明背景，使用透明材质让底图和行政边界正常透出。
+                    material: new Material({ fabric: { type: 'Image', uniforms: { image } }, translucent: true }),
                     aboveGround: this.options.height! > 0
                 }),
                 asynchronous: false, show: this.visible,

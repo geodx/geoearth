@@ -407,64 +407,34 @@ export const demoTree: DemoNode[] = [
         "title": "groups.visualizationThematic",
         "children": [
           {
-            "id": "visualization-migration-echarts",
-            "title": "demos.visualization-migration-echarts",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/thematic/migration/echarts.html"
-          },
-          {
-            "id": "visualization-migration-mapv",
-            "title": "demos.visualization-migration-mapv",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/thematic/migration/mapv.html"
-          },
-          {
-            "id": "visualization-inflow",
-            "title": "demos.visualization-inflow",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/thematic/inflow/echarts.html"
-          },
-          {
-            "id": "visualization-outflow",
-            "title": "demos.visualization-outflow",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/thematic/outflow/echarts.html"
+            "id": "visualization-migration",
+            "title": "demos.visualization-migration",
+            "description": "demos.visualizationThematicMigrationDescription",
+            "path": "demos/visualization/thematic/migration.html"
           },
           {
             "id": "visualization-scatter",
             "title": "demos.visualization-scatter",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/thematic/scatter/echarts.html"
+            "description": "demos.visualizationThematicScatterDescription",
+            "path": "demos/visualization/thematic/scatter.html"
           },
           {
             "id": "visualization-heatmap",
             "title": "demos.visualization-heatmap",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/thematic/heatmap/heatmapjs.html"
+            "description": "demos.visualizationThematicHeatmapDescription",
+            "path": "demos/visualization/thematic/heatmap.html"
           },
           {
-            "id": "visualization-heatmap-mapv",
-            "title": "demos.visualization-heatmap-mapv",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/thematic/heatmap/mapv.html"
-          },
-          {
-            "id": "visualization-grid",
-            "title": "demos.visualization-grid",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/thematic/grid/mapv.html"
-          },
-          {
-            "id": "visualization-honeycomb",
-            "title": "demos.visualization-honeycomb",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/thematic/honeycomb/mapv.html"
+            "id": "visualization-aggregation",
+            "title": "demos.visualization-aggregation",
+            "description": "demos.visualizationThematicAggregationDescription",
+            "path": "demos/visualization/thematic/aggregation.html"
           },
           {
             "id": "visualization-regions",
             "title": "demos.visualization-regions",
-            "description": "demos.visualizationScaffoldDescription",
-            "path": "demos/visualization/thematic/regions/index.html"
+            "description": "demos.visualizationThematicRegionsDescription",
+            "path": "demos/visualization/thematic/regions.html"
           }
         ]
       },

@@ -104,7 +104,7 @@ export class EchartsLayer extends OwnedResource {
             super.destroy()
             throw error
         }
-        this.own(this.viewer.scene.postRender.addEventListener(() => this.refresh()))
+        this.own(this.viewer.scene.preRender.addEventListener(() => this.refresh()))
     }
 
     get show(): boolean {
@@ -138,14 +138,21 @@ export class EchartsLayer extends OwnedResource {
         this.assertAlive()
         this.width = this.viewer.canvas.clientWidth
         this.height = this.viewer.canvas.clientHeight
-        this.chart.resize({ width: Math.max(1, this.width), height: Math.max(1, this.height), silent: true })
+        // 相机重投影即时更新位置，避免图形通过过渡动画追赶地图。
+        this.chart.resize({
+            width: Math.max(1, this.width), height: Math.max(1, this.height),
+            silent: true, animation: { duration: 0 },
+        })
+        // 在当前地图帧显示前完成图表绘制，使两层使用同一帧的相机位置。
+        this.chart.getZr().flush()
     }
 
     private refresh(): void {
         if (this.destroyed || !this.visible) return
-        // 相机或视口变化时让 ECharts 重新投影；静止场景不重复提交配置。
-        if (this.width !== this.viewer.canvas.clientWidth || this.height !== this.viewer.canvas.clientHeight) this.resize()
-        else if (!Matrix4.equals(this.matrix, this.viewer.camera.viewMatrix) || !Matrix4.equals(this.projection, this.viewer.camera.frustum.projectionMatrix)) this.chart.setOption({}, { silent: true })
+        // 仅在相机或视口变化时重新投影，图表配置和数据保持不变。
+        if (this.width !== this.viewer.canvas.clientWidth || this.height !== this.viewer.canvas.clientHeight
+            || !Matrix4.equals(this.matrix, this.viewer.camera.viewMatrix)
+            || !Matrix4.equals(this.projection, this.viewer.camera.frustum.projectionMatrix)) this.resize()
         Matrix4.clone(this.viewer.camera.viewMatrix, this.matrix)
         Matrix4.clone(this.viewer.camera.frustum.projectionMatrix, this.projection)
     }
