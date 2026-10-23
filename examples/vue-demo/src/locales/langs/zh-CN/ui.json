@@ -142,6 +142,7 @@
     "effect-weather": "天气特效",
     "weatherDescription": "在同一街区场景中切换雨、雪、雾，支持效果显隐与场景定位。",
     "effect-particle": "粒子特效",
+    "particleDescription": "同时展示火焰、烟雾和喷泉粒子，支持单独查看、暂停继续与场景定位。",
     "effect-water": "水面",
     "effect-point-lights": "模型点光源",
     "visualizationBasicsDescription": "展示点、图标、折线、多边形、矩形和圆，调整颜色、大小、高度与透明度，支持筛选、显隐、移除和重新加载。",

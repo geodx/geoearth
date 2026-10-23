@@ -453,7 +453,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "effect-particle",
         "title": "demos.effect-particle",
-        "description": "demos.visualizationScaffoldDescription",
+        "description": "demos.particleDescription",
         "path": "demos/effects/particle.html"
       },
       {

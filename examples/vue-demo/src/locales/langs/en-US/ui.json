@@ -142,6 +142,7 @@
     "effect-weather": "Weather effects",
     "weatherDescription": "Switch between rain, snow and distance fog in the same city scene, with visibility and scene positioning controls.",
     "effect-particle": "Particle effects",
+    "particleDescription": "Display fire, smoke and fountain particles together, or view each effect separately, with pause, resume and scene positioning controls.",
     "effect-water": "Water",
     "effect-point-lights": "Model point lights",
     "visualizationBasicsDescription": "Display points, billboards, polylines, polygons, rectangles and circles with live style controls, filtering and layer lifecycle actions.",
