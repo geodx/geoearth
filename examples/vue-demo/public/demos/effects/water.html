@@ -56,6 +56,9 @@
     .toolbar { right: 325px; }
     #status { max-width: calc(100% - 360px); }
     #resource-status { font-size: 12px; color: #b3c8d7; }
+    #earth .cesium-performanceDisplay-defaultContainer {
+      position: absolute; top: 105px; left: 12px; right: auto; z-index: 2; pointer-events: none;
+    }
     @media (max-width: 800px) {
       .demo-panel { top: 125px; width: 260px; max-height: calc(100vh - 165px); }
       .toolbar { right: 12px; }
@@ -79,6 +82,7 @@
       <button id="pause" type="button" disabled>暂停波纹</button>
       <button id="locate" type="button" disabled>定位场景</button>
       <button id="sun-view" type="button" disabled>追光视角</button>
+      <button id="caustics-view" type="button" disabled>浅水焦散</button>
     </div>
   </header>
   <aside class="demo-panel" aria-label="水体参数面板">
@@ -119,11 +123,12 @@
     const offline = new URLSearchParams(location.search).has('offline');
     const params = {
       waveHeight: .35, waveSteepness: .35, shoreFadeDistance: 12, refraction: true, refractionStrength: .65,
-      absorptionR: .28, absorptionG: .09, absorptionB: .045, foam: true, foamWidth: 1.2, foamOpacity: .7, debugView: 'surface', depthRange: 5,
+      absorptionR: .28, absorptionG: .09, absorptionB: .045, foam: true, foamWidth: 1.2, foamOpacity: .7,
+      caustics: true, causticsIntensity: 2, causticsMaxDepth: 12, debugView: 'surface', depthRange: 5,
       color: '#06292e', opacity: .97, waveLength: 55, frequency: 100, waveDirection: 25, amplitude: .65,
       rippleStrength: .3, roughness: .18, scattering: .65, distortionScale: 9,
       specularIntensity: 1, reflectionStrength: 1, animationSpeed: .65, skyReflection: true,
-      date: '2026-06-21', hour: 15, online: !offline, lighting: true, sunElevation: '',
+      date: '2026-06-21', hour: 15, online: !offline, lighting: true, fps: true, sunElevation: '',
       reset: () => changeStyle(),
     };
     const gui = new lil.GUI({ container: document.getElementById('gui'), title: '水体 · 实时调节' });
@@ -150,14 +155,22 @@
     depthFolder.add(params, 'refractionStrength', 0, 1, .01).name('折射偏移').onChange(applyParameters);
     for (const [key, name] of [['absorptionR', '红光吸收 / 米'], ['absorptionG', '绿光吸收 / 米'], ['absorptionB', '蓝光吸收 / 米']])
       depthFolder.add(params, key, 0, 1, .005).name(name).onChange(applyParameters);
+    const causticsFolder = gui.addFolder('水下焦散 · 太阳聚光');
+    causticsFolder.add(params, 'caustics').name('水下焦散').onChange(applyParameters);
+    causticsFolder.add(params, 'causticsIntensity', 0, 10, .1).name('聚光强度').onChange(applyParameters);
+    causticsFolder.add(params, 'causticsMaxDepth', .5, 30, .5).name('最大水深（米）').onChange(applyParameters);
     const foamFolder = gui.addFolder('岸边泡沫与观察');
     foamFolder.add(params, 'foam').name('岸边泡沫').onChange(applyParameters);
     foamFolder.add(params, 'foamWidth', .1, 3, .05).name('泡沫水深（米）').onChange(applyParameters);
     foamFolder.add(params, 'foamOpacity', 0, 1, .01).name('泡沫强度').onChange(applyParameters);
-    foamFolder.add(params, 'debugView', { '水面成像': 'surface', '水深：浅黄深蓝': 'depth', '水下折射原色': 'refraction', '泡沫遮罩': 'foam', '波面法线': 'normals' }).name('观察视图').onChange(applyParameters);
+    foamFolder.add(params, 'debugView', { '水面成像': 'surface', '水深：浅黄深蓝': 'depth', '水下折射原色': 'refraction', '泡沫遮罩': 'foam', '波面法线': 'normals', '焦散照明': 'caustics' }).name('观察视图').onChange(applyParameters);
     foamFolder.add(params, 'depthRange', 1, 20, .5).name('水深显示量程').onChange(applyParameters);
-    depthFolder.close(); foamFolder.close();
+    depthFolder.close(); causticsFolder.close(); foamFolder.close();
     const environmentFolder = gui.addFolder('太阳与地理环境 · UTC');
+    environmentFolder.add(params, 'fps').name('Cesium 原生 FPS').onChange(value => {
+      if (value) earth.tools.fps.show(); else earth.tools.fps.hide();
+      viewer.scene.requestRender();
+    });
     environmentFolder.add(params, 'date').name('日期 YYYY-MM-DD').onFinishChange(updateSun);
     environmentFolder.add(params, 'hour', 0, 23.99, .05).name('时间（UTC）').onChange(updateSun);
     environmentFolder.add(params, 'sunElevation').name('太阳高度角').listen().disable();
@@ -178,6 +191,7 @@
         refraction: params.refraction, refractionStrength: params.refractionStrength,
         absorption: new C.Cartesian3(params.absorptionR, params.absorptionG, params.absorptionB),
         foam: params.foam, foamWidth: params.foamWidth, foamOpacity: params.foamOpacity,
+        caustics: params.caustics, causticsIntensity: params.causticsIntensity, causticsMaxDepth: params.causticsMaxDepth,
         debugView: params.debugView, depthRange: params.depthRange });
     }
 
@@ -238,7 +252,7 @@
       // 复用水面图元，只更新材质的颜色、波纹和高光参数。
       Object.assign(params, {
         shoreFadeDistance: 12, refraction: true, absorptionR: .28, absorptionG: .09, absorptionB: .045,
-        foam: true, foamOpacity: .7, debugView: 'surface', depthRange: 5,
+        foam: true, foamOpacity: .7, caustics: true, causticsIntensity: 2, causticsMaxDepth: 12, debugView: 'surface', depthRange: 5,
       }, uniforms, { color: color.toCssHexString(), opacity: color.alpha });
       applyParameters();
       gui.controllersRecursive().forEach(controller => controller.updateDisplay());
@@ -255,6 +269,13 @@
       event.target.textContent = paused ? '继续波纹' : '暂停波纹';
     });
     document.getElementById('locate').addEventListener('click', locate);
+    document.getElementById('caustics-view').addEventListener('click', () => {
+      styleSelect.value = 'shallow'; changeStyle();
+      viewer.camera.lookAt(at(205, -70, 2.5), new C.HeadingPitchRange(C.Math.toRadians(20), C.Math.toRadians(-55), 180));
+      viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+      causticsFolder.open();
+      viewer.scene.requestRender();
+    });
     document.getElementById('sun-view').addEventListener('click', () => {
       const sun = viewer.scene.context.uniformState.sunDirectionWC;
       const localSun = C.Matrix4.multiplyByPointAsVector(C.Matrix4.inverseTransformation(frame, new C.Matrix4()), sun, new C.Cartesian3());
@@ -290,6 +311,7 @@
     async function main() {
       await earth.onReady();
       if (disposed) return;
+      earth.tools.fps.show();
       viewer.scene.globe.depthTestAgainstTerrain = true;
       viewer.scene.screenSpaceCameraController.enableCollisionDetection = false;
       viewer.scene.light = new C.SunLight();

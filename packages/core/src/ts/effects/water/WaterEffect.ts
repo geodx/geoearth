@@ -13,6 +13,12 @@ import { refineWaterGeometry } from './waterGeometry'
 import { waterVertexShader } from './waterVertexShader'
 
 export interface WaterStyleOptions {
+    /** 实时近似水下焦散，默认 true；正常成像需开启 refraction。 */
+    caustics?: boolean
+    /** 聚光增益，范围 0—10，默认 2。 */
+    causticsIntensity?: number
+    /** 焦散的最大垂直水深，单位米，默认 12。 */
+    causticsMaxDepth?: number
     /** 折射与 Beer-Lambert 吸收，默认 true；仅水面上方的透视 3D 相机。 */
     refraction?: boolean
     /** 折射偏移倍率，范围 0—1，默认 0.65。 */
@@ -25,8 +31,8 @@ export interface WaterStyleOptions {
     foamWidth?: number
     /** 泡沫覆盖强度，范围 0—1，默认 0.7。 */
     foamOpacity?: number
-    /** 观察水深（深水为蓝）、折射原色或泡沫遮罩。 */
-    debugView?: 'surface' | 'depth' | 'refraction' | 'foam' | 'normals'
+    /** 观察水深、折射原色、泡沫、法线或焦散照明。 */
+    debugView?: 'surface' | 'depth' | 'refraction' | 'foam' | 'normals' | 'caustics'
     /** 水深观察视图的满量程，单位米，默认 10。 */
     depthRange?: number
     /** 几何波浪的最大垂直振幅，单位米，范围 0—10，默认 0.35。 */
@@ -128,6 +134,9 @@ export class WaterEffect extends OwnedResource {
                     foam: options.foam === false ? 0 : 1,
                     foamWidth: options.foamWidth ?? 1.2,
                     foamOpacity: options.foamOpacity ?? .7,
+                    caustics: options.caustics === false ? 0 : 1,
+                    causticsIntensity: options.causticsIntensity ?? 2,
+                    causticsMaxDepth: options.causticsMaxDepth ?? 12,
                     debugView: debugViews.indexOf(options.debugView ?? 'surface'),
                     depthRange: options.depthRange ?? 10,
                     underwaterReady: 0,
@@ -190,7 +199,7 @@ export class WaterEffect extends OwnedResource {
             this.material.uniforms.reflectionReady = this.reflectionPass.ready ? 1 : 0
             Matrix4.toArray(this.reflectionPass.matrix, this.material.uniforms.reflectionMatrix)
             const u = this.material.uniforms
-            this.underwaterPass.enabled = u.refraction > 0 || u.foam > 0 || (u.debugView > 0 && u.debugView < 3.5)
+            this.underwaterPass.enabled = u.refraction > 0 || u.foam > 0 || (u.debugView > 0 && u.debugView < 3.5) || u.debugView > 4.5
             this.underwaterPass.clipMargin = u.waveHeight + .05
             this.underwaterPass.render([...group])
             u.underwaterReady = this.underwaterPass.ready ? 1 : 0
@@ -207,7 +216,7 @@ export class WaterEffect extends OwnedResource {
     update(options: WaterStyleOptions): void {
         this.assertAlive()
         validateStyle(options)
-        const { color, reflection, skyReflection, sunColor, refraction, absorption, foam, debugView, ...uniforms } = options
+        const { color, reflection, skyReflection, sunColor, refraction, absorption, foam, caustics, debugView, ...uniforms } = options
         for (const [key, value] of Object.entries(uniforms)) {
             if (value !== undefined) this.material.uniforms[key] = value
         }
@@ -216,6 +225,7 @@ export class WaterEffect extends OwnedResource {
         if (absorption) this.material.uniforms.absorption = Cartesian3.clone(absorption)
         if (refraction !== undefined) this.material.uniforms.refraction = refraction ? 1 : 0
         if (foam !== undefined) this.material.uniforms.foam = foam ? 1 : 0
+        if (caustics !== undefined) this.material.uniforms.caustics = caustics ? 1 : 0
         if (debugView !== undefined) this.material.uniforms.debugView = debugViews.indexOf(debugView)
         if (reflection !== undefined) this.reflectionPass.enabled = reflection
         if (skyReflection !== undefined) this.reflectionPass.skyReflection = skyReflection
@@ -235,15 +245,16 @@ export class WaterEffect extends OwnedResource {
     }
 }
 
-const debugViews = ['surface', 'depth', 'refraction', 'foam', 'normals'] as const
+const debugViews = ['surface', 'depth', 'refraction', 'foam', 'normals', 'caustics'] as const
 function validateStyle(options: WaterStyleOptions): void {
     if (options.debugView !== undefined && !debugViews.includes(options.debugView)) throw new RangeError('debugView 无效。')
     if (options.absorption && [options.absorption.x, options.absorption.y, options.absorption.z].some(v => !Number.isFinite(v) || v < 0)) throw new RangeError('absorption 必须是非负有限 RGB 系数。')
-    for (const key of ['refractionStrength', 'foamWidth', 'foamOpacity', 'depthRange', 'waveHeight', 'waveSteepness', 'shoreFadeDistance', 'frequency', 'animationSpeed', 'amplitude', 'specularIntensity', 'distortionScale', 'reflectionStrength', 'waveLength', 'rippleStrength', 'roughness', 'scattering', 'waveDirection'] as const) {
+    for (const key of ['causticsIntensity', 'causticsMaxDepth', 'refractionStrength', 'foamWidth', 'foamOpacity', 'depthRange', 'waveHeight', 'waveSteepness', 'shoreFadeDistance', 'frequency', 'animationSpeed', 'amplitude', 'specularIntensity', 'distortionScale', 'reflectionStrength', 'waveLength', 'rippleStrength', 'roughness', 'scattering', 'waveDirection'] as const) {
         const value = options[key]
         if (value !== undefined && (!Number.isFinite(value) || (key !== 'waveDirection' && value < 0) ||
             (key === 'reflectionStrength' && value > 1) || (key === 'waveLength' && value <= 0) ||
             (key === 'waveHeight' && value > 10) || (key === 'waveSteepness' && value > 1) ||
+            (key === 'causticsIntensity' && value > 10) || (key === 'causticsMaxDepth' && value <= 0) ||
             ((key === 'refractionStrength' || key === 'foamOpacity') && value > 1) ||
             ((key === 'foamWidth' || key === 'depthRange') && value <= 0) ||
             (key === 'roughness' && (value < .03 || value > 1)))) {

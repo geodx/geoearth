@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { verifyAdvancedWater } from './water.advanced.mjs';
 import { verifyProceduralWater } from './water.procedural.mjs';
+import { verifyCaustics } from './water.caustics.mjs';
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ? pathToFileURL(process.env.PLAYWRIGHT_MODULE).href : 'playwright');
 const server = createServer(async (req, res) => {
@@ -36,6 +37,14 @@ try {
   page.on('response', response => { if (response.status() >= 400) errors.push(response.status() + ' ' + response.url()); });
   await page.goto(origin + '/demos/effects/water.html?offline=1');
   await page.waitForFunction(() => water?.reflectionPass.ready && viewer.entities.values.filter(e => e.name.startsWith('岸边建筑')).length === 3);
+  await page.locator('.cesium-performanceDisplay-fps').waitFor({ state: 'visible' });
+  const fpsBounds = await page.locator('.cesium-performanceDisplay-defaultContainer').boundingBox();
+  assert(fpsBounds && fpsBounds.x < 30 && fpsBounds.y >= 100 && fpsBounds.width < 200, 'Native FPS must remain visible to the left of the parameter panel');
+  await page.waitForFunction(() => /\d+ FPS/.test(document.querySelector('.cesium-performanceDisplay-fps')?.textContent ?? ''));
+  await page.evaluate(() => gui.controllersRecursive().find(c => c.property === 'fps').setValue(false));
+  await page.locator('.cesium-performanceDisplay-fps').waitFor({ state: 'detached' });
+  await page.evaluate(() => gui.controllersRecursive().find(c => c.property === 'fps').setValue(true));
+  await page.locator('.cesium-performanceDisplay-fps').waitFor({ state: 'visible' });
   await page.waitForTimeout(1800);
   await page.locator('#pause').click();
   await page.waitForTimeout(300);
@@ -43,6 +52,7 @@ try {
   await page.waitForTimeout(300);
   assert.equal(await page.evaluate(() => water.material.uniforms.time), time);
   await verifyProceduralWater(page);
+  await verifyCaustics(page);
   assert.deepEqual(normalMapRequests, [], 'WaterEffect must render without requesting a normal-map image');
   await verifyAdvancedWater(page);
   // Read the actual offscreen texture: building visibility must change its contents.
@@ -264,6 +274,9 @@ try {
     await online.locator('#reflection').check();
     await online.waitForFunction(() => water.reflectionPass.ready);
     if (process.env.WATER_ONLINE_SCREENSHOT) await online.screenshot({ path: process.env.WATER_ONLINE_SCREENSHOT });
+    await online.locator('#caustics-view').click();
+    await online.waitForFunction(() => water.underwaterPass.ready && water.material.uniforms.caustics > 0 && viewer.useDefaultRenderLoop);
+    if (process.env.WATER_CAUSTICS_ONLINE_SCREENSHOT) await online.screenshot({ path: process.env.WATER_CAUSTICS_ONLINE_SCREENSHOT });
     await online.locator('#sun-view').click();
     await online.waitForTimeout(500);
     if (process.env.WATER_SUN_SCREENSHOT) await online.screenshot({ path: process.env.WATER_SUN_SCREENSHOT });
