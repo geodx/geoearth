@@ -36,7 +36,7 @@
   <div id="earth"></div>
   <section class="demo-panel" aria-labelledby="title">
     <h2 id="title">模型点光源</h2>
-    <p class="hint">分别开关两盏灯，观察车身朝向灯光的一侧如何随距离逐渐变暗。</p>
+    <p class="hint">暖黄灯和冷蓝灯分别照亮车身两端，离灯越远，照明越弱。</p>
     <fieldset id="controls" aria-label="灯光设置" disabled>
       <div class="lights">
         <label><input id="warm" type="checkbox" checked />暖黄灯</label>
@@ -85,7 +85,6 @@
       camera.lookAt(at(0, -6, 12), new C.HeadingPitchRange(
         C.Math.toRadians(10), C.Math.toRadians(-20), 138,
       ));
-      camera.lookAtTransform(C.Matrix4.IDENTITY);
       scene.requestRender();
     }
 
@@ -117,8 +116,10 @@
       scene.skyBox.show = false;
       scene.sun.show = false;
       scene.moon.show = false;
+      camera.constrainedAxis = C.Cartesian3.UNIT_Z;
+      const up = C.Matrix4.multiplyByPointAsVector(frame, C.Cartesian3.UNIT_Z, new C.Cartesian3());
       scene.light = new C.DirectionalLight({
-        direction: C.Cartesian3.negate(C.Cartesian3.normalize(at(0, 0, 0), new C.Cartesian3()), new C.Cartesian3()),
+        direction: C.Cartesian3.negate(up, up),
         intensity: 0.35,
       });
       entities.add({
@@ -152,7 +153,7 @@
       model.readyEvent.addEventListener(() => {
         controls.disabled = false;
         status.dataset.state = 'ready';
-        status.textContent = '拖动可旋转视角，关闭两盏灯可对比基础照明。';
+        status.textContent = '拖动可绕车身旋转，关闭两盏灯可对比基础照明。';
       });
       updateLights();
     }
