@@ -30,7 +30,7 @@ export function createPointLightShader(lights: readonly PointLightOptions[]): Cu
     return new CustomShader({
         lightingModel: LightingModel.PBR, uniforms,
         fragmentShaderText: `void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material) {
-            vec3 positionEC = (czm_modelView * vec4(fsInput.attributes.positionMC, 1.0)).xyz;
+            vec3 positionEC = fsInput.attributes.positionEC;
             vec3 normalEC = normalize(fsInput.attributes.normalEC);
             vec3 illumination = vec3(0.0);
             ${contributions.join('\n')}

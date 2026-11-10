@@ -4,25 +4,172 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 模型点光源</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
   <style>
     html, body, #earth { width: 100%; height: 100%; margin: 0; }
-    .scaffold-note { position: absolute; top: 12px; left: 12px; z-index: 2; padding: 8px 12px; background: #071a2edd; color: white; font: 14px sans-serif; pointer-events: none; }
+    .demo-panel { width: min(240px, calc(100vw - 32px)); }
+    .demo-panel h2 { margin: 0; }
+    .demo-panel fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+    .lights { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+    .lights label { display: inline-flex; align-items: center; gap: 4px; }
+    .parameter { display: block; margin-top: 12px; }
+    .parameter input { display: block; width: 100%; margin: 4px 0 0; }
+    .demo-panel button {
+      margin-top: 12px;
+      padding: 5px 10px;
+      color: inherit;
+      background: #334155;
+      border: 1px solid #475569;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .demo-panel button:disabled { opacity: .5; cursor: default; }
+    .demo-panel .status { margin-bottom: 0; }
+    @media (max-width: 720px) {
+      body { display: flex; flex-direction: column; }
+      #earth { flex: 1; height: auto; min-height: 0; }
+      .demo-panel { position: static; flex: none; width: 100%; max-height: 45vh; border-radius: 0; }
+    }
   </style>
 </head>
 <body>
   <div id="earth"></div>
-  <div class="scaffold-note">示例骨架：具体效果待实现。</div>
+  <section class="demo-panel" aria-labelledby="title">
+    <h2 id="title">模型点光源</h2>
+    <p class="hint">分别开关两盏灯，观察车身朝向灯光的一侧如何随距离逐渐变暗。</p>
+    <fieldset id="controls" aria-label="灯光设置" disabled>
+      <div class="lights">
+        <label><input id="warm" type="checkbox" checked />暖黄灯</label>
+        <label><input id="cool" type="checkbox" checked />冷蓝灯</label>
+      </div>
+      <label class="parameter" for="intensity">
+        光照强度 <output id="intensity-value" for="intensity">3.0</output>
+        <input id="intensity" type="range" min="0" max="6" step="0.1" value="3" />
+      </label>
+      <label class="parameter" for="radius">
+        光照半径 <output id="radius-value" for="radius">65</output> 米
+        <input id="radius" type="range" min="5" max="110" step="1" value="65" />
+      </label>
+      <button id="locate" type="button">回到初始视角</button>
+    </fieldset>
+    <p id="status" class="status" role="status" data-state="loading">正在加载模型…</p>
+  </section>
   <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    const earth = new GeoEarth('earth');
-    // 入口：GeoEarth.createPointLightShader
-    // TODO 1：准备本示例使用的数据和配置。
-    // TODO 2：await earth.onReady() 后创建对应展示对象；传 earth 可自动绑定销毁。
-    // TODO 3：补充更新、显隐、清理等交互，并检查实际效果。
-    // 将返回的 CustomShader 绑定 Model 或 Cesium3DTileset；调用方解除绑定并销毁。
-    window.addEventListener('pagehide', () => earth.destroy(), { once: true });
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false, backgroundColor: '#0b1422', fxaa: true },
+    });
+    const { scene, camera, entities } = earth.viewer;
+    const frame = C.Transforms.eastNorthUpToFixedFrame(C.Cartesian3.fromDegrees(110, 30, 100));
+    const at = (east, north, up) => C.Matrix4.multiplyByPoint(
+      frame, new C.Cartesian3(east, north, up), new C.Cartesian3(),
+    );
+    const controls = document.getElementById('controls');
+    const intensity = document.getElementById('intensity');
+    const radius = document.getElementById('radius');
+    const intensityValue = document.getElementById('intensity-value');
+    const radiusValue = document.getElementById('radius-value');
+    const status = document.getElementById('status');
+    const lights = [
+      { toggle: document.getElementById('warm'), position: at(-32, -25, 21), color: C.Color.fromCssColorString('#ffad56') },
+      { toggle: document.getElementById('cool'), position: at(32, -25, 21), color: C.Color.fromCssColorString('#5f9bff') },
+    ];
+    let disposed = false;
+    let model;
+    let shader;
+
+    function locate() {
+      camera.lookAt(at(0, -6, 12), new C.HeadingPitchRange(
+        C.Math.toRadians(10), C.Math.toRadians(-20), 138,
+      ));
+      camera.lookAtTransform(C.Matrix4.IDENTITY);
+      scene.requestRender();
+    }
+
+    function updateLights() {
+      const strength = intensity.valueAsNumber;
+      const distance = radius.valueAsNumber;
+      intensityValue.value = strength.toFixed(1);
+      radiusValue.value = radius.value;
+      lights.forEach(({ toggle, marker }, index) => {
+        shader.setUniform(`u_intensity${index}`, toggle.checked ? strength : 0);
+        shader.setUniform(`u_radius${index}`, distance);
+        marker.show = toggle.checked && strength > 0;
+      });
+      scene.requestRender();
+    }
+
+    function showError(error) {
+      if (disposed) return;
+      controls.disabled = true;
+      status.dataset.state = 'error';
+      status.textContent = '场景加载失败：' + (error.message || error);
+    }
+
+    async function init() {
+      await earth.onReady();
+      if (disposed) return;
+      scene.globe.show = false;
+      scene.skyAtmosphere.show = false;
+      scene.skyBox.show = false;
+      scene.sun.show = false;
+      scene.moon.show = false;
+      scene.light = new C.DirectionalLight({
+        direction: C.Cartesian3.negate(C.Cartesian3.normalize(at(0, 0, 0), new C.Cartesian3()), new C.Cartesian3()),
+        intensity: 0.35,
+      });
+      entities.add({
+        position: at(0, 0, -0.5),
+        ellipse: { semiMajorAxis: 82, semiMinorAxis: 82, height: 99.5, material: C.Color.fromCssColorString('#202d40') },
+      });
+      locate();
+
+      const loadedModel = await C.Model.fromGltfAsync({
+        url: '/demo-assets/model/CesiumMilkTruck.glb',
+        modelMatrix: frame,
+        scale: 12,
+      });
+      if (disposed) {
+        loadedModel.destroy();
+        return;
+      }
+      model = scene.primitives.add(loadedModel);
+      model.imageBasedLighting.imageBasedLightingFactor = new C.Cartesian2(0.3, 0);
+      shader = GeoEarth.createPointLightShader(lights.map(({ position, color }) => ({
+        position, color, radius: radius.valueAsNumber, intensity: intensity.valueAsNumber,
+      })));
+      model.customShader = shader;
+      lights.forEach(light => {
+        light.marker = entities.add({
+          position: light.position,
+          point: { color: light.color, pixelSize: 10, outlineColor: C.Color.WHITE, outlineWidth: 1 },
+        });
+      });
+      model.errorEvent.addEventListener(showError);
+      model.readyEvent.addEventListener(() => {
+        controls.disabled = false;
+        status.dataset.state = 'ready';
+        status.textContent = '拖动可旋转视角，关闭两盏灯可对比基础照明。';
+      });
+      updateLights();
+    }
+
+    lights.forEach(({ toggle }) => toggle.addEventListener('change', updateLights));
+    intensity.addEventListener('input', updateLights);
+    radius.addEventListener('input', updateLights);
+    document.getElementById('locate').addEventListener('click', locate);
+    scene.renderError.addEventListener((_scene, error) => showError(error));
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      if (model) model.customShader = undefined;
+      shader?.destroy();
+      earth.destroy();
+    });
+    init().catch(showError);
   </script>
 </body>
 </html>
