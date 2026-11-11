@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://geoearth.dev/</loc></url>
+  <url><loc>https://geoearth.dev/docs/getting-started</loc></url>
+  <url><loc>https://geoearth.dev/docs/camera</loc></url>
+  <url><loc>https://geoearth.dev/docs/drawing</loc></url>
+  <url><loc>https://geoearth.dev/docs/measurement</loc></url>
+  <url><loc>https://geoearth.dev/docs/interaction</loc></url>
+  <url><loc>https://geoearth.dev/docs/profile</loc></url>
+  <url><loc>https://geoearth.dev/docs/line-of-sight</loc></url>
+  <url><loc>https://geoearth.dev/docs/height-limit</loc></url>
+  <url><loc>https://geoearth.dev/docs/water</loc></url>
+  <url><loc>https://geoearth.dev/docs/fps</loc></url>
+</urlset>

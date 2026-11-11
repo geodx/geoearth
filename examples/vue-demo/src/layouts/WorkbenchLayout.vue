@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 import { RouterLink, RouterView, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { demoMap } from "@/demos/registry";
-import { Compass, Connection, Monitor, Moon, Sunny, Grid, EditPen } from "@element-plus/icons-vue";
+import { Connection, Monitor, Moon, Sunny, Grid, EditPen } from "@element-plus/icons-vue";
 import { useWorkbench } from "@/composables/useWorkbench";
 import EditorSettings from "@/components/playground/EditorSettings.vue";
 
@@ -33,9 +33,8 @@ function togglePanel(panel: "directory" | "code") {
   <div class="workbench">
     <header class="topbar">
       <RouterLink class="brand" to="/" aria-label="GeoEarth">
-        <span class="brand-mark">
-          <el-icon aria-hidden="true"><Compass /></el-icon>
-        </span><strong>GeoEarth<span> / LAB</span></strong>
+        <img class="site-brand-icon" src="/favicon.svg" width="30" height="30" alt="" />
+        <strong>GeoEarth<span> / LAB</span></strong>
       </RouterLink>
       <div class="current-example">
         <span class="live-dot"></span>
@@ -45,9 +44,9 @@ function togglePanel(panel: "directory" | "code") {
         <el-button text class="nav-link" @click="helpOpen = true">{{
           t("nav.guide")
         }}</el-button>
-        <el-button text tag="a" class="nav-link" href="https://github.com/geoearth-dev/geoearth#readme"
+        <el-button text tag="a" class="nav-link" href="https://geoearth.dev/docs/getting-started"
           target="_blank" rel="noopener noreferrer">{{ t("nav.docs") }}</el-button>
-        <el-button text tag="a" class="nav-link" href="https://github.com/geoearth-dev/geoearth" target="_blank"
+        <el-button text tag="a" class="nav-link" href="https://github.com/geodx/geoearth" target="_blank"
           rel="noopener noreferrer">
           <el-icon aria-hidden="true"><Connection /></el-icon><span>{{ t("nav.source") }}</span>
         </el-button>

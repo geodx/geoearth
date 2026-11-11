@@ -3,13 +3,17 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "docs"
   ],
   "scripts": {
     "dev": "npm run build && npm run dev -w examples/vue-demo",
     "build": "npm run build -w packages/core",
     "build:iife": "npm run build:iife -w packages/core",
     "build:example": "npm run build && npm run build -w examples/vue-demo",
+    "dev:site": "npm run dev -w docs",
+    "build:site": "npm run build -w docs",
+    "preview:site": "npm run preview -w docs",
     "typecheck": "npm run typecheck -w packages/core",
     "pack:geoearth": "npm pack --dry-run -w packages/core",
     "format": "prettier --write ."
