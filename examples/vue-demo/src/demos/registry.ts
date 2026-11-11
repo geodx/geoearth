@@ -513,14 +513,8 @@ export const demoTree: DemoNode[] = [
       {
         "id": "advanced-fps",
         "title": "demos.advanced-fps",
-        "description": "demos.placeholderDescription",
+        "description": "demos.fpsDescription",
         "path": "demos/advanced/fps.html"
-      },
-      {
-        "id": "advanced-request-render",
-        "title": "demos.advanced-request-render",
-        "description": "demos.placeholderDescription",
-        "path": "demos/advanced/request-render.html"
       },
       {
         "id": "advanced-many-objects",

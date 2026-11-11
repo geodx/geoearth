@@ -129,7 +129,7 @@
     "heightLimitDescription": "Draw an area over the Dayanta 3D Tiles and adjust the height threshold, reference plane, and highlight color.",
     "analysis-terrain-excavation": "Terrain excavation",
     "advanced-fps": "FPS",
-    "advanced-request-render": "Render on demand",
+    "fpsDescription": "View native FPS and actual rendered-frame statistics while comparing continuous rendering, request rendering, and resolution.",
     "advanced-many-objects": "Many objects",
     "advanced-multi-instance": "Multiple instances",
     "advanced-container-resize": "Container resizing",

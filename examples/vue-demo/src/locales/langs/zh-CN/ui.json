@@ -129,7 +129,7 @@
     "heightLimitDescription": "在大雁塔 3D Tiles 上绘制范围，调整限高、参考面和超高颜色。",
     "analysis-terrain-excavation": "地形开挖",
     "advanced-fps": "FPS",
-    "advanced-request-render": "按需渲染",
+    "fpsDescription": "查看原生 FPS 面板和实际渲染统计，对比连续渲染、按需渲染与分辨率。",
     "advanced-many-objects": "大量对象",
     "advanced-multi-instance": "多实例",
     "advanced-container-resize": "容器尺寸变化",

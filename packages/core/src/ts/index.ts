@@ -42,6 +42,8 @@ export type {
 
 
 export { DrawTool, CoordinateType, DrawCancelledError } from './tools/draw';
+export { FPSMonitor } from './tools/fps';
+export type { FPSStats } from './tools/fps';
 export type {
     DegreePosition, DrawPositionMap, DrawPosition, DrawCoordinateOptions,
     DrawPointStyle, DrawPathStyle, DrawAreaStyle, DrawPointOptions, DrawLineOptions, DrawPolylineOptions,
