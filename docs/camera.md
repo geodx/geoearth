@@ -33,7 +33,7 @@ earth.camera.setView(saved)
 新操作会终止开场动画并取消先前飞行；销毁时也会结束等待。锁定俯视只限制鼠标倾斜，程序仍可主动设置其他姿态。
 
 ```ts
-import { CameraEventType } from 'geoearth'
+import { CameraEventType } from 'geoearth-sdk'
 const remove = earth.event.camera.addEventListener(CameraEventType.FLY_CANCEL, () => {
     console.log('飞行已取消')
 })

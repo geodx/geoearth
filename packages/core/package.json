@@ -1,5 +1,5 @@
 {
-  "name": "geoearth",
+  "name": "geoearth-sdk",
   "version": "1.1.0",
   "description": "A TypeScript toolkit for building Cesium-based 3D geospatial visualization applications.",
   "type": "module",
@@ -68,6 +68,10 @@
   ],
   "author": "Qiang Liu",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/geodx/geoearth.git"

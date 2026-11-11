@@ -53,7 +53,7 @@ npm run dev
 
 ```ts
 import { defineConfig } from "vite";
-import { geoEarth } from "geoearth/vite";
+import { geoEarth } from "geoearth-sdk/vite";
 
 export default defineConfig({
   plugins: [geoEarth()],
@@ -63,8 +63,8 @@ export default defineConfig({
 在容器创建后初始化：
 
 ```ts
-import { GeoEarth } from "geoearth";
-import "geoearth/style.css";
+import { GeoEarth } from "geoearth-sdk";
+import "geoearth-sdk/style.css";
 
 const earth = new GeoEarth("container");
 await earth.onReady();
@@ -119,7 +119,7 @@ SDK 输出到 `packages/core/dist`；示例网站输出到 `examples/vue-demo/di
 
 ## npm 发布
 
-发布对象是 `packages/core` 中的 `geoearth` 包，根工作区保持 `private: true`。npm 使用说明见 [SDK README](packages/core/README.md)。在项目根目录执行：
+发布对象是 `packages/core` 中的 `geoearth-sdk` 公开包，根工作区保持 `private: true`。npm 使用说明见 [SDK README](packages/core/README.md)。在项目根目录执行：
 
 ```bash
 npm run typecheck
@@ -127,16 +127,16 @@ npm run pack:geoearth
 npm pack -w packages/core
 ```
 
-`npm pack` 和 `npm publish` 会通过 `prepack` 自动重新构建 SDK。实际发布前，应将生成的 `geoearth-0.0.1.tgz` 安装到独立项目，验证类型检查、构建和浏览器运行；后续版本使用对应版本号的文件名。
+`npm pack` 和 `npm publish` 会通过 `prepack` 自动重新构建 SDK。实际发布前，应将生成的 `geoearth-sdk-<version>.tgz` 安装到独立项目，验证类型检查、构建和浏览器运行；文件名中的 `<version>` 对应包的实际版本号。
 
-确认 npm 账号拥有包名的发布权限后执行：
+使用拥有 `geoearth-sdk` 包发布权限的 npm 账号执行；首次发布时由 npm 校验包名并创建包：
 
 ```bash
 npm login --registry=https://registry.npmjs.org/
-npm publish -w packages/core --registry=https://registry.npmjs.org/
+npm publish -w packages/core --access public --registry=https://registry.npmjs.org/
 ```
 
-首次发布前需确认包名可用；后续发布需提高 `packages/core/package.json` 的版本号并同步锁文件。已发布的同名同版本不能重复发布。
+`geoearth` 因与已有的 `geo-earth` 过于相似被 npm 拒绝，当前使用 `geoearth-sdk`；查询包名返回 404 不代表 npm 一定允许注册。后续发布需提高 `packages/core/package.json` 的版本号并同步锁文件。已发布的同名同版本不能重复发布。
 
 ## 项目结构
 

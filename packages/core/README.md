@@ -2,12 +2,12 @@
 
 基于 Cesium 的 TypeScript 三维地球 SDK，提供地球初始化、相机控制、资源管理、绘制量测、对象交互、可视化和常用组件。
 
-项目持续开发中，当前版本为 `0.0.1`，API 可能调整。
+项目持续开发中，API 可能调整。
 
 ## 安装
 
 ```bash
-npm install geoearth cesium
+npm install geoearth-sdk cesium
 ```
 
 当前支持 Cesium `^1.147.0`，提供 ESM 和 TypeScript 类型声明。以下示例使用 Vite，支持 Vite 7 / 8；开发环境使用 Node.js 22.17+（或 24 LTS）。SDK 在浏览器中运行，SSR 项目应在客户端挂载后加载和初始化。
@@ -21,7 +21,7 @@ npm install geoearth cesium
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite'
-import { geoEarth } from 'geoearth/vite'
+import { geoEarth } from 'geoearth-sdk/vite'
 
 export default defineConfig({
   plugins: [geoEarth()],
@@ -39,8 +39,8 @@ export default defineConfig({
 在容器创建后初始化地球：
 
 ```ts
-import { GeoEarth } from 'geoearth'
-import 'geoearth/style.css'
+import { GeoEarth } from 'geoearth-sdk'
+import 'geoearth-sdk/style.css'
 
 const earth = new GeoEarth('earth')
 await earth.onReady()
@@ -65,9 +65,9 @@ Vue 中应在 `onMounted` 后初始化，并在 `onBeforeUnmount` 中调用 `ear
 
 按需从以下入口导入：
 
-- `geoearth/thematic/echarts`：ECharts 图表，需额外安装 `echarts@5.6.0`。
-- `geoearth/thematic/mapv`：MapV 可视化。
-- `geoearth/thematic/heatmap`：热力图。
+- `geoearth-sdk/thematic/echarts`：ECharts 图表，需额外安装 `echarts@5.6.0`。
+- `geoearth-sdk/thematic/mapv`：MapV 可视化。
+- `geoearth-sdk/thematic/heatmap`：热力图。
 
 ```bash
 npm install echarts@5.6.0

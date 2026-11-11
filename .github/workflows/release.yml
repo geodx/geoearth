@@ -50,7 +50,7 @@ jobs:
 
           const pkg = JSON.parse(readFileSync('packages/core/package.json', 'utf8'));
           const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
-          if (pkg.name !== 'geoearth' || pkg.private) throw new Error('Expected the public geoearth package.');
+          if (pkg.name !== 'geoearth-sdk' || pkg.private) throw new Error('Expected the public geoearth-sdk package.');
           if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.test(pkg.version)) {
             throw new Error('Use a version such as 0.1.0 or 0.1.0-beta.1.');
           }

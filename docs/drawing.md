@@ -12,8 +12,8 @@
 - 非默认格式必须显式传入 `coordinateType`，不能仅写一个泛型参数让类型与运行时默认值不一致。
 
 ```ts
-import { CoordinateType, DrawCancelledError } from 'geoearth'
-import type { DrawCircleOptions } from 'geoearth'
+import { CoordinateType, DrawCancelledError } from 'geoearth-sdk'
+import type { DrawCircleOptions } from 'geoearth-sdk'
 
 const options: DrawCircleOptions<CoordinateType.DEGREES> = {
   coordinateType: CoordinateType.DEGREES,
@@ -95,7 +95,7 @@ packages/core/src/ts/utils/geometry/
 展示方法及选项类型均从包入口导出：
 
 ```ts
-import { EntityFactory, type EntityAreaOptions, type EntityLineOptions } from 'geoearth'
+import { EntityFactory, type EntityAreaOptions, type EntityLineOptions } from 'geoearth-sdk'
 import { CustomDataSource } from 'cesium'
 
 // 默认返回 Cartesian3，可直接传给工厂；HTML 中使用 GeoEarth.EntityFactory。

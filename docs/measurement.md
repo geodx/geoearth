@@ -3,7 +3,7 @@
 入口为 `earth.tools.measure`。复用 `earth.tools.draw` 采点，返回 Promise；默认保留结果实体和数值标注，页面可直接 `console.log` 返回数据。
 
 ```ts
-import { GeoEarth, MeasureCancelledError } from 'geoearth'
+import { GeoEarth, MeasureCancelledError } from 'geoearth-sdk'
 
 const earth = new GeoEarth('earth')
 await earth.onReady()

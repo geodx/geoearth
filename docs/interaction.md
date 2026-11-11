@@ -3,7 +3,7 @@
 `earth.interaction` 统一处理 Entity、3D Tiles feature、Model 和普通 Primitive 拾取结果。自动交互默认关闭，手动 API 可以直接使用。
 
 ```ts
-import { GeoEarth, InteractionEventType } from 'geoearth'
+import { GeoEarth, InteractionEventType } from 'geoearth-sdk'
 
 // 属性框与选中标记复用 Cesium 控件，需要在创建 Viewer 时开启。
 const earth = new GeoEarth('earth', { infoBox: true, selectionIndicator: true })
