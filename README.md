@@ -32,7 +32,7 @@ GeoEarth 封装地球初始化、资源管理、交互工具和常用组件，�
 
 ## 本地运行
 
-需要 Node.js 22.12 或更高版本，以及 npm。在项目根目录执行：
+需要 Node.js 22.17 或更高版本，以及 npm。在项目根目录执行：
 
 ```bash
 npm install
@@ -113,9 +113,30 @@ await earth.onReady();
 | `npm run build:iife`    | 单独构建浏览器 IIFE 产物              |
 | `npm run build:example` | 构建 SDK 和示例网站                   |
 | `npm run typecheck`     | 检查 SDK 的 TypeScript 类型           |
-| `npm run pack:geoearth` | 预览 npm 包将包含的文件，不生成压缩包 |
+| `npm run pack:geoearth` | 先构建 SDK，再预览 npm 包内容，不生成压缩包 |
 
 SDK 输出到 `packages/core/dist`；示例网站输出到 `examples/vue-demo/dist`，其中包含 `sdk` 目录。
+
+## npm 发布
+
+发布对象是 `packages/core` 中的 `geoearth` 包，根工作区保持 `private: true`。npm 使用说明见 [SDK README](packages/core/README.md)。在项目根目录执行：
+
+```bash
+npm run typecheck
+npm run pack:geoearth
+npm pack -w packages/core
+```
+
+`npm pack` 和 `npm publish` 会通过 `prepack` 自动重新构建 SDK。实际发布前，应将生成的 `geoearth-0.0.1.tgz` 安装到独立项目，验证类型检查、构建和浏览器运行；后续版本使用对应版本号的文件名。
+
+确认 npm 账号拥有包名的发布权限后执行：
+
+```bash
+npm login --registry=https://registry.npmjs.org/
+npm publish -w packages/core --registry=https://registry.npmjs.org/
+```
+
+首次发布前需确认包名可用；后续发布需提高 `packages/core/package.json` 的版本号并同步锁文件。已发布的同名同版本不能重复发布。
 
 ## 项目结构
 
