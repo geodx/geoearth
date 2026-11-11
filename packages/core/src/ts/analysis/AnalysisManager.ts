@@ -2,12 +2,25 @@ import type { SceneHost } from '../utils/scene/types'
 import { HeightLimitAnalysis, type HeightLimitOptions } from './height-limit/HeightLimitAnalysis'
 import { LayerSplitAnalysis, type LayerSplitOptions } from './layer-split/LayerSplitAnalysis'
 import { SurfaceExcavateAnalysis, type SurfaceExcavateOptions } from './surface-excavate/SurfaceExcavateAnalysis'
+import { computeProfile } from './profile/computeProfile'
+import type { ProfileOptions, ProfileResult } from './profile/types'
+import type { WorldPosition } from '../utils/coordinate/positions'
+import { computeLineOfSight } from './line-of-sight/computeLineOfSight'
+import type { LineOfSightOptions, LineOfSightResult } from './line-of-sight/types'
 
 export class AnalysisManager {
     private swipe?: LayerSplitAnalysis
     private excavation?: SurfaceExcavateAnalysis
 
     constructor(private readonly host: SceneHost) {}
+
+    computeProfile(path: readonly WorldPosition[], options?: ProfileOptions): Promise<ProfileResult> {
+        return computeProfile(this.host, path, options)
+    }
+
+    computeLineOfSight(observer: WorldPosition, target: WorldPosition, options?: LineOfSightOptions): Promise<LineOfSightResult> {
+        return computeLineOfSight(this.host, observer, target, options)
+    }
 
     /** 同一场景共享一条分界线；销毁当前卷帘后可再次创建。 */
     addImagerySwipe(options?: LayerSplitOptions): LayerSplitAnalysis {

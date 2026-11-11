@@ -483,13 +483,13 @@ export const demoTree: DemoNode[] = [
       {
         "id": "analysis-profile",
         "title": "demos.analysis-profile",
-        "description": "demos.placeholderDescription",
+        "description": "demos.profileDescription",
         "path": "demos/analysis/profile.html"
       },
       {
         "id": "analysis-line-of-sight",
         "title": "demos.analysis-line-of-sight",
-        "description": "demos.placeholderDescription",
+        "description": "demos.lineOfSightDescription",
         "path": "demos/analysis/line-of-sight.html"
       },
       {

@@ -1,23 +1,291 @@
 <!doctype html>
 <html lang="zh-CN">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GeoEarth · 剖面</title>
+  <title>GeoEarth · 剖面分析</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body { overflow: hidden; background: #0f172a; }
+    .scene { position: absolute; inset: 0; }
+    #earth, #chart { width: 100%; height: 100%; }
+    .demo-panel { top: 12px; left: 12px; right: auto; width: min(400px, calc(100% - 24px)); max-height: calc(100% - 280px); }
+    #chart-panel { position: absolute; left: 12px; right: 12px; bottom: 52px; z-index: 2; height: 230px; border: 1px solid #334155; border-radius: 8px; overflow: hidden; background: #0f172aeb; }
+    h2 { margin: 0 0 8px; font-size: 17px; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    button, select, input { font: inherit; color: #e2e8f0; background: #1e293b; border: 1px solid #475569; border-radius: 4px; padding: 4px 6px; }
+    button { cursor: pointer; }
+    :disabled { opacity: .5; cursor: default; }
+    input { width: 54px; }
+    #summary { margin: 8px 0 0; font-variant-numeric: tabular-nums; }
+    @media (max-width: 600px) { #chart-panel { height: 200px; bottom: 110px; } .demo-panel { max-height: calc(100% - 340px); } }
+  </style>
 </head>
-
 <body>
-  <div id="earth"></div>
-  <script>
-    window.CESIUM_BASE_URL = '/sdk/cesium/';
-  </script>
+  <div class="scene">
+    <div id="earth"></div>
+    <section class="demo-panel" aria-labelledby="title">
+      <h2 id="title">剖面分析</h2>
+      <div class="controls">
+        <button id="sample" type="button" disabled>示例路径</button>
+        <button id="draw" type="button" disabled>绘制折线</button>
+        <button id="cancel" type="button" disabled>取消</button>
+        <button id="clear" type="button" disabled>清除</button>
+        <button id="retry" type="button" disabled>重试加载</button>
+      </div>
+      <div class="controls" style="margin-top: 8px">
+        <label>来源
+          <select id="source" disabled>
+            <option value="terrain">地形</option>
+            <option value="surface">场景表面（含模型）</option>
+          </select>
+        </label>
+        <label>间距 <input id="spacing" type="number" min="5" max="500" step="5" value="30" disabled /> 米</label>
+      </div>
+      <p id="status" class="status" role="status" data-state="loading">正在准备地形与模型…</p>
+      <p id="summary"></p>
+    </section>
+  </div>
+  <section id="chart-panel" aria-label="剖面图">
+    <div id="chart" role="img" aria-label="剖面距离与高程曲线"></div>
+  </section>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
+  <script src="/sdk/echarts/echarts.min.js"></script>
   <script>
-    // TODO：补充“剖面”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false, globeBaseColor: '#536c47' },
+      homeView: { longitude: 103.55, latitude: 31.08, height: 8000, pitch: -90 },
+    });
+    const viewer = earth.viewer;
+    const buttons = Object.fromEntries(['sample', 'draw', 'cancel', 'clear'].map(id => [id, document.getElementById(id)]));
+    const source = document.getElementById('source');
+    const spacing = document.getElementById('spacing');
+    const status = document.getElementById('status');
+    const summary = document.getElementById('summary');
+    const chart = echarts.init(document.getElementById('chart'));
+    const chartPanel = document.getElementById('chart-panel');
+    chart.setOption({ graphic: { type: 'text', left: 'center', top: 'middle', style: { text: '正在准备剖面…', fill: '#94a3b8', fontSize: 14 } } });
+    const retry = document.getElementById('retry');
+    const samplePath = [
+      { longitude: 103.532, latitude: 31.079, height: 0 },
+      { longitude: 103.55, latitude: 31.08, height: 0 },
+      { longitude: 103.568, latitude: 31.084, height: 0 },
+    ];
+    const line = viewer.entities.add({
+      show: false, polyline: { positions: [], width: 4, material: C.Color.ORANGE, arcType: C.ArcType.NONE },
+    });
+    const marker = viewer.entities.add({
+      show: false, position: C.Cartesian3.fromDegrees(103.55, 31.08),
+      point: { pixelSize: 11, color: C.Color.YELLOW, outlineColor: C.Color.BLACK, outlineWidth: 2, disableDepthTestDistance: Infinity },
+    });
+    let disposed = false;
+    let ready = false;
+    let busy = false;
+    let revision = 0;
+    let controller;
+    let result;
+    let lastPath;
+    let resizeFrame;
+    let groundHeight = 0;
+
+    function setStatus(message, state = 'ready') {
+      status.textContent = message;
+      status.dataset.state = state;
+    }
+
+    function updateControls() {
+      buttons.sample.disabled = buttons.draw.disabled = source.disabled = spacing.disabled = !ready || busy;
+      buttons.cancel.disabled = !busy;
+      buttons.clear.disabled = !ready;
+    }
+
+    function hideMarker() {
+      if (disposed) return;
+      marker.show = false;
+      viewer.scene.requestRender();
+    }
+
+    function showSample(index) {
+      if (!result || disposed || !result.samples[index]) return;
+      const point = result.samples[index];
+      marker.position = C.Cartesian3.fromDegrees(point.longitude, point.latitude, point.height + 5);
+      marker.show = true;
+      viewer.scene.requestRender();
+    }
+
+    chart.on('updateAxisPointer', event => {
+      const index = event.dataIndex;
+      if (Number.isInteger(index)) showSample(index);
+    });
+    chart.getZr().on('globalout', hideMarker);
+
+    function renderProfile() {
+      chartPanel.hidden = false;
+      chart.resize();
+      const name = result.source === 'terrain' ? '地形剖面' : '场景表面剖面';
+      chart.setOption({
+        backgroundColor: 'transparent',
+        title: { text: name + ' · 椭球高', left: 16, top: 8, textStyle: { color: '#e2e8f0', fontSize: 14 } },
+        grid: { left: 65, right: 30, top: 48, bottom: 45 },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: { type: 'cross' },
+          formatter(params) {
+            const point = result.samples[params[0].dataIndex];
+            return '距离 ' + point.distance.toFixed(1) + ' m<br/>高程 ' + point.height.toFixed(1)
+              + ' m<br/>' + point.longitude.toFixed(6) + '°, ' + point.latitude.toFixed(6) + '°';
+          },
+        },
+        xAxis: { type: 'value', name: '距离(m)', nameLocation: 'middle', nameGap: 28, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#253448' } } },
+        yAxis: { type: 'value', name: '高程(m)', nameLocation: 'middle', nameGap: 48, scale: true, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#253448' } } },
+        series: [{
+          type: 'line', showSymbol: false, animation: false,
+          data: result.samples.map(point => [point.distance, point.height]),
+          lineStyle: { color: '#ffb65c', width: 2 }, areaStyle: { color: '#c27d32', opacity: .2 },
+        }],
+      }, true);
+      summary.textContent = (result.totalDistance / 1000).toFixed(2) + ' km · '
+        + result.samples.length + ' 点 · 最低 ' + result.lowestPoint.height.toFixed(1)
+        + ' m · 最高 ' + result.highestPoint.height.toFixed(1) + ' m';
+      line.polyline.positions = result.samples.map(point => C.Cartesian3.fromDegrees(point.longitude, point.latitude, point.height + 2));
+      line.polyline.clampToGround = result.source === 'terrain';
+      line.polyline.arcType = result.source === 'terrain' ? C.ArcType.GEODESIC : C.ArcType.NONE;
+      line.show = true;
+      hideMarker();
+      viewer.scene.requestRender();
+    }
+
+    async function calculate(path, draw = false) {
+      const current = ++revision;
+      controller?.abort();
+      controller = new AbortController();
+      busy = true;
+      updateControls();
+      setStatus(draw ? '左键添加节点，右键完成，Esc 取消。' : '正在采样剖面…', 'loading');
+      try {
+        if (draw) path = await earth.tools.draw.drawPolyLine({ color: C.Color.ORANGE, clampToGround: true });
+        if (disposed || current !== revision) return;
+        const next = await earth.analysis.computeProfile(path, {
+          source: source.value,
+          sampleSpacing: spacing.valueAsNumber,
+          maxSamples: 2048,
+          exclude: [line, marker],
+          signal: controller.signal,
+        });
+        if (disposed || current !== revision) return;
+        lastPath = path;
+        result = next;
+        renderProfile();
+        setStatus('剖面已生成');
+      } catch (error) {
+        if (disposed || current !== revision) return;
+        if (error.name === 'AbortError' || error instanceof GeoEarth.DrawCancelledError) setStatus('已取消，已有剖面可继续查看。');
+        else setStatus(error.message || String(error), 'error');
+      } finally {
+        if (!disposed && current === revision) {
+          busy = false;
+          updateControls();
+        }
+      }
+    }
+
+    buttons.sample.addEventListener('click', () => {
+      viewer.camera.lookAt(C.Cartesian3.fromDegrees(103.55, 31.08, groundHeight + 80),
+        new C.HeadingPitchRange(C.Math.toRadians(8), C.Math.toRadians(-48), 7000));
+      viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+      void calculate(samplePath);
+    });
+    buttons.draw.addEventListener('click', () => { void calculate(undefined, true); });
+    buttons.cancel.addEventListener('click', () => {
+      controller?.abort();
+      earth.tools.draw.cancel();
+    });
+    buttons.clear.addEventListener('click', () => {
+      revision++;
+      controller?.abort();
+      earth.tools.draw.cancel();
+      result = lastPath = undefined;
+      line.show = marker.show = false;
+      summary.textContent = '';
+      chart.clear();
+      chartPanel.hidden = true;
+      busy = false;
+      updateControls();
+      setStatus('已清除，可以绘制新路径。');
+      viewer.scene.requestRender();
+    });
+    source.addEventListener('change', () => { if (lastPath) void calculate(lastPath); });
+    spacing.addEventListener('change', () => { if (lastPath) void calculate(lastPath); });
+    retry.addEventListener('click', () => { void loadScene(); });
+
+    function onResize() {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => { if (!disposed) chart.resize(); });
+    }
+    const resizeObserver = new ResizeObserver(onResize);
+    resizeObserver.observe(document.getElementById('chart'));
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      revision++;
+      controller?.abort();
+      resizeObserver.disconnect();
+      cancelAnimationFrame(resizeFrame);
+      chart.dispose();
+      earth.destroy();
+    });
+    viewer.scene.renderError.addEventListener((_scene, error) => {
+      if (!disposed) setStatus(error.message, 'error');
+    });
+
+    async function init() {
+      await earth.onReady();
+      if (disposed) return;
+      const resources = await Promise.allSettled([
+        earth.sources.presets.addWorldTerrain(),
+        earth.sources.presets.addBingImagery(),
+      ]);
+      if (disposed) return;
+      const failed = resources.flatMap((resource, index) => resource.status === 'rejected' ? [index === 0 ? '世界地形' : 'Bing 影像'] : []);
+      if (failed.length) throw new Error(failed.join('、') + '加载失败，请检查网络和 Cesium ion 配置。');
+      viewer.scene.globe.depthTestAgainstTerrain = true;
+      groundHeight = await GeoEarth.getTerrainMostDetailedHeight(viewer, 103.55, 31.08);
+      if (disposed) return;
+      viewer.camera.lookAt(C.Cartesian3.fromDegrees(103.55, 31.08, groundHeight + 80),
+        new C.HeadingPitchRange(C.Math.toRadians(8), C.Math.toRadians(-48), 7000));
+      viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+      const model = await C.Model.fromGltfAsync({
+        url: '/demo-assets/model/CesiumMilkTruck.glb',
+        modelMatrix: C.Transforms.eastNorthUpToFixedFrame(C.Cartesian3.fromDegrees(103.55, 31.08, groundHeight)),
+        scale: 25,
+      });
+      if (disposed) {
+        model.destroy();
+        return;
+      }
+      viewer.scene.primitives.add(model);
+      model.errorEvent.addEventListener(error => { if (!disposed) setStatus(error.message, 'error'); });
+      ready = true;
+      updateControls();
+      await calculate(samplePath);
+    }
+    async function loadScene() {
+      retry.disabled = true;
+      setStatus('正在加载 Bing 影像、世界地形与模型…', 'loading');
+      try {
+        await init();
+      } catch (error) {
+        if (!disposed) {
+          retry.disabled = false;
+          setStatus('加载失败：' + error.message, 'error');
+        }
+      }
+    }
+    void loadScene();
   </script>
 </body>
-
 </html>

@@ -1,23 +1,249 @@
 <!doctype html>
 <html lang="zh-CN">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GeoEarth · 通视</title>
+  <title>GeoEarth · 通视分析</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    .demo-panel { top: 12px; left: 12px; right: auto; width: min(390px, calc(100% - 24px)); }
+    h2 { margin: 0 0 8px; font-size: 17px; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+    button, select, input { font: inherit; color: #e2e8f0; background: #1e293b; border: 1px solid #475569; border-radius: 4px; padding: 4px 6px; }
+    button { cursor: pointer; }
+    :disabled { opacity: .5; cursor: default; }
+    input { width: 55px; }
+    #status[data-visible="false"] { color: #fca5a5; }
+    #summary { margin: 8px 0 0; font-variant-numeric: tabular-nums; }
+    .legend { margin: 8px 0; color: #94a3b8; }
+  </style>
 </head>
-
 <body>
   <div id="earth"></div>
-  <script>
-    window.CESIUM_BASE_URL = '/sdk/cesium/';
-  </script>
+  <section class="demo-panel" aria-labelledby="title">
+    <h2 id="title">通视分析</h2>
+    <div class="controls">
+      <select id="scenario" aria-label="示例场景" disabled>
+        <option value="terrain">山地示例</option>
+        <option value="building">建筑示例</option>
+      </select>
+      <button id="sample" type="button" disabled>分析示例</button>
+      <button id="draw" type="button" disabled>选取两点</button>
+      <button id="cancel" type="button" disabled>取消</button>
+      <button id="clear" type="button" disabled>清除</button>
+    </div>
+    <div class="controls">
+      <label>观察点附加高度 <input id="observer-height" type="number" min="0" step="10" value="2" disabled /> 米</label>
+      <label>目标点附加高度 <input id="target-height" type="number" min="0" step="10" value="2" disabled /> 米</label>
+    </div>
+    <div class="controls">
+      <label>检查
+        <select id="source" disabled>
+          <option value="surface">地形与场景</option>
+          <option value="terrain">仅地形</option>
+        </select>
+      </label>
+      <button id="retry" type="button" disabled>重试加载</button>
+    </div>
+    <p class="legend"><span style="color:#62e4a3">绿色可见段</span> · <span style="color:#ff6a67">红色遮挡段</span></p>
+    <p id="status" class="status" role="status" data-state="loading">正在加载…</p>
+    <p id="summary"></p>
+  </section>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“通视”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false },
+      homeView: { longitude: 103.55, latitude: 31.08, height: 8000, pitch: -90 },
+    });
+    const viewer = earth.viewer;
+    const buttons = Object.fromEntries(['sample', 'draw', 'cancel', 'clear', 'retry'].map(id => [id, document.getElementById(id)]));
+    const scenario = document.getElementById('scenario');
+    const source = document.getElementById('source');
+    const observerHeight = document.getElementById('observer-height');
+    const targetHeight = document.getElementById('target-height');
+    const status = document.getElementById('status');
+    const summary = document.getElementById('summary');
+    const green = C.Color.fromCssColorString('#62e4a3');
+    const red = C.Color.fromCssColorString('#ff6a67');
+    const makeLine = color => viewer.entities.add({
+      show: false, polyline: { positions: [], width: 4, material: color, depthFailMaterial: color, arcType: C.ArcType.NONE },
+    });
+    const makeMarker = (text, color) => viewer.entities.add({
+      show: false, position: C.Cartesian3.fromDegrees(103.55, 31.08),
+      point: { pixelSize: 9, color, outlineColor: C.Color.BLACK, outlineWidth: 1, disableDepthTestDistance: Infinity },
+      label: { text, font: '13px sans-serif', fillColor: color, showBackground: true, pixelOffset: new C.Cartesian2(0, -22), disableDepthTestDistance: Infinity },
+    });
+    const visibleLine = makeLine(green);
+    const blockedLine = makeLine(red);
+    const observerMarker = makeMarker('观察点', green);
+    const targetMarker = makeMarker('目标点', red);
+    const obstructionMarker = makeMarker('遮挡点', C.Color.YELLOW);
+    obstructionMarker.label.pixelOffset = new C.Cartesian2(0, 22);
+    const graphics = [visibleLine, blockedLine, observerMarker, targetMarker, obstructionMarker];
+    let disposed = false;
+    let ready = false;
+    let busy = false;
+    let revision = 0;
+    let controller;
+    let result;
+    let lastPair;
+    let terrainPair;
+    let buildingPair;
+    let building;
+    let groundHeight;
+
+    function setStatus(message, state = 'ready') {
+      status.textContent = message;
+      status.dataset.state = state;
+      delete status.dataset.visible;
+    }
+
+    function updateControls() {
+      for (const control of [buttons.sample, buttons.draw, scenario, source, observerHeight, targetHeight]) control.disabled = !ready || busy;
+      buttons.cancel.disabled = !busy;
+      buttons.clear.disabled = !ready;
+    }
+
+    function showResult() {
+      const hit = result.obstruction?.position;
+      visibleLine.show = !hit || result.obstruction.distance > 0.001;
+      visibleLine.polyline.positions = [result.observer, hit ?? result.target];
+      blockedLine.show = Boolean(hit);
+      if (hit) blockedLine.polyline.positions = [hit, result.target];
+      observerMarker.position = result.observer;
+      targetMarker.position = result.target;
+      targetMarker.point.color = targetMarker.label.fillColor = result.visible ? green : red;
+      observerMarker.show = targetMarker.show = true;
+      obstructionMarker.show = Boolean(hit);
+      if (hit) obstructionMarker.position = hit;
+      setStatus(result.visible ? '可通视' : result.obstruction.source === 'terrain' ? '地形遮挡' : '场景遮挡');
+      status.dataset.visible = String(result.visible);
+      summary.textContent = '距离 ' + result.distance.toFixed(1) + ' 米'
+        + (hit ? ' · 首个遮挡点 ' + result.obstruction.distance.toFixed(1) + ' 米' : '');
+      viewer.scene.requestRender();
+    }
+
+    async function calculate(pair, draw = false) {
+      const current = ++revision;
+      controller?.abort();
+      controller = new AbortController();
+      busy = true;
+      updateControls();
+      setStatus(draw ? '依次点击观察点和目标点，Esc 取消。' : '正在分析…', 'loading');
+      try {
+        if (draw) pair = await earth.tools.draw.drawLine({ color: green, width: 3 });
+        if (disposed || current !== revision) return;
+        const next = await earth.analysis.computeLineOfSight(pair[0], pair[1], {
+          source: source.value,
+          observerHeight: observerHeight.valueAsNumber,
+          targetHeight: targetHeight.valueAsNumber,
+          sampleSpacing: 20,
+          exclude: graphics,
+          signal: controller.signal,
+        });
+        if (disposed || current !== revision) return;
+        result = next;
+        lastPair = pair;
+        showResult();
+      } catch (error) {
+        if (disposed || current !== revision) return;
+        if (error.name === 'AbortError' || error instanceof GeoEarth.DrawCancelledError) setStatus('已取消');
+        else setStatus(error.message || String(error), 'error');
+      } finally {
+        if (!disposed && current === revision) {
+          busy = false;
+          updateControls();
+        }
+      }
+    }
+
+    function runSample() {
+      const local = scenario.value === 'building';
+      building.show = local;
+      const target = C.Cartesian3.fromDegrees(103.55, 31.08, groundHeight + (local ? 180 : 80));
+      viewer.camera.lookAt(target, new C.HeadingPitchRange(C.Math.toRadians(local ? 30 : 8), C.Math.toRadians(-35), local ? 1700 : 7000));
+      viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+      void calculate(local ? buildingPair : terrainPair);
+    }
+
+    buttons.sample.addEventListener('click', runSample);
+    scenario.addEventListener('change', runSample);
+    buttons.draw.addEventListener('click', () => { void calculate(undefined, true); });
+    buttons.cancel.addEventListener('click', () => {
+      controller?.abort();
+      earth.tools.draw.cancel();
+    });
+    buttons.clear.addEventListener('click', () => {
+      revision++;
+      controller?.abort();
+      earth.tools.draw.cancel();
+      graphics.forEach(entity => { entity.show = false; });
+      result = lastPair = undefined;
+      busy = false;
+      updateControls();
+      summary.textContent = '';
+      setStatus('已清除');
+      viewer.scene.requestRender();
+    });
+    for (const control of [source, observerHeight, targetHeight]) {
+      control.addEventListener('change', () => { if (lastPair) void calculate(lastPair); });
+    }
+    buttons.retry.addEventListener('click', () => { void init(); });
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      revision++;
+      controller?.abort();
+      earth.destroy();
+    });
+    viewer.scene.renderError.addEventListener((_scene, error) => {
+      if (!disposed) setStatus(error.message, 'error');
+    });
+
+    async function init() {
+      buttons.retry.disabled = true;
+      setStatus('正在加载影像与地形…', 'loading');
+      try {
+        await earth.onReady();
+        if (disposed) return;
+        const resources = await Promise.allSettled([
+          earth.sources.presets.addWorldTerrain(),
+          earth.sources.presets.addBingImagery(),
+        ]);
+        if (disposed) return;
+        if (resources.some(resource => resource.status === 'rejected')) throw new Error('影像或地形加载失败。');
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+        const ends = [
+          { longitude: 103.532, latitude: 31.079, height: 0 },
+          { longitude: 103.568, latitude: 31.084, height: 0 },
+          { longitude: 103.55, latitude: 31.08, height: 0 },
+        ];
+        const heights = await GeoEarth.sampleHeights(viewer, ends, { mode: 'terrain' });
+        if (disposed) return;
+        terrainPair = ends.slice(0, 2).map((point, index) => ({ ...point, height: heights[index] }));
+        groundHeight = heights[2];
+        const frame = C.Transforms.eastNorthUpToFixedFrame(C.Cartesian3.fromDegrees(103.55, 31.08, groundHeight));
+        const at = (east, up) => C.Matrix4.multiplyByPoint(frame, new C.Cartesian3(east, 0, up), new C.Cartesian3());
+        buildingPair = [at(-300, 250), at(300, 250)];
+        building = viewer.entities.add({
+          name: '示例建筑', show: false, position: at(0, 200),
+          box: { dimensions: new C.Cartesian3(180, 100, 400), material: C.Color.fromCssColorString('#b8c7d6') },
+        });
+        ready = true;
+        updateControls();
+        runSample();
+      } catch (error) {
+        if (!disposed) {
+          buttons.retry.disabled = false;
+          setStatus(error.message || String(error), 'error');
+        }
+      }
+    }
+    void init();
   </script>
 </body>
-
 </html>
