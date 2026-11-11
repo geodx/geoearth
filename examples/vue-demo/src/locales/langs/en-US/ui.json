@@ -131,6 +131,7 @@
     "advanced-fps": "FPS",
     "fpsDescription": "View native FPS and actual rendered-frame statistics while comparing continuous rendering, request rendering, and resolution.",
     "advanced-many-objects": "Many objects",
+    "manyObjectsDescription": "Load points or icons in chunks, compare creation time and FPS, and toggle or clear the layer.",
     "advanced-multi-instance": "Multiple instances",
     "advanced-container-resize": "Container resizing",
     "basic": "starter example",

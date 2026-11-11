@@ -131,6 +131,7 @@
     "advanced-fps": "FPS",
     "fpsDescription": "查看原生 FPS 面板和实际渲染统计，对比连续渲染、按需渲染与分辨率。",
     "advanced-many-objects": "大量对象",
+    "manyObjectsDescription": "分帧加载大量点或图标，比较创建耗时与 FPS，支持显隐和清空。",
     "advanced-multi-instance": "多实例",
     "advanced-container-resize": "容器尺寸变化",
     "basic": "创建地球",

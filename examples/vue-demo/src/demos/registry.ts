@@ -519,7 +519,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "advanced-many-objects",
         "title": "demos.advanced-many-objects",
-        "description": "demos.placeholderDescription",
+        "description": "demos.manyObjectsDescription",
         "path": "demos/advanced/many-objects.html"
       },
       {

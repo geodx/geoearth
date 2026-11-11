@@ -5,18 +5,225 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 大量对象</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
+  <style>
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    .demo-panel { top: 12px; left: 12px; right: auto; width: min(300px, calc(100% - 24px)); }
+    h2 { margin: 0 0 12px; font-size: 17px; }
+    .field { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 10px 0; }
+    select, button { color: #e2e8f0; background: #1e293b; border: 1px solid #475569; border-radius: 4px; padding: 5px 9px; }
+    select { min-width: 145px; }
+    button, select { cursor: pointer; }
+    :disabled { opacity: .5; cursor: default; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+    progress { display: block; width: 100%; height: 8px; margin: 12px 0; accent-color: #38bdf8; }
+    .demo-panel .status { margin-bottom: 0; }
+    #map-status:empty { display: none; }
+  </style>
 </head>
 
 <body>
   <div id="earth"></div>
-  <script>
-    window.CESIUM_BASE_URL = '/sdk/cesium/';
-  </script>
+  <section class="demo-panel" aria-labelledby="title">
+    <h2 id="title">大量对象</h2>
+    <label class="field">对象数量
+      <select id="count" disabled>
+        <option value="1000">1,000</option>
+        <option value="10000" selected>10,000</option>
+        <option value="50000">50,000</option>
+        <option value="100000">100,000</option>
+      </select>
+    </label>
+    <label class="field">对象类型
+      <select id="kind" disabled>
+        <option value="point">点标记</option>
+        <option value="billboard">图标标记</option>
+      </select>
+    </label>
+    <div class="controls">
+      <button id="reload" type="button" disabled>重新加载</button>
+      <button id="cancel" type="button" disabled>取消加载</button>
+      <button id="clear" type="button" disabled>清空</button>
+      <button id="locate" type="button" disabled>定位</button>
+      <label><input id="visible" type="checkbox" checked disabled /> 显示</label>
+    </div>
+    <progress id="progress" value="0" max="10000" aria-label="对象创建进度"></progress>
+    <dl class="info">
+      <dt>已创建</dt><dd id="size">0</dd>
+      <dt title="包含分帧等待，不含底图加载和 GPU 完成时间">创建耗时</dt><dd id="elapsed">—</dd>
+      <dt>实际 FPS</dt><dd id="fps">—</dd>
+      <dt title="preRender 到 postRender 的 CPU 侧平均时间">CPU 渲染耗时</dt><dd id="render-time">—</dd>
+    </dl>
+    <p class="hint">切换数量或类型自动重载，使用固定点位比较性能。</p>
+    <p id="status" class="status" role="status" data-state="loading">正在初始化…</p>
+    <p id="map-status" class="status" role="status" data-state="error"></p>
+  </section>
+  <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    // TODO：补充“大量对象”示例；当前仅创建初始地球。
-    const earth = new GeoEarth("earth");
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: false, shouldAnimate: false }, {
+      startup: { animation: false, resolutionScale: 1 },
+      homeView: { longitude: 110, latitude: 30, height: 350000, pitch: -90 },
+    });
+    const viewer = earth.viewer;
+    const monitor = earth.tools.fps;
+    const countInput = document.getElementById('count');
+    const kindInput = document.getElementById('kind');
+    const visibleInput = document.getElementById('visible');
+    const buttons = Object.fromEntries(['reload', 'cancel', 'clear', 'locate'].map(id => [id, document.getElementById(id)]));
+    const status = document.getElementById('status');
+    const sizeOutput = document.getElementById('size');
+    const elapsedOutput = document.getElementById('elapsed');
+    const fpsOutput = document.getElementById('fps');
+    const renderOutput = document.getElementById('render-time');
+    const progress = document.getElementById('progress');
+    const colors = ['#38bdf8', '#34d399', '#fbbf24', '#fb7185', '#c084fc'].map(color => C.Color.fromCssColorString(color));
+    let layer;
+    let job;
+    let frame;
+    let timer;
+    let disposed = false;
+
+    function setStatus(text, state = 'ready') {
+      status.textContent = text;
+      status.dataset.state = state;
+    }
+
+    function updateControls() {
+      buttons.cancel.disabled = !job;
+      buttons.clear.disabled = !job && !layer.size;
+      visibleInput.disabled = Boolean(job) || !layer.size;
+    }
+
+    function updateStats() {
+      const stats = monitor.getStats();
+      fpsOutput.textContent = stats.state === 'sampling' ? '统计中' : stats.state === 'hidden' ? '后台暂停' : String(stats.fps);
+      renderOutput.textContent = stats.renderTime === undefined ? '—' : stats.renderTime.toFixed(2) + ' ms';
+    }
+
+    function locate() {
+      viewer.camera.setView({ destination: C.Rectangle.fromDegrees(108.8, 28.9, 111.2, 31.1) });
+    }
+
+    // 每批最多创建 1,000 个，约 8 ms 后让出主线程；隐藏集合以避免反复上传未完成的数据。
+    function createChunk(current) {
+      if (disposed || job !== current) return;
+      try {
+        const start = performance.now();
+        const limit = Math.min(current.created + 1000, current.total);
+        const random = () => {
+          current.seed = (Math.imul(current.seed, 1664525) + 1013904223) >>> 0;
+          return current.seed / 4294967296;
+        };
+        while (current.created < limit) {
+          const position = { longitude: 109.2 + random() * 1.6, latitude: 29.3 + random() * 1.4, height: 100 };
+          const index = current.created;
+          layer.add({
+            id: 'marker-' + index,
+            position,
+            ...(current.kind === 'point'
+              ? { point: { pixelSize: 4, color: colors[index % colors.length] } }
+              : { billboard: { image: GeoEarth.MarkerAssets.camera, width: 18, height: 18 } }),
+          });
+          current.created++;
+          if (performance.now() - start >= 8) break;
+        }
+        sizeOutput.textContent = layer.size.toLocaleString();
+        progress.value = current.created;
+        elapsedOutput.textContent = (performance.now() - current.started).toFixed(0) + ' ms';
+        if (current.created < current.total) {
+          setStatus('正在创建 ' + Math.round(current.created / current.total * 100) + '%', 'loading');
+          frame = requestAnimationFrame(() => createChunk(current));
+        } else {
+          job = undefined;
+          layer.show = visibleInput.checked;
+          monitor.reset();
+          updateStats();
+          setStatus('已加载 ' + layer.size.toLocaleString() + ' 个' + (current.kind === 'point' ? '点标记' : '图标标记'));
+          updateControls();
+        }
+      } catch (error) {
+        clearObjects();
+        setStatus('创建失败：' + (error.message || String(error)), 'error');
+        console.error(error);
+      }
+    }
+
+    function clearObjects() {
+      cancelAnimationFrame(frame);
+      job = undefined;
+      layer.clear();
+      layer.show = visibleInput.checked;
+      sizeOutput.textContent = '0';
+      elapsedOutput.textContent = '—';
+      progress.value = 0;
+      monitor.reset();
+      updateStats();
+      updateControls();
+    }
+
+    function loadObjects() {
+      clearObjects();
+      const total = Number(countInput.value);
+      layer.show = false;
+      job = { total, kind: kindInput.value, created: 0, seed: 42, started: performance.now() };
+      progress.max = total;
+      setStatus('正在创建 0%', 'loading');
+      updateControls();
+      const current = job;
+      frame = requestAnimationFrame(() => createChunk(current));
+    }
+
+    countInput.addEventListener('change', loadObjects);
+    kindInput.addEventListener('change', loadObjects);
+    buttons.reload.addEventListener('click', loadObjects);
+    buttons.cancel.addEventListener('click', () => { clearObjects(); setStatus('已取消加载'); });
+    buttons.clear.addEventListener('click', () => { clearObjects(); setStatus('已清空'); });
+    buttons.locate.addEventListener('click', locate);
+    visibleInput.addEventListener('change', () => {
+      layer.show = visibleInput.checked;
+      monitor.reset();
+      updateStats();
+      setStatus(visibleInput.checked ? '已显示全部对象' : '已隐藏全部对象');
+    });
+    const removeRenderError = viewer.scene.renderError.addEventListener((_scene, error) => {
+      if (disposed) return;
+      if (layer) clearObjects();
+      setStatus('渲染失败：' + (error.message || String(error)), 'error');
+    });
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      cancelAnimationFrame(frame);
+      clearInterval(timer);
+      job = undefined;
+      removeRenderError();
+      earth.destroy();
+    });
+
+    async function init() {
+      await earth.onReady();
+      if (disposed) return;
+      layer = earth.visuals.addMarkerLayer();
+      locate();
+      monitor.getStats();
+      timer = setInterval(updateStats, 250);
+      for (const control of [countInput, kindInput, buttons.reload, buttons.locate]) control.disabled = false;
+      loadObjects();
+      // 底图独立加载，网络异常不阻塞标记创建与性能统计。
+      try {
+        await earth.sources.presets.addBingImagery();
+      } catch {
+        if (!disposed) document.getElementById('map-status').textContent = '影像加载失败，已保留默认底图';
+      }
+    }
+    init().catch(error => {
+      if (disposed) return;
+      setStatus('初始化失败：' + (error.message || String(error)), 'error');
+      console.error(error);
+    });
   </script>
 </body>
 
