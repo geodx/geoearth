@@ -8,8 +8,6 @@ import {
     PolylineGraphics, ArcType, PolygonGraphics, PolygonHierarchy, Viewer
 } from "cesium";
 import type { MaterialProperty } from "cesium";
-// import { Material, SuperiorEntity } from "../ExpandEntity";
-// import { FireParticle, FountainParticle, SmokeParticle } from "../SceneEffect";
 export interface PlotLoadOptions {
     credit?: string | Credit;
     sourceUri?: string;
@@ -365,85 +363,22 @@ function addPointEntity(ds: PlotDataSource, feature: any, coords: number[], opts
         });
     }
 
-    const pe = props;
-    const worldDegrees = { longitude: coords[0]!, latitude: coords[1]!, height: coords[2]! };
-    const position = Cartesian3.fromDegrees(worldDegrees.longitude, worldDegrees.latitude, worldDegrees.height)
-    // if (pe.code === "winInfo-SimpleLabel") new SuperiorEntity.SampleLablePoint(ds.viewer, worldDegrees, pe.内容);
-    // if (pe.code === "winInfo-Bubble-1") new SuperiorEntity.PopupWindow1(ds.viewer, worldDegrees, pe.paramList?.[0]?.value, pe.paramList?.[1]?.value);
-    // if (pe.code === "GradientLabelPointDecorator") new SuperiorEntity.GradientLabelPoint(ds.viewer, worldDegrees, document.createElement("div"));
-    // if (pe.code === "winInfo-Bubble-2") new SuperiorEntity.PopupWindow2(ds.viewer, worldDegrees, pe.paramList?.[0]?.value, pe.paramList?.[1]?.value);
-    // if (pe.code === "winInfo-device") new SuperiorEntity.HudPanel(ds.viewer, worldDegrees, pe.paramList?.[0]?.value, pe.paramList?.[1]?.value, pe.颜色);
-    // if (pe.code === "winInfo-HLS") new SuperiorEntity.HlsVideoWindow(ds.viewer, { title: pe.paramList?.[0]?.value, url: pe.paramList?.[1]?.value, position: worldDegrees });
-
-    // if (pe.code === "particleSystem-fire") new FireParticle(ds.viewer, position);
-    // if (pe.code === "particleSystem-fountain") new FountainParticle(ds.viewer, position);
-    // if (pe.code === "particleSystem-smoke") new SmokeParticle(ds.viewer, position);
 }
-// function sC(type: string, d = []) {
-//     let y = {},
-//         E = [];
-//     if (type === "fire") E = yG;
-//     else if (type === "fountain") E = vG;
-//     else if (type === "smoke") E = wG;
-//     else return y;
-//     return (E.forEach((B) => {
-//         if (B.name === "风向") {
-//             let Y = d.find((V) => V.name === B.name || {}) ? .value;
-//             Y && ((y.heading = Y.heading), (y.pitch = Y.pitch));
-//             return;
-//         }
-//         let N = parseFloat((d.find((Y) => Y.name === B.name) || {}).value);
-//         B.min <= N && N <= B.max && (y[B.paramName] = N);
-//     }),
-//         y
-//     );
-// }
-// polyline(对应ZB/KB/XB)
+// 线要素
 function addPolylineEntity(ds: PlotDataSource, feature: any, coords: number[][], opts: any) {
     let material: MaterialProperty = opts.strokeMaterialProperty;
-    let widthProp = opts.strokeWidthProperty;
 
     const props = feature.properties || {};
-    const materialType = props["stroke-material"] || "normal";
     const width = props["stroke-width"] || 12;
-    //  自定义材质
-    switch (materialType) {
-        // case "PolylineArrowMaterial":
-        //     material = new Material.Polyline.PolylineArrowMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
-        //     break;
-        // case "PolylineEnergyTransMaterial":
-        //     material = new Material.Polyline.PolylineEnergyTransMaterial({ color: Color.AQUA, duration: 800, repeatCount: 3 });
-        //     break;
-        // case "PolylineLightingMaterial":
-        //     material = new Material.Polyline.PolylineLightingMaterial(Color.AQUA);
-        //     break;
-        // case "PolylineLinkPulseMaterial":
-        //     material = new Material.Polyline.PolylineLinkPulseMaterial({ color: Color.AQUA, duration: 5000 });
-        //     break;
-        // case "PolylineSpriteMaterial":
-        //     material = new Material.Polyline.PolylineSpriteMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
-        //     break;
-        // case "PolylineSuperMaterial":
-        //     material = new Material.Polyline.PolylineSuperMaterial({ color: Color.AQUA, duration: 2000, repeatCount: 3 });
-        //     break;
-        // case "PolylineTrailMaterial":
-        //     material = new Material.Polyline.PolylineTrailMaterial({ speed: 5 * Math.random(), color: Color.CYAN, percent: 0.5, gradient: 0.01 });
-        //     break;
-        default: {
-            const w = props["stroke-width"];
-            widthProp = defined(w) ? new ConstantProperty(w) : widthProp;
 
-            let c: Color | undefined;
-            if (defined(props.stroke)) c = Color.fromCssColorString(props.stroke);
-
-            const op = props["stroke-opacity"];
-            if (defined(op) && op !== 1) {
-                if (!defined(c)) c = (material.getValue().color as Color).clone();
-                c.alpha = op;
-            }
-            if (defined(c)) material = new ColorMaterialProperty(c);
-        }
+    let color: Color | undefined;
+    if (defined(props.stroke)) color = Color.fromCssColorString(props.stroke);
+    const opacity = props["stroke-opacity"];
+    if (defined(opacity) && opacity !== 1) {
+        if (!defined(color)) color = (material.getValue().color as Color).clone();
+        color.alpha = opacity;
     }
+    if (defined(color)) material = new ColorMaterialProperty(color);
 
     const entity = getOrCreateEntityFromFeature(feature, ds._entityCollection, opts.describe);
     const poly = new PolylineGraphics();
@@ -456,7 +391,7 @@ function addPolylineEntity(ds: PlotDataSource, feature: any, coords: number[][],
     poly.arcType = new ConstantProperty(ArcType.GEODESIC);
 }
 
-// polygon(对应YB/JB/eN)——按你贴的逻辑完整还原会很长，这里给核心框架
+// 面要素
 function addPolygonEntity(ds: PlotDataSource, feature: any, rings: number[][][], opts: any) {
     if (rings.length === 0 || rings[0]?.length === 0) return;
 
@@ -574,16 +509,6 @@ async function processGeoJson(ds: PlotDataSource, obj: any, opts: any, sourceUri
         case "GeometryCollection":
             for (const g of obj.geometries || []) renderGeometry(ds, obj, g, opts);
             break;
-        // case "Topology": {
-        //     for (const k in obj.objects) {
-        //         if (!Object.prototype.hasOwnProperty.call(obj.objects, k)) continue;
-        //         const feat = topojson.feature(obj, obj.objects[k]);
-        //         // feat.type 可能是Feature/FeatureCollection
-        //         if (feat.type === "Feature") renderFeature(ds, feat, opts);
-        //         else if (feat.type === "FeatureCollection") for (const f of feat.features || []) renderFeature(ds, f, opts);
-        //     }
-        //     break;
-        // }
         default:
             throw new RuntimeError(`Unsupported GeoJSON object type: ${type}`);
     }

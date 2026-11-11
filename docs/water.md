@@ -122,13 +122,4 @@ water.destroy()
 
 场景包括岸线、小岛、水底石块、窗格建筑、树木、栈道、码头和帆船，外岸及岛边增加了连续变化水深的沙质坡面。面板可实时调整水色、不透明度、反射强度、粗糙度、散射、波纹周期/方向/强度/速度，及天空反射。程序细浪密度和波面法线视图可直接在面板调节。新增几何振幅/陡峭度、靠岸衰减、折射偏移、RGB 吸收、泡沫开关/水深范围/强度、水深与泡沫观察视图。点击「浅水焦散」可进入水底石块附近的观察视角；面板可调焦散开关、聚光强度、最大水深，或切换「焦散照明」单独观察。示例默认通过 `earth.tools.fps.show()` 显示 Cesium 原生 FPS/MS 面板，环境面板的「Cesium 原生 FPS」使用 `show()` / `hide()` 控制；暂停波纹后请求渲染模式可能显示 N/A 或 throttled。日期时间使用 UTC，太阳高度角实时显示，点击「追光视角」将视点对准太阳在水面上的反光方向。默认日期为 2026-06-21，15:00 UTC，是可复现的夏日下午场景；并非强制使用计算机当前时间。
 
-在线资源状态独立显示，失败时保留本地底图和水体实验场。直接访问示例时添加 `?offline=1` 可跳过在线资源。新增网格 Gerstner 波、水下深度采集、吸收和泡沫是在 Cesium 侧实现；细浪法线已替换为 GeoEarth 的程序化波形及噪声导数；Fresnel 和倒影扰动仍保留 Three.js Water 改编。其代码改编范围及许可保留在 `packages/core/THIRD_PARTY_NOTICES.md`。
-
-
-回归验证：`node packages/core/tests/water.geometry.mjs` 检查凹边界、岛洞、最大边长、三角形面积和网格裂缝。执行 `npm run build:example` 后，在可导入 Playwright 的环境中运行 `node packages/core/tests/water.browser.mjs`。若 Playwright 不在当前模块搜索路径，可通过 `PLAYWRIGHT_MODULE` 指定其 `index.mjs` 绝对路径；`BROWSER_EXECUTABLE` 可指定本机 Chromium/Edge 可执行文件；`WATER_SCREENSHOT` 可指定截图输出路径。
-
-浏览器回归会拦截法线图片请求，确认 WaterEffect 不依赖图片；使用 GPU 对波形解析导数与高度数值差分进行核对，并验证程序细浪、微波纹、方向、密度及时间改变实际法线像素，密度为 0 时只保留几何法线。`WATER_NORMAL_SCREENSHOT` 可保存法线视图。
-
-焦散回归读取真实帧像素，覆盖开关、波浪时间与暂停、平水面无聚光、深度限制、真实太阳的昼夜变化、缺少接收物体时无焦散，以及焦散确实改变最终折射成像。平底接收面另检查水下纹理从 1024 改为 512 后焦散像素的连续性，避免按深度纹素跳格；近景质量不靠单纯加密水面网格解决。`WATER_CAUSTICS_SCREENSHOT` 可保存近景截图。原生 FPS 面板的显示和开关也有浏览器验证。
-
-浏览器回归使用已知高度的水底盒子读取 GPU 深度，核对重建坐标及其随物体下降一米的变化，同时检查低角度平底的水深颜色均匀性；关闭程序细浪后检查几何波浪改变成像、折射移动水下图像、RGB 吸收改变颜色，以及水底上移使远离多边形边界的位置产生泡沫。还覆盖天空与大气反射、Cesium 太阳随时间变化、参数面板更新、实际反射纹理像素变化、水底裁剪、本地生成 glTF 模型与 3D Tiles、深度拾取后的反射像素一致性、连续滚轮缩放（`percentageChanged` 分别为 0.01 和 1）、三种预设、暂停继续、倒影及显隐开关、窗口变化、Viewer 与 GeoEarth 生命周期、生产站点菜单。默认回归关闭网络资源；设置 `WATER_ONLINE=1` 额外检查官方默认 Token 的 Bing/世界地形、倒影开关前后主场景一致性和追光视角。可通过 `WATER_ONLINE_SCREENSHOT`、`WATER_SUN_SCREENSHOT` 保存在线与追光截图。测试使用无界面 Edge 的软件 WebGL；大体量生产 3D Tiles 和硬件 GPU 性能仍需在目标环境验收。
+在线资源状态独立显示，失败时保留本地底图和水体实验场。新增网格 Gerstner 波、水下深度采集、吸收和泡沫是在 Cesium 侧实现；细浪法线已替换为 GeoEarth 的程序化波形及噪声导数；Fresnel 和倒影扰动仍保留 Three.js Water 改编。其代码改编范围及许可保留在 `packages/core/THIRD_PARTY_NOTICES.md`。

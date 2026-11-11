@@ -521,18 +521,6 @@ export const demoTree: DemoNode[] = [
         "title": "demos.advanced-many-objects",
         "description": "demos.manyObjectsDescription",
         "path": "demos/advanced/many-objects.html"
-      },
-      {
-        "id": "advanced-multi-instance",
-        "title": "demos.advanced-multi-instance",
-        "description": "demos.placeholderDescription",
-        "path": "demos/advanced/multi-instance.html"
-      },
-      {
-        "id": "advanced-container-resize",
-        "title": "demos.advanced-container-resize",
-        "description": "demos.placeholderDescription",
-        "path": "demos/advanced/container-resize.html"
       }
     ]
   }

@@ -185,7 +185,6 @@
     let disposed = false;
     let resizeFrame;
     let paused = false;
-    const offline = new URLSearchParams(location.search).has('offline');
     const params = {
       waveHeight: .35, waveSteepness: .35, shoreFadeDistance: 12, refraction: true, refractionStrength: .65,
       absorptionR: .28, absorptionG: .09, absorptionB: .045, foam: true, foamWidth: 1.2, foamOpacity: .7,
@@ -193,7 +192,7 @@
       color: '#06292e', opacity: .97, waveLength: 55, frequency: 100, waveDirection: 25, amplitude: .65,
       rippleStrength: .3, roughness: .18, scattering: .65, distortionScale: 9,
       specularIntensity: 1, reflectionStrength: 1, animationSpeed: .65, skyReflection: true,
-      date: '2026-06-21', hour: 15, online: !offline, lighting: true, fps: true, sunElevation: '',
+      date: '2026-06-21', hour: 15, online: true, lighting: true, fps: true, sunElevation: '',
       reset: () => changeStyle(),
     };
     const gui = new lil.GUI({ container: document.getElementById('gui'), title: '水体 · 实时调节' });
