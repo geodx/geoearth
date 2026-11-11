@@ -6,75 +6,78 @@
   <title>GeoEarth · 限高分析</title>
   <link rel="stylesheet" href="/demo-common/panel.css" />
   <style>
-    html, body, #earth { width: 100%; height: 100%; margin: 0; }
-    .demo-panel label { display: block; margin: 8px 0; }
+    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    .demo-panel { top: 12px; left: 12px; right: auto; width: min(350px, calc(100% - 24px)); }
+    h2 { margin: 0 0 8px; font-size: 17px; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }
+    button, input { font: inherit; color: #e2e8f0; background: #1e293b; border: 1px solid #475569; border-radius: 4px; padding: 4px 6px; }
+    button { cursor: pointer; }
+    :disabled { opacity: .5; cursor: default; }
+    input[type="number"] { width: 74px; }
+    input[type="range"] { width: 100%; padding: 0; }
+    input[type="color"] { width: 36px; height: 27px; padding: 2px; }
+    .parameter { display: block; margin-top: 10px; }
+    #absolute { margin: 8px 0; color: #94a3b8; font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body>
   <div id="earth"></div>
   <section class="demo-panel" aria-labelledby="title">
     <h2 id="title">限高分析</h2>
-    <p class="hint">红色标出区域内超过阈值的 3D Tiles 表面。拖动滑块可比较不同高度。</p>
-    <label>椭球高度阈值 <output id="value">40</output> 米
-      <input id="height" type="range" min="0" max="120" value="40" disabled />
+    <div class="controls">
+      <button id="sample" type="button" disabled>示例范围</button>
+      <button id="draw" type="button" disabled>绘制范围</button>
+      <button id="cancel" type="button" disabled>取消</button>
+      <button id="clear" type="button" disabled>清除</button>
+      <button id="locate" type="button" disabled>定位</button>
+    </div>
+    <label class="parameter">相对基准限高 <output id="value">40</output> 米
+      <input id="height" type="range" min="0" max="150" step="1" value="40" disabled />
     </label>
-    <label><input id="show" type="checkbox" checked disabled /> 高亮超高部分</label>
-    <p id="status" class="status" role="status" data-state="loading">正在准备场景…</p>
+    <div class="controls">
+      <label>基准椭球高 <input id="base" type="number" step="0.1" disabled /> 米</label>
+      <input id="color" type="color" value="#ff3434" aria-label="超高颜色" disabled />
+    </div>
+    <div class="controls">
+      <label><input id="show" type="checkbox" checked disabled /> 超高高亮</label>
+      <label><input id="plane" type="checkbox" checked disabled /> 参考面</label>
+    </div>
+    <p id="absolute"></p>
+    <p id="status" class="status" role="status" data-state="loading">正在加载…</p>
+    <button id="retry" type="button" disabled>重试加载</button>
   </section>
   <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
     const C = Cesium;
-    const earth = new GeoEarth('earth', { requestRenderMode: true }, { startup: { animation: false } });
-    const { scene, camera } = earth.viewer;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false },
+      homeView: { longitude: 108.959, latitude: 34.219, height: 2000, pitch: -55 },
+    });
+    const viewer = earth.viewer;
     const height = document.getElementById('height');
     const value = document.getElementById('value');
+    const base = document.getElementById('base');
+    const color = document.getElementById('color');
     const show = document.getElementById('show');
-    const frame = C.Transforms.eastNorthUpToFixedFrame(C.Cartesian3.fromDegrees(110, 30));
-    let analysis;
-
-    height.addEventListener('input', () => {
-      analysis.height = height.valueAsNumber;
-      value.value = height.value;
-    });
-    show.addEventListener('change', () => { analysis.show = show.checked; });
-
-    async function init() {
-      await earth.onReady();
-      if (disposed) return;
-      // 用本地 GLB 构成单瓦片数据集，演示对 3D Tiles 表面分类。
-      const transform = C.Matrix4.multiplyByUniformScale(frame, 40, new C.Matrix4());
-      const json = {
-        asset: { version: '1.1' }, geometricError: 50,
-        root: {
-          boundingVolume: { box: [0, 0, 1.3, 3, 0, 0, 0, 3, 0, 0, 0, 1.5] },
-          transform: C.Matrix4.toArray(transform), geometricError: 0, refine: 'ADD',
-          content: { uri: new URL('/demo-assets/model/CesiumMilkTruck.glb', document.baseURI).href },
-        },
-      };
-      const tileset = await C.Cesium3DTileset.fromUrl('data:application/json,' + encodeURIComponent(JSON.stringify(json)));
-      if (disposed) {
-        tileset.destroy();
-        return;
-      }
-      scene.primitives.add(tileset);
-      const hierarchy = [[-112, -68], [112, -68], [112, 68], [-112, 68]].map(([east, north]) =>
-        C.Matrix4.multiplyByPoint(frame, new C.Cartesian3(east, north, 0), new C.Cartesian3()));
-      analysis = earth.analysis.addHeightLimit({ hierarchy, height: height.valueAsNumber, upperHeight: 150 });
-      camera.lookAt(C.Cartesian3.fromDegrees(110, 30, 45),
-        new C.HeadingPitchRange(C.Math.toRadians(15), C.Math.toRadians(-22), 450));
-      camera.lookAtTransform(C.Matrix4.IDENTITY);
-      tileset.tileFailed.addEventListener(error => { if (!disposed) setStatus(error.message, 'error'); });
-      const stop = tileset.initialTilesLoaded.addEventListener(() => {
-        stop();
-        height.disabled = show.disabled = false;
-        setStatus('本地 3D Tiles 已加载。');
-      });
-      scene.requestRender();
-    }
-
+    const plane = document.getElementById('plane');
+    const absolute = document.getElementById('absolute');
     const status = document.getElementById('status');
+    const buttons = Object.fromEntries(['sample', 'draw', 'cancel', 'clear', 'locate', 'retry'].map(id => [id, document.getElementById(id)]));
+    const resourceId = 'height-limit-dayanta';
+    const outline = viewer.entities.add({
+      show: false, polyline: { positions: [], width: 2, material: C.Color.YELLOW, clampToGround: true },
+    });
+    const reference = viewer.entities.add({
+      show: false, polygon: { hierarchy: [], material: C.Color.CYAN.withAlpha(0.12), outline: true, outlineColor: C.Color.CYAN },
+    });
+    let analysis;
+    let tileset;
+    let defaultRange;
+    let range;
+    let drawing = false;
+    let ready = false;
     let disposed = false;
 
     function setStatus(message, state = 'ready') {
@@ -82,12 +85,137 @@
       status.dataset.state = state;
     }
 
+    function updateControls() {
+      for (const button of [buttons.sample, buttons.draw, buttons.locate]) button.disabled = !ready || drawing;
+      buttons.cancel.disabled = !drawing;
+      buttons.clear.disabled = !ready || drawing || !analysis;
+      for (const control of [height, base, color, show, plane]) control.disabled = !ready || drawing || !analysis;
+    }
+
+    function updateReference() {
+      const level = base.valueAsNumber + height.valueAsNumber;
+      value.value = height.value;
+      absolute.textContent = range ? '判定椭球高 ' + level.toFixed(1) + ' 米' : '';
+      reference.show = Boolean(range) && plane.checked;
+      if (range) {
+        reference.polygon.hierarchy = new C.PolygonHierarchy(range);
+        reference.polygon.height = level;
+        outline.polyline.positions = [...range, range[0]];
+      }
+      outline.show = Boolean(range);
+      viewer.scene.requestRender();
+    }
+
+    function applyRange(next) {
+      const options = {
+        hierarchy: next,
+        height: base.valueAsNumber + height.valueAsNumber,
+        color: C.Color.fromCssColorString(color.value).withAlpha(0.6),
+        show: show.checked,
+      };
+      if (analysis) analysis.update(options);
+      else analysis = earth.analysis.addHeightLimit(options);
+      range = next.map(position => C.Cartesian3.clone(position));
+      updateReference();
+      updateControls();
+      setStatus('已就绪');
+    }
+
+    function updateStyle() {
+      if (!analysis) return;
+      try {
+        analysis.update({
+          height: base.valueAsNumber + height.valueAsNumber,
+          color: C.Color.fromCssColorString(color.value).withAlpha(0.6),
+        });
+        updateReference();
+        setStatus('已就绪');
+      } catch (error) {
+        setStatus(error.message, 'error');
+      }
+    }
+    height.addEventListener('input', updateStyle);
+    base.addEventListener('change', updateStyle);
+    color.addEventListener('input', updateStyle);
+    show.addEventListener('change', () => { analysis.show = show.checked; });
+    plane.addEventListener('change', updateReference);
+    buttons.sample.addEventListener('click', () => applyRange(defaultRange));
+    buttons.locate.addEventListener('click', () => {
+      void earth.camera.flyToTarget(tileset, { heading: 25, pitch: -35, range: tileset.boundingSphere.radius * 2.5, duration: 0.8 });
+    });
+    buttons.draw.addEventListener('click', async () => {
+      drawing = true;
+      updateControls();
+      setStatus('左键加点，右键完成，Esc 取消。', 'loading');
+      try {
+        const positions = await earth.tools.draw.drawPolygon({ color: C.Color.YELLOW, clampToGround: true });
+        if (!disposed) applyRange(positions);
+      } catch (error) {
+        if (!disposed) setStatus(error instanceof GeoEarth.DrawCancelledError ? '已取消' : error.message,
+          error instanceof GeoEarth.DrawCancelledError ? 'ready' : 'error');
+      } finally {
+        if (!disposed) { drawing = false; updateControls(); }
+      }
+    });
+    buttons.cancel.addEventListener('click', () => earth.tools.draw.cancel());
+    buttons.clear.addEventListener('click', () => {
+      analysis?.destroy();
+      analysis = range = undefined;
+      updateReference();
+      updateControls();
+      setStatus('已清除');
+    });
+    buttons.retry.addEventListener('click', () => { void init(); });
     window.addEventListener('pagehide', event => {
       if (event.persisted || disposed) return;
       disposed = true;
       earth.destroy();
     });
-    init().catch(error => { if (!disposed) setStatus(error.message, 'error'); });
+    viewer.scene.renderError.addEventListener((_scene, error) => {
+      if (!disposed) setStatus(error.message, 'error');
+    });
+
+    async function init() {
+      buttons.retry.disabled = true;
+      setStatus('正在加载影像、地形与大雁塔…', 'loading');
+      try {
+        await earth.onReady();
+        if (disposed) return;
+        const resources = await Promise.allSettled([
+          earth.sources.presets.addWorldTerrain(),
+          earth.sources.presets.addBingImagery(),
+          earth.sources.addData({
+            id: resourceId, name: '大雁塔', sourceType: GeoEarth.SourceType.TILESET,
+            properties: { url: 'https://tiles.geoearth.dev/DaYanTa/tileset.json', maximumScreenSpaceError: 4, offset: { height: -26 } },
+          }),
+        ]);
+        if (disposed) return;
+        if (resources.some(resource => resource.status === 'rejected')) throw new Error('影像、地形或模型加载失败。');
+        tileset = earth.sources.getInstance(resourceId);
+        tileset.tileFailed.addEventListener(error => { if (!disposed) setStatus(error.message, 'error'); });
+        const center = C.Cartographic.fromCartesian(tileset.boundingSphere.center);
+        const longitude = C.Math.toDegrees(center.longitude);
+        const latitude = C.Math.toDegrees(center.latitude);
+        const ground = await GeoEarth.getTerrainMostDetailedHeight(viewer, longitude, latitude);
+        if (disposed) return;
+        base.value = ground.toFixed(1);
+        const frame = C.Transforms.eastNorthUpToFixedFrame(C.Cartesian3.fromDegrees(longitude, latitude, ground));
+        const half = tileset.boundingSphere.radius * 0.65;
+        defaultRange = [[-half, -half], [half, -half], [half, half], [-half, half]].map(([east, north]) =>
+          C.Matrix4.multiplyByPoint(frame, new C.Cartesian3(east, north, 0), new C.Cartesian3()));
+        viewer.camera.lookAt(tileset.boundingSphere.center,
+          new C.HeadingPitchRange(C.Math.toRadians(25), C.Math.toRadians(-35), tileset.boundingSphere.radius * 2.5));
+        viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+        ready = true;
+        applyRange(defaultRange);
+      } catch (error) {
+        if (!disposed) {
+          buttons.retry.disabled = false;
+          setStatus(error.message || String(error), 'error');
+        }
+      }
+    }
+    void init();
   </script>
 </body>
 </html>

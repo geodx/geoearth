@@ -1,55 +1,107 @@
-import { ClassificationPrimitive, ClassificationType, Color, ColorGeometryInstanceAttribute, GeometryInstance, PolygonGeometry, PolygonHierarchy } from 'cesium'
+import { Cartesian3, ClassificationPrimitive, ClassificationType, Color, ColorGeometryInstanceAttribute, GeometryInstance, PolygonGeometry, PolygonHierarchy } from 'cesium'
 import { OwnedResource } from '../../utils/scene/OwnedResource'
 import type { SceneHost } from '../../utils/scene/types'
 import { toCartesian } from '../../utils/coordinate/positions'
+import { getSurfaceArea } from '../../utils/geometry/measurements'
 
 import type { HeightLimitOptions } from './types'
 export type { HeightLimitOptions } from './types'
 
-/** 高亮边界内超过阈值的 3D Tiles；不改变全场景的反向分类开关。 */
+type HeightLimitSettings = Required<Omit<HeightLimitOptions, 'hierarchy'>> & { hierarchy: PolygonHierarchy }
+
+function copyHierarchy(input: HeightLimitOptions['hierarchy']): PolygonHierarchy {
+    const ring = input instanceof PolygonHierarchy ? input.positions : input
+    const positions = ring.map(position => toCartesian(position))
+    if (positions.length > 1 && Cartesian3.equals(positions[0], positions[positions.length - 1])) positions.pop()
+    if (positions.length < 3 || positions.some(position => Cartesian3.magnitudeSquared(position) === 0)) {
+        throw new RangeError('限高范围至少需要三个有效的地理位置。')
+    }
+    if (getSurfaceArea(positions) < 0.01) throw new RangeError('限高范围必须具有有效面积。')
+    const holes = input instanceof PolygonHierarchy ? input.holes.map(hole => copyHierarchy(hole)) : []
+    return new PolygonHierarchy(positions, holes)
+}
+
+function resolveOptions(options: HeightLimitOptions): HeightLimitSettings {
+    const upperHeight = options.upperHeight ?? 200000
+    if (!Number.isFinite(options.height) || !Number.isFinite(upperHeight) || upperHeight <= options.height) {
+        throw new RangeError('限高上界必须大于阈值，且两者均为有限数值。')
+    }
+    const color = options.color ?? Color.RED.withAlpha(0.6)
+    if (![color.red, color.green, color.blue, color.alpha].every(Number.isFinite)) throw new RangeError('限高颜色各分量必须为有限数值。')
+    return {
+        height: options.height, upperHeight, color: Color.clone(color),
+        hierarchy: copyHierarchy(options.hierarchy), show: options.show ?? true,
+    }
+}
+
+/** 按水平范围和绝对椭球高分类高亮 3D Tiles 表面。 */
 export class HeightLimitAnalysis extends OwnedResource {
     private primitive: ClassificationPrimitive
-    private readonly hierarchy: PolygonHierarchy
-    private readonly upper: number
-    private readonly color: Color
-    private threshold: number
+    private settings: HeightLimitSettings
 
     constructor(host: SceneHost, options: HeightLimitOptions) {
-        const upper = options.upperHeight ?? 200000
-        if (!Number.isFinite(options.height) || !Number.isFinite(upper) || upper <= options.height) throw new RangeError('限高上界必须大于阈值。')
-        const hierarchy = options.hierarchy instanceof PolygonHierarchy ? options.hierarchy : new PolygonHierarchy(options.hierarchy.map(position => toCartesian(position)))
-        if (hierarchy.positions.length < 3) throw new RangeError('限高范围至少需要三个点。')
+        const settings = resolveOptions(options)
         super(host)
-        this.hierarchy = hierarchy
-        this.upper = upper
-        this.color = Color.clone(options.color ?? Color.RED.withAlpha(.6))
-        this.threshold = options.height
-        this.primitive = this.createPrimitive()
+        this.settings = settings
+        try {
+            this.primitive = this.createPrimitive(settings)
+            this.requestRender()
+        } catch (error) {
+            super.destroy()
+            throw error
+        }
     }
 
-    get height(): number { return this.threshold }
+    get height(): number { return this.settings.height }
     set height(value: number) {
         this.assertAlive()
-        if (!Number.isFinite(value) || value >= this.upper) throw new RangeError('限高阈值必须小于上界。')
-        const visible = this.show
-        this.threshold = value
-        this.viewer.scene.primitives.remove(this.primitive)
-        this.primitive = this.createPrimitive()
-        this.show = visible
+        if (!Number.isFinite(value)) throw new RangeError('限高阈值必须为有限数值。')
+        if (value !== this.height) this.update({ height: value })
     }
 
-    get show(): boolean { return this.primitive.show }
-    set show(value: boolean) { this.assertAlive(); this.primitive.show = value; this.requestRender() }
+    get upperHeight(): number { return this.settings.upperHeight }
 
-    private createPrimitive(): ClassificationPrimitive {
-        const primitive = this.viewer.scene.primitives.add(new ClassificationPrimitive({
-            classificationType: ClassificationType.CESIUM_3D_TILE,
-            geometryInstances: new GeometryInstance({ geometry: new PolygonGeometry({
-                polygonHierarchy: this.hierarchy, height: this.threshold, extrudedHeight: this.upper,
-            }), attributes: { color: ColorGeometryInstanceAttribute.fromColor(this.color) } }),
-        }))
+    get color(): Color { return Color.clone(this.settings.color) }
+
+    get show(): boolean { return this.settings.show }
+    set show(value: boolean) {
+        this.assertAlive()
+        this.settings.show = this.primitive.show = value
         this.requestRender()
-        return primitive
+    }
+
+    /** 校验并创建新分类体后再替换旧实例，无效更新保留原结果。 */
+    update(options: Partial<HeightLimitOptions>): void {
+        this.assertAlive()
+        const next = resolveOptions({
+            hierarchy: options.hierarchy ?? this.settings.hierarchy,
+            height: options.height ?? this.height,
+            upperHeight: options.upperHeight ?? this.upperHeight,
+            color: options.color ?? this.settings.color,
+            show: options.show ?? this.show,
+        })
+        const primitive = this.createPrimitive(next)
+        const previous = this.primitive
+        this.primitive = primitive
+        this.settings = next
+        this.viewer.scene.primitives.remove(previous)
+        this.requestRender()
+    }
+
+    private createPrimitive(settings: HeightLimitSettings): ClassificationPrimitive {
+        return this.viewer.scene.primitives.add(new ClassificationPrimitive({
+            asynchronous: false,
+            show: settings.show,
+            classificationType: ClassificationType.CESIUM_3D_TILE,
+            geometryInstances: new GeometryInstance({
+                geometry: new PolygonGeometry({
+                    polygonHierarchy: settings.hierarchy,
+                    height: settings.height,
+                    extrudedHeight: settings.upperHeight,
+                }),
+                attributes: { color: ColorGeometryInstanceAttribute.fromColor(settings.color) },
+            }),
+        }))
     }
 
     override destroy(): void {

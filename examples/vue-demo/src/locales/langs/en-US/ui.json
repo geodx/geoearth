@@ -126,6 +126,7 @@
     "analysis-line-of-sight": "Line of sight",
     "lineOfSightDescription": "Choose observer and target positions to check terrain and scene occlusion, with green and red visibility segments.",
     "analysis-height-limit": "Height limit",
+    "heightLimitDescription": "Draw an area over the Dayanta 3D Tiles and adjust the height threshold, reference plane, and highlight color.",
     "analysis-terrain-excavation": "Terrain excavation",
     "advanced-fps": "FPS",
     "advanced-request-render": "Render on demand",

@@ -495,7 +495,7 @@ export const demoTree: DemoNode[] = [
       {
         "id": "analysis-height-limit",
         "title": "demos.analysis-height-limit",
-        "description": "demos.placeholderDescription",
+        "description": "demos.heightLimitDescription",
         "path": "demos/analysis/height-limit.html"
       },
       {

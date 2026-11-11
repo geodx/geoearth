@@ -7,4 +7,5 @@ export interface HeightLimitOptions {
     height: number
     upperHeight?: number
     color?: Color
+    show?: boolean
 }

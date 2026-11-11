@@ -126,6 +126,7 @@
     "analysis-line-of-sight": "通视",
     "lineOfSightDescription": "选取观察点和目标点，检查地形与场景遮挡，以绿红线显示通视结果。",
     "analysis-height-limit": "限高",
+    "heightLimitDescription": "在大雁塔 3D Tiles 上绘制范围，调整限高、参考面和超高颜色。",
     "analysis-terrain-excavation": "地形开挖",
     "advanced-fps": "FPS",
     "advanced-request-render": "按需渲染",
