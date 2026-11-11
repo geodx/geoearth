@@ -4,25 +4,91 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 地形开挖</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
   <style>
     html, body, #earth { width: 100%; height: 100%; margin: 0; }
-    .scaffold-note { position: absolute; top: 12px; left: 12px; z-index: 2; padding: 8px 12px; background: #071a2edd; color: white; font: 14px sans-serif; pointer-events: none; }
+    .demo-panel label { display: block; margin: 8px 0; }
   </style>
 </head>
 <body>
   <div id="earth"></div>
-  <div class="scaffold-note">示例骨架：具体效果待实现。</div>
+  <section class="demo-panel" aria-labelledby="title">
+    <h2 id="title">地形开挖</h2>
+    <p class="hint">在本地椭球地表开挖矩形区域。调整深度可观察坑壁和坑底。</p>
+    <label>开挖深度 <output id="value">300</output> 米
+      <input id="depth" type="range" min="100" max="650" step="10" value="300" disabled />
+    </label>
+    <button id="toggle" type="button" disabled>恢复地表</button>
+    <p id="status" class="status" role="status" data-state="loading">正在准备场景…</p>
+  </section>
   <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    const earth = new GeoEarth('earth');
-    // 入口：GeoEarth.SurfaceExcavateAnalysis
-    // TODO 1：准备本示例使用的数据和配置。
-    // TODO 2：await earth.onReady() 后创建对应展示对象；传 earth 可自动绑定销毁。
-    // TODO 3：补充更新、显隐、清理等交互，并检查实际效果。
-    // await analysis.ready；depth 相对边界最低地形高度，已有裁剪时先释放。
-    window.addEventListener('pagehide', () => earth.destroy(), { once: true });
+    const C = Cesium;
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, { startup: { animation: false } });
+    const { camera } = earth.viewer;
+    const depth = document.getElementById('depth');
+    const value = document.getElementById('value');
+    const toggle = document.getElementById('toggle');
+    const positions = [[109.994, 29.996], [110.006, 29.996], [110.006, 30.004], [109.994, 30.004]]
+      .map(([longitude, latitude]) => ({ longitude, latitude, height: 0 }));
+    let analysis;
+
+    async function excavate() {
+      toggle.disabled = true;
+      analysis = earth.analysis.addTerrainExcavation({ positions, depth: depth.valueAsNumber, sampleTerrain: false });
+      await analysis.ready;
+      if (disposed) return;
+      depth.disabled = toggle.disabled = false;
+      toggle.textContent = '恢复地表';
+      setStatus('拖动滑块调整开挖深度。');
+    }
+
+    depth.addEventListener('input', () => {
+      analysis.depth = depth.valueAsNumber;
+      value.value = depth.value;
+    });
+    toggle.addEventListener('click', () => {
+      if (analysis && !analysis.isDestroyed()) {
+        analysis.destroy();
+        analysis = undefined;
+        depth.disabled = true;
+        toggle.textContent = '重新开挖';
+        setStatus('已移除裁剪并恢复地表。');
+      } else {
+        excavate().catch(error => {
+          if (disposed) return;
+          toggle.disabled = false;
+          setStatus(error.message, 'error');
+        });
+      }
+    });
+
+    async function init() {
+      await earth.onReady();
+      if (disposed) return;
+      earth.viewer.scene.globe.depthTestAgainstTerrain = true;
+      camera.lookAt(C.Cartesian3.fromDegrees(110, 30, -100),
+        new C.HeadingPitchRange(C.Math.toRadians(24), C.Math.toRadians(-50), 2100));
+      camera.lookAtTransform(C.Matrix4.IDENTITY);
+      await excavate();
+    }
+
+    const status = document.getElementById('status');
+    let disposed = false;
+
+    function setStatus(message, state = 'ready') {
+      status.textContent = message;
+      status.dataset.state = state;
+    }
+
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      earth.destroy();
+    });
+    init().catch(error => { if (!disposed) setStatus(error.message, 'error'); });
   </script>
 </body>
 </html>

@@ -213,7 +213,7 @@
             disableDepthTestDistance: Infinity,
           },
         });
-        const effect = new GeoEarth.ParticleEffect(earth, { type: preset.type, position: at(preset.east, 0, 1.2), ...preset.options });
+        const effect = earth.effects.addParticle({ type: preset.type, position: at(preset.east, 0, 1.2), ...preset.options });
         effects.set(preset.type, { effect, label, pedestal });
       }
       selectEffect();

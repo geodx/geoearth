@@ -4,25 +4,81 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GeoEarth · 影像卷帘</title>
+  <link rel="stylesheet" href="/demo-common/panel.css" />
   <style>
     html, body, #earth { width: 100%; height: 100%; margin: 0; }
-    .scaffold-note { position: absolute; top: 12px; left: 12px; z-index: 2; padding: 8px 12px; background: #071a2edd; color: white; font: 14px sans-serif; pointer-events: none; }
+    .demo-panel label { display: block; margin: 8px 0; }
   </style>
 </head>
 <body>
   <div id="earth"></div>
-  <div class="scaffold-note">示例骨架：具体效果待实现。</div>
+  <section class="demo-panel" aria-labelledby="title">
+    <h2 id="title">影像卷帘</h2>
+    <p class="hint">左侧显示底图，右侧叠加本地网格。可拖动分界线，也可聚焦后用方向键移动。</p>
+    <button id="toggle" type="button" disabled>关闭卷帘</button>
+    <p id="status" class="status" role="status" data-state="loading">正在准备场景…</p>
+  </section>
   <script>window.CESIUM_BASE_URL = '/sdk/cesium/';</script>
   <script src="/sdk/cesium/Cesium.js"></script>
   <script src="/sdk/geoearth.js"></script>
   <script>
-    const earth = new GeoEarth('earth');
-    // 入口：GeoEarth.LayerSplitAnalysis
-    // TODO 1：准备本示例使用的数据和配置。
-    // TODO 2：await earth.onReady() 后创建对应展示对象；传 earth 可自动绑定销毁。
-    // TODO 3：补充更新、显隐、清理等交互，并检查实际效果。
-    // 传入 left/right 借用影像层；销毁恢复分屏方向。
-    window.addEventListener('pagehide', () => earth.destroy(), { once: true });
+    const earth = new GeoEarth('earth', { requestRenderMode: true }, {
+      startup: { animation: false },
+      homeView: { longitude: 110, latitude: 30, height: 2500000, pitch: -90 },
+    });
+    const toggle = document.getElementById('toggle');
+    const id = 'swipe-grid';
+    let grid;
+    let swipe;
+
+    function openSwipe() {
+      swipe = earth.analysis.addImagerySwipe({ right: [grid], position: 0.5 });
+      earth.sources.setResourceVisible(id, true);
+      toggle.textContent = '关闭卷帘';
+      setStatus('拖动分界线可对比两侧。');
+    }
+
+    toggle.addEventListener('click', () => {
+      if (swipe) {
+        swipe.destroy();
+        swipe = undefined;
+        earth.sources.setResourceVisible(id, false);
+        toggle.textContent = '开启卷帘';
+        setStatus('已恢复底图。');
+      } else {
+        openSwipe();
+      }
+    });
+
+    async function init() {
+      await earth.onReady();
+      if (disposed) return;
+      grid = await earth.sources.addData({
+        id, name: '卷帘对比网格', sourceType: GeoEarth.SourceType.IMAGERY,
+        properties: {
+          scheme: GeoEarth.ImageryScheme.SINGLE_TILE, url: '/demo-assets/resource-events-grid.png', alpha: 0.8,
+          rectangle: { west: 97, south: 20, east: 123, north: 40 },
+        },
+      });
+      if (disposed) return;
+      openSwipe();
+      toggle.disabled = false;
+    }
+
+    const status = document.getElementById('status');
+    let disposed = false;
+
+    function setStatus(message, state = 'ready') {
+      status.textContent = message;
+      status.dataset.state = state;
+    }
+
+    window.addEventListener('pagehide', event => {
+      if (event.persisted || disposed) return;
+      disposed = true;
+      earth.destroy();
+    });
+    init().catch(error => { if (!disposed) setStatus(error.message, 'error'); });
   </script>
 </body>
 </html>

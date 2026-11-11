@@ -162,18 +162,18 @@
       ];
       for (const [theme, text, column, row] of presets) {
         const position = at(column, row);
-        markers.push(new GeoEarth.LabelMarker(earth, { position, text, theme, anchor: 'center' }));
+        markers.push(earth.visuals.addLabelMarker({ position, text, theme, anchor: 'center' }));
         caption(position, theme === 'led' ? 'LED 数字标牌' : text, { simple: 42, gradient: 65, erect: 90, hotspot: 158, floating: 45, dynamic: 45, led: 40, frame: 96 }[theme]);
       }
       const customPosition = at(0, 3);
-      markers.push(new GeoEarth.HtmlMarker(earth, {
+      markers.push(earth.visuals.addHtmlMarker({
         position: customPosition, anchor: 'center',
         content: content('<div class="custom-card"><strong>环境监测站</strong>温度 26℃ · 湿度 65%<br><small>支持自定义 DOM 内容</small></div>')
       }));
       caption(customPosition, '自定义 HTML', 66);
       for (const [column, value, color] of [[1, .35, '#22b8cf'], [2, .75, '#2fc888']]) {
         const position = at(column, 3);
-        markers.push(new GeoEarth.LiquidFillMarker(earth, { position, value, color, anchor: 'center' }));
+        markers.push(earth.visuals.addLiquidFillMarker({ position, value, color, anchor: 'center' }));
         caption(position, '水球比例 ' + Math.round(value * 100) + '%', 76);
       }
       await Promise.all(markers.map(marker => marker.ready));

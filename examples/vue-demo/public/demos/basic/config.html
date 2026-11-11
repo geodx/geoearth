@@ -108,7 +108,7 @@
 
     function updateImagery() {
       if (!earth || initializing) return;
-      earth.sources.imagery.setShow("geoearth-base-imagery", display.showImagery);
+      earth.sources.setResourceVisible("geoearth-base-imagery", display.showImagery);
     }
 
     async function applyConfig() {

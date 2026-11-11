@@ -229,7 +229,7 @@
       });
       if (disposed) return;
       // 视频宽高比与投影相机保持一致，画面按视锥投射到可见表面。
-      projection = new GeoEarth.VideoProjection(earth, video, {
+      projection = earth.visuals.addVideoProjection(video, {
         position, heading: 0, pitch: -16, near: 1, far: 600,
         fov: 53, aspectRatio: video.videoWidth / video.videoHeight,
         alpha: .95, textureSize: 1024, debugFrustum: frustumToggle.checked,

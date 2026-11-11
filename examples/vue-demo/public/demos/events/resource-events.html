@@ -33,7 +33,7 @@
   <script src="/sdk/geoearth.js"></script>
   <script>
     // HTML 中从 GeoEarth 获取 API；npm 中从 'geoearth' 导入。
-    const { SourceEventType, SourceType, ImageryProviderType } = GeoEarth;
+    const { SourceEventType, SourceType, ImageryScheme } = GeoEarth;
     const earth = new GeoEarth("earth", undefined, {
       startup: { animation: false },
     });
@@ -60,7 +60,7 @@
     }
 
     function updateControls() {
-      const layer = earth.sources.imagery.get(layerId);
+      const layer = earth.sources.getInstance(layerId);
       addButton.disabled = adding || Boolean(layer);
       removeButton.disabled = !layer;
       showButton.disabled = !layer || layer.show;
@@ -97,22 +97,23 @@
     }
 
     async function addLayer() {
-      if (adding || earth.sources.imagery.has(layerId)) return;
+      if (adding || earth.sources.isLoaded(layerId)) return;
       adding = true;
       updateControls();
       try {
-        await earth.sources.add(SourceType.LAYER, {
+        await earth.sources.addData({
           id: layerId,
           name: "资源事件示例网格",
+          sourceType: SourceType.IMAGERY,
           show: true,
           properties: {
-            providerType: ImageryProviderType.SINGLE_TILE,
+            scheme: ImageryScheme.SINGLE_TILE,
             url: "/demo-assets/resource-events-grid.png",
-            layerOptions: { alpha: Number(alphaInput.value) },
+            alpha: Number(alphaInput.value),
           },
         });
       } catch (error) {
-        // 当前 SDK 尚未提供 ERROR 事件，这里处理 add() 的失败。
+        // 当前 SDK 尚未提供 ERROR 事件，这里处理 addData() 的失败。
         console.error("影像添加失败", error);
         log(`[添加失败] ${error?.message ?? String(error)}`);
       } finally {
@@ -122,17 +123,24 @@
     }
 
     function removeLayer() {
-      earth.sources.remove(SourceType.LAYER, layerId);
+      earth.sources.removeSourceById(layerId);
       updateControls();
     }
 
     function setShow(show) {
-      earth.sources.imagery.setShow(layerId, show);
+      earth.sources.setResourceVisible(layerId, show);
       updateControls();
     }
 
     function setAlpha(alpha) {
-      earth.sources.imagery.setAlpha(layerId, alpha);
+      const layer = earth.sources.getInstance(layerId);
+      const source = earth.sources.getSourceItemById(layerId);
+      if (!layer || !source || layer.alpha === alpha) return;
+      layer.alpha = source.properties.alpha = alpha;
+      earth.viewer.scene.requestRender();
+      earth.event.source.raiseEvent(SourceEventType.CHANGE, {
+        type: SourceEventType.CHANGE, sourceType: SourceType.IMAGERY, source, id: layerId,
+      });
       updateControls();
     }
 

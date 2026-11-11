@@ -68,7 +68,7 @@
       await earth.onReady();
       if (disposed) return;
       for (const [column, theme] of ['point', 'image'].entries()) {
-        const layer = new GeoEarth.ClusterLayer(earth, { theme, pixelRange: 42, minimumClusterSize: 3,
+        const layer = earth.visuals.addClusterLayer({ theme, pixelRange: 42, minimumClusterSize: 3,
           style: (entities, graphics) => {
             graphics.label.horizontalOrigin = C.HorizontalOrigin.CENTER;
             graphics.label.verticalOrigin = C.VerticalOrigin.CENTER;

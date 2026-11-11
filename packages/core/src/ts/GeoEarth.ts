@@ -8,6 +8,9 @@ import { Config } from './config/types';
 import { EventManager } from './events/EventManager';
 import { ViewerEventType } from './events/types';
 import { InteractionManager } from './interaction';
+import { EffectManager } from './effects/EffectManager';
+import { AnalysisManager } from './analysis/AnalysisManager';
+import { VisualManager } from './visualization/VisualManager';
 import { loadSources, ResourceManager } from './sources';
 import { ToolManager } from './tools/ToolManager';
 import { WidgetManager } from './widgets';
@@ -25,6 +28,9 @@ export class GeoEarth {
 
     public readonly widgets: WidgetManager
     public readonly interaction: InteractionManager
+    public readonly effects: EffectManager
+    public readonly visuals: VisualManager
+    public readonly analysis: AnalysisManager
 
     private readonly startAnimation: StartAnimation
     private readonly readyPromise: Promise<void>
@@ -53,9 +59,12 @@ export class GeoEarth {
 
         this.sources = new ResourceManager(this.viewer, this.event.source, this.camera)
 
-        this.tools = new ToolManager(this.viewer, this.event.screen)
+        this.tools = new ToolManager(this, this.event.screen)
 
         this.interaction = new InteractionManager(this.viewer, this.event.screen, this.event.interaction, this.tools.draw)
+        this.effects = new EffectManager(this)
+        this.visuals = new VisualManager(this)
+        this.analysis = new AnalysisManager(this)
 
         this.widgets = new WidgetManager(this.viewer, this, (container, options, config) => {
             return new GeoEarth(container, options, config)

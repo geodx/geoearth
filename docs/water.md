@@ -1,9 +1,9 @@
 # 波浪、反射与浅水成像
 
-HTML 全局入口仍为 `GeoEarth.WaterEffect`，无需引入 Three.js。npm/ESM 使用 `import { WaterEffect } from "geoearth"` 后调用 `new WaterEffect(earth, options)`。运行 `npm run dev`，在示例菜单中打开「水面」。
+HTML 和 npm/ESM 都可使用 `earth.effects.addWater(options)`。直接使用 Cesium Viewer 时，可通过 `new WaterEffect(viewer, options)` 创建水面。运行 `npm run dev`，在示例菜单中打开「水面」。
 
 ```ts
-const water = new GeoEarth.WaterEffect(earth, {
+const water = earth.effects.addWater({
     hierarchy: [
         { longitude: 110, latitude: 30 }, { longitude: 110.01, latitude: 30 },
         { longitude: 110.01, latitude: 30.01 }, { longitude: 110, latitude: 30.01 },

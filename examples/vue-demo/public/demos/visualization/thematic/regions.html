@@ -178,7 +178,7 @@
 
     function createLayers(mode) {
       const colors = ['#32b9e9', '#40d4bd', '#a3b85d', '#ecb65f', '#668dea', '#b27dca'];
-      const layer = new GeoEarth.RegionLayer(earth, {
+      const layer = earth.visuals.addRegionLayer({
         data: china, theme: mode === 'wall' ? 'administrative' : 'plain',
         showLabels: true, labelProperty: 'name',
         style: (feature, index) => ({

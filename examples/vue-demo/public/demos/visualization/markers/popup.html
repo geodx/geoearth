@@ -158,7 +158,7 @@
       const themes = ['panel', 'hud', 'angular'];
       for (let column = 0; column < themes.length; column++) {
         const position = at(column, -.15);
-        const popup = new GeoEarth.PopupMarker(earth, {
+        const popup = earth.visuals.addPopupMarker({
           position, anchor: 'center', theme: themes[column],
           title: ['普通弹窗', 'HUD 弹窗', '切角弹窗'][column],
           content: content('监测站点 ' + (column + 1) + '<br>状态：运行正常<br>温度：26℃')
@@ -168,7 +168,7 @@
       }
       for (const [column, theme] of ['panel', 'sample', 'hud'].entries()) {
         const position = at(column - .35, 1.75);
-        const panel = new GeoEarth.PanelMarker(earth, {
+        const panel = earth.visuals.addPanelMarker({
           position, anchor: 'center', theme,
           title: ['普通面板', '信息面板', 'HUD 面板'][column],
           content: content('设备编号：GE-00' + (column + 1) + '<br>在线设备：128 台<br>点击关闭按钮可折叠')

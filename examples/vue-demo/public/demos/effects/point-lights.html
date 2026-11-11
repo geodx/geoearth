@@ -78,8 +78,7 @@
       { toggle: document.getElementById('cool'), position: at(32, -25, 21), color: C.Color.fromCssColorString('#5f9bff') },
     ];
     let disposed = false;
-    let model;
-    let shader;
+    let pointLights;
 
     function locate() {
       camera.lookAt(at(0, -6, 12), new C.HeadingPitchRange(
@@ -88,17 +87,25 @@
       scene.requestRender();
     }
 
-    function updateLights() {
+    function getLightOptions() {
       const strength = intensity.valueAsNumber;
       const distance = radius.valueAsNumber;
-      intensityValue.value = strength.toFixed(1);
+      return lights.map(({ toggle, position, color }) => ({
+        position,
+        color,
+        radius: distance,
+        intensity: toggle.checked ? strength : 0,
+      }));
+    }
+
+    function updateLights() {
+      const options = getLightOptions();
+      pointLights.update(options);
+      intensityValue.value = intensity.valueAsNumber.toFixed(1);
       radiusValue.value = radius.value;
-      lights.forEach(({ toggle, marker }, index) => {
-        shader.setUniform(`u_intensity${index}`, toggle.checked ? strength : 0);
-        shader.setUniform(`u_radius${index}`, distance);
-        marker.show = toggle.checked && strength > 0;
+      lights.forEach(({ marker }, index) => {
+        marker.show = options[index].intensity > 0;
       });
-      scene.requestRender();
     }
 
     function showError(error) {
@@ -137,12 +144,9 @@
         loadedModel.destroy();
         return;
       }
-      model = scene.primitives.add(loadedModel);
+      const model = scene.primitives.add(loadedModel);
       model.imageBasedLighting.imageBasedLightingFactor = new C.Cartesian2(0.3, 0);
-      shader = GeoEarth.createPointLightShader(lights.map(({ position, color }) => ({
-        position, color, radius: radius.valueAsNumber, intensity: intensity.valueAsNumber,
-      })));
-      model.customShader = shader;
+      pointLights = earth.effects.addPointLights(model, getLightOptions());
       lights.forEach(light => {
         light.marker = entities.add({
           position: light.position,
@@ -166,8 +170,6 @@
     window.addEventListener('pagehide', event => {
       if (event.persisted || disposed) return;
       disposed = true;
-      if (model) model.customShader = undefined;
-      shader?.destroy();
       earth.destroy();
     });
     init().catch(showError);

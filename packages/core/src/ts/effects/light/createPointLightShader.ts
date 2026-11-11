@@ -1,4 +1,4 @@
-import { Cartesian3, Color, CustomShader, LightingModel, UniformType } from 'cesium'
+import { Cartesian4, Color, CustomShader, LightingModel, UniformType, type UniformSpecifier } from 'cesium'
 import { toCartesian, type WorldPosition } from '../../utils/coordinate/positions'
 
 export interface PointLightOptions {
@@ -10,23 +10,31 @@ export interface PointLightOptions {
 
 /** 用于 Model/Cesium3DTileset.customShader；调用方负责解除绑定并销毁返回的着色器。 */
 export function createPointLightShader(lights: readonly PointLightOptions[]): CustomShader {
-    const uniforms: Record<string, { type: UniformType; value: Cartesian3 | Color | number }> = {}
-    const contributions = lights.map((light, index) => {
+    return buildPointLightShader(lights.length, getPointLightUniforms(lights))
+}
+
+export function getPointLightUniforms(lights: readonly PointLightOptions[]): Record<string, UniformSpecifier> {
+    const uniforms: Record<string, UniformSpecifier> = {}
+    lights.forEach((light, index) => {
         const radius = light.radius ?? 1000, intensity = light.intensity ?? 1
         if (!Number.isFinite(radius) || radius <= 0 || !Number.isFinite(intensity) || intensity < 0) throw new RangeError('光照半径必须为正数，强度不能为负数。')
         uniforms[`u_position${index}`] = { type: UniformType.VEC3, value: toCartesian(light.position) }
-        uniforms[`u_color${index}`] = { type: UniformType.VEC4, value: light.color ?? Color.WHITE }
+        uniforms[`u_color${index}`] = { type: UniformType.VEC4, value: Cartesian4.fromColor(light.color ?? Color.WHITE) }
         uniforms[`u_radius${index}`] = { type: UniformType.FLOAT, value: radius }
         uniforms[`u_intensity${index}`] = { type: UniformType.FLOAT, value: intensity }
-        return `{
+    })
+    return uniforms
+}
+
+export function buildPointLightShader(lightCount: number, uniforms: Record<string, UniformSpecifier>): CustomShader {
+    const contributions = Array.from({ length: lightCount }, (_, index) => `{
             vec3 lightEC = (czm_view * vec4(u_position${index}, 1.0)).xyz;
             vec3 delta = lightEC - positionEC;
             float distanceToLight = length(delta);
             float attenuation = pow(max(0.0, 1.0 - distanceToLight / u_radius${index}), 2.0);
             float diffuse = max(dot(normalEC, delta / max(distanceToLight, 0.001)), 0.0);
             illumination += u_color${index}.rgb * attenuation * diffuse * u_intensity${index} * u_color${index}.a;
-        }`
-    })
+        }`)
     return new CustomShader({
         lightingModel: LightingModel.PBR, uniforms,
         fragmentShaderText: `void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material) {

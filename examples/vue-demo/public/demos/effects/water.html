@@ -7,8 +7,18 @@
   <title>GeoEarth · 水面</title>
   <link rel="stylesheet" href="/demo-common/panel.css" />
   <style>
-    html, body, #earth { width: 100%; height: 100%; margin: 0; overflow: hidden; }
-    body { font: 14px/1.6 system-ui, sans-serif; }
+    html,
+    body,
+    #earth {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    body {
+      font: 14px/1.6 system-ui, sans-serif;
+    }
 
     .toolbar {
       position: absolute;
@@ -20,10 +30,22 @@
       pointer-events: none;
     }
 
-    h1 { margin: 0 0 6px; font-size: 18px; text-shadow: 0 1px 4px #000; }
-    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      text-shadow: 0 1px 4px #000;
+    }
 
-    select, button, .toggle {
+    .controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    select,
+    button,
+    .toggle {
       padding: 5px 10px;
       color: #e7f7ff;
       background: #102a40ed;
@@ -33,9 +55,19 @@
       pointer-events: auto;
     }
 
-    .toggle { display: inline-flex; align-items: center; gap: 6px; }
-    button { cursor: pointer; }
-    :disabled { opacity: .5; }
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    :disabled {
+      opacity: .5;
+    }
 
     #status {
       position: absolute;
@@ -51,18 +83,51 @@
       pointer-events: none;
     }
 
-    #status[data-state="error"] { color: #ffb0a4; }
-    .demo-panel { width: 305px; }
-    .toolbar { right: 325px; }
-    #status { max-width: calc(100% - 360px); }
-    #resource-status { font-size: 12px; color: #b3c8d7; }
-    #earth .cesium-performanceDisplay-defaultContainer {
-      position: absolute; top: 105px; left: 12px; right: auto; z-index: 2; pointer-events: none;
+    #status[data-state="error"] {
+      color: #ffb0a4;
     }
+
+    .demo-panel {
+      width: 305px;
+    }
+
+    .toolbar {
+      right: 325px;
+    }
+
+    #status {
+      max-width: calc(100% - 360px);
+    }
+
+    #resource-status {
+      font-size: 12px;
+      color: #b3c8d7;
+    }
+
+    #earth .cesium-performanceDisplay-defaultContainer {
+      position: absolute;
+      top: 105px;
+      left: 12px;
+      right: auto;
+      z-index: 2;
+      pointer-events: none;
+    }
+
     @media (max-width: 800px) {
-      .demo-panel { top: 125px; width: 260px; max-height: calc(100vh - 165px); }
-      .toolbar { right: 12px; }
-      #status { max-width: calc(100% - 48px); font-size: 12px; }
+      .demo-panel {
+        top: 125px;
+        width: 260px;
+        max-height: calc(100vh - 165px);
+      }
+
+      .toolbar {
+        right: 12px;
+      }
+
+      #status {
+        max-width: calc(100% - 48px);
+        font-size: 12px;
+      }
     }
   </style>
 </head>
@@ -184,7 +249,8 @@
       if (!water || disposed) return;
       const { color, opacity, waveLength, frequency, waveDirection, amplitude, rippleStrength, roughness,
         scattering, distortionScale, specularIntensity, reflectionStrength, animationSpeed, skyReflection } = params;
-      water.update({ color: C.Color.fromCssColorString(color).withAlpha(opacity), waveLength, frequency, waveDirection,
+      water.update({
+        color: C.Color.fromCssColorString(color).withAlpha(opacity), waveLength, frequency, waveDirection,
         amplitude, rippleStrength, roughness, scattering, distortionScale, specularIntensity,
         reflectionStrength, animationSpeed: paused ? 0 : animationSpeed, skyReflection,
         waveHeight: params.waveHeight, waveSteepness: params.waveSteepness, shoreFadeDistance: params.shoreFadeDistance,
@@ -192,7 +258,8 @@
         absorption: new C.Cartesian3(params.absorptionR, params.absorptionG, params.absorptionB),
         foam: params.foam, foamWidth: params.foamWidth, foamOpacity: params.foamOpacity,
         caustics: params.caustics, causticsIntensity: params.causticsIntensity, causticsMaxDepth: params.causticsMaxDepth,
-        debugView: params.debugView, depthRange: params.depthRange });
+        debugView: params.debugView, depthRange: params.depthRange
+      });
     }
 
     function updateSun() {
@@ -354,10 +421,12 @@
       // Variable-depth sandy slopes expose real depth gradients around both banks and the island.
       const addSlope = (outer, inner) => outer.forEach((a, i) => {
         const j = (i + 1) % outer.length;
-        viewer.entities.add({ name: '水下浅滩', polygon: {
-          hierarchy: [a, outer[j], inner[j], inner[i]], perPositionHeight: true,
-          material: C.Color.fromCssColorString('#b9a57b'),
-        } });
+        viewer.entities.add({
+          name: '水下浅滩', polygon: {
+            hierarchy: [a, outer[j], inner[j], inner[i]], perPositionHeight: true,
+            material: C.Color.fromCssColorString('#b9a57b'),
+          }
+        });
       });
       addSlope(boundary.map(([x, y]) => at(x, y, 2.46)), boundary.map(([x, y]) => at(x * .86, y * .86, .55)));
       const islandRing = (scale, height) => Array.from({ length: 32 }, (_, i) => {
@@ -413,16 +482,24 @@
       for (let i = 0; i < 8; i++) addBox('码头木桩', 250 + (i % 2 ? 6 : -6), 125 + Math.floor(i / 2) * 45, 2.8, 2, 2, 8, '#75634c');
       for (let i = 0; i < 3; i++) {
         const x = 280 + i * 19, y = 145 + i * 38;
-        viewer.entities.add({ name: '帆船船体', position: at(x, y, 3.2), orientation,
-          ellipsoid: { radii: new C.Cartesian3(7, 19, 2.3), material: C.Color.fromCssColorString(['#e6ded0', '#577c8c', '#d1ac73'][i]) } });
+        viewer.entities.add({
+          name: '帆船船体', position: at(x, y, 3.2), orientation,
+          ellipsoid: { radii: new C.Cartesian3(7, 19, 2.3), material: C.Color.fromCssColorString(['#e6ded0', '#577c8c', '#d1ac73'][i]) }
+        });
         addBox('帆船桅杆', x, y, 17, .7, .7, 28, '#d5d0bb');
-        viewer.entities.add({ name: '帆船船帆', polygon: { hierarchy: [at(x, y, 30), at(x, y, 7), at(x, y + 14, 7)],
-          perPositionHeight: true, material: C.Color.fromCssColorString('#f4ead2') } });
+        viewer.entities.add({
+          name: '帆船船帆', polygon: {
+            hierarchy: [at(x, y, 30), at(x, y, 7), at(x, y + 14, 7)],
+            perPositionHeight: true, material: C.Color.fromCssColorString('#f4ead2')
+          }
+        });
       }
       const addTree = (x, y, size) => {
         addBox('树干', x, y, size * .4, size * .14, size * .14, size * .8, '#695641');
-        viewer.entities.add({ name: '树冠', position: at(x, y, size), orientation,
-          ellipsoid: { radii: new C.Cartesian3(size * .55, size * .5, size * .8), material: C.Color.fromCssColorString('#385b47') } });
+        viewer.entities.add({
+          name: '树冠', position: at(x, y, size), orientation,
+          ellipsoid: { radii: new C.Cartesian3(size * .55, size * .5, size * .8), material: C.Color.fromCssColorString('#385b47') }
+        });
       };
       for (let i = 0; i < 27; i++) {
         const angle = i / 27 * Math.PI * 2;
@@ -431,7 +508,7 @@
       }
       for (let i = 0; i < 5; i++) addTree(-75 + i * 12, 30 + Math.sin(i * 2) * 18, 12 + i % 3 * 4);
       // 水域外环确定岸线，小岛作为孔洞，避免水面覆盖岛屿。
-      water = new GeoEarth.WaterEffect(earth, {
+      water = earth.effects.addWater({
         hierarchy: new C.PolygonHierarchy(positions, [new C.PolygonHierarchy(island)]),
         height: groundHeight + 2.5,
         reflectionSize: 1024, refractionSize: 1024, meshSize: 8,

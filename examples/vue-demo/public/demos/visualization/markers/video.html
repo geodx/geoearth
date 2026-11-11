@@ -67,7 +67,7 @@
     async function main() {
       await earth.onReady();
       if (disposed) return;
-      const marker = new GeoEarth.VideoMarker(earth, { position: at(1, 0), anchor: 'center',
+      const marker = earth.visuals.addVideoMarker({ position: at(1, 0), anchor: 'center',
         title: '摄像头 · 演示画面', src: '/demo-assets/markers/camera.webm',
         onPlaybackError: () => { status.textContent = '请点击视频播放按钮开始播放'; } });
       marker.video.muted = true;

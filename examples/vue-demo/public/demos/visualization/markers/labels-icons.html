@@ -146,7 +146,7 @@
     async function main() {
       await earth.onReady();
       if (disposed) return;
-      const layer = new GeoEarth.MarkerLayer(earth);
+      const layer = earth.visuals.addMarkerLayer();
       const label = text => ({
         text, font: '16px sans-serif', fillColor: C.Color.WHITE,
         outlineColor: C.Color.BLACK, outlineWidth: 3, style: C.LabelStyle.FILL_AND_OUTLINE,

@@ -80,11 +80,11 @@
     async function main() {
       await earth.onReady();
       if (disposed) return;
-      const repeat = new GeoEarth.BounceMarker(earth, { position: at(0, 0), height: 900, duration: 2,
+      const repeat = earth.visuals.addBounceMarker({ position: at(0, 0), height: 900, duration: 2,
         billboard: { width: 44, height: 60, disableDepthTestDistance: Infinity } });
-      const settle = new GeoEarth.BounceMarker(earth, { position: at(1, 0), mode: 'settle', height: 1500, duration: .8,
+      const settle = earth.visuals.addBounceMarker({ position: at(1, 0), mode: 'settle', height: 1500, duration: .8,
         billboard: { width: 44, height: 60, disableDepthTestDistance: Infinity } });
-      const floating = new GeoEarth.FloatingMarker(earth, { position: at(2, 0), lineHeight: 2200, bounceHeight: 400, duration: 3,
+      const floating = earth.visuals.addFloatingMarker({ position: at(2, 0), lineHeight: 2200, bounceHeight: 400, duration: 3,
         billboard: { width: 42, height: 78, disableDepthTestDistance: Infinity } });
       motions.push(repeat, settle, floating);
       repeat.play();
