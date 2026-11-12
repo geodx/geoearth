@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { RouterLink, RouterView, useRoute } from "vue-router";
+import { RouterView, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { demoMap } from "@/demos/registry";
 import { Connection, Monitor, Moon, Sunny, Grid, EditPen } from "@element-plus/icons-vue";
@@ -32,10 +32,10 @@ function togglePanel(panel: "directory" | "code") {
 <template>
   <div class="workbench">
     <header class="topbar">
-      <RouterLink class="brand" to="/" aria-label="GeoEarth">
+      <a class="brand" href="https://geoearth.dev" aria-label="GeoEarth 官网">
         <img class="site-brand-icon" src="/favicon.svg" width="30" height="30" alt="" />
         <strong>GeoEarth<span> / LAB</span></strong>
-      </RouterLink>
+      </a>
       <div class="current-example">
         <span class="live-dot"></span>
         <h1>{{ t(currentDemo?.title ?? "demos.fallback") }}</h1>

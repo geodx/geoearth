@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from 'vue';
+import { computed, nextTick, onUnmounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import SiteHeader from '../components/SiteHeader.vue';
 import SiteFooter from '../components/SiteFooter.vue';
 import SiteIcon from '../components/SiteIcon.vue';
 import { exampleUrl, adminUrl } from '../config';
+import sdkPackage from '../../../packages/core/package.json';
 
 const examples = [
   { id: 'effect-water', image: 'water', title: '真实感水体', caption: '波浪、倒影与水下光影', category: 'EFFECTS' },
@@ -21,10 +22,15 @@ const language = ref<'TypeScript' | 'HTML'>('TypeScript');
 const copyState = ref<'idle' | 'copied' | 'failed'>('idle');
 let copyTimer: ReturnType<typeof setTimeout> | undefined;
 const snippets = {
-  TypeScript: "import { GeoEarth } from 'geoearth';\nimport 'geoearth/style.css';\n\nconst earth = new GeoEarth('earth');\nawait earth.onReady();",
+  TypeScript: `import { GeoEarth } from '${sdkPackage.name}';\nimport '${sdkPackage.name}/style.css';\n\nconst earth = new GeoEarth('earth');\nawait earth.onReady();`,
   HTML: '<div id="earth" style="height: 100vh"></div>\n<script src="/sdk/cesium/Cesium.js"><\/script>\n<script src="/sdk/geoearth.js"><\/script>\n<script>\n  const earth = new GeoEarth("earth");\n<\/script>',
 };
 const snippet = computed(() => snippets[language.value]);
+function selectLanguage(value: 'TypeScript' | 'HTML', focus = false) {
+  language.value = value;
+  copyState.value = 'idle';
+  if (focus) void nextTick(() => document.getElementById('code-tab-' + value)?.focus());
+}
 const highlighted = computed(() => {
   const escaped = snippet.value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   return escaped.replace(/('[^']*'|"[^"]*")|\b(import|from|const|new|await)\b/g, (match, quoted) => `<span class="${quoted ? 'code-string' : 'code-keyword'}">${match}</span>`);
@@ -98,9 +104,9 @@ onUnmounted(() => clearTimeout(copyTimer));
       <section id="quick-start" class="quick-start wrap" aria-labelledby="quick-title">
         <div class="quick-copy"><p class="eyebrow">LESS SETUP. MORE CREATING.</p><h2 id="quick-title">几行代码，<br />开启三维世界</h2><p>从一个地球开始，逐步加入你的数据与交互。</p><RouterLink class="button" to="/docs/getting-started">阅读开发文档<SiteIcon name="arrow" /></RouterLink></div>
         <div class="code-panel">
-          <div class="code-toolbar"><div role="tablist" aria-label="接入方式"><button v-for="tab in (['TypeScript', 'HTML'] as const)" :id="'code-tab-' + tab" :key="tab" role="tab" type="button" :aria-selected="language === tab" aria-controls="code-content" :class="{ active: language === tab }" @click="language = tab; copyState = 'idle'">{{ tab }}</button></div><button class="copy-button" type="button" :aria-label="copyState === 'copied' ? '已复制代码' : '复制代码'" @click="copyCode"><SiteIcon :name="copyState === 'copied' ? 'check' : 'copy'" /><span>{{ copyState === 'copied' ? '已复制' : '复制' }}</span></button></div>
+          <div class="code-toolbar"><div role="tablist" aria-label="接入方式"><button v-for="tab in (['TypeScript', 'HTML'] as const)" :id="'code-tab-' + tab" :key="tab" role="tab" type="button" :aria-selected="language === tab" :tabindex="language === tab ? 0 : -1" aria-controls="code-content" :class="{ active: language === tab }" @click="selectLanguage(tab)" @keydown.right.prevent="selectLanguage(language === 'TypeScript' ? 'HTML' : 'TypeScript', true)" @keydown.left.prevent="selectLanguage(language === 'TypeScript' ? 'HTML' : 'TypeScript', true)">{{ tab }}</button></div><button class="copy-button" type="button" :aria-label="copyState === 'copied' ? '已复制代码' : '复制代码'" @click="copyCode"><SiteIcon :name="copyState === 'copied' ? 'check' : 'copy'" /><span>{{ copyState === 'copied' ? '已复制' : '复制' }}</span></button></div>
           <pre id="code-content" role="tabpanel" :aria-labelledby="'code-tab-' + language"><code v-html="highlighted"></code></pre>
-          <div class="code-bottom"><code>npm install geoearth cesium</code><span role="status">{{ copyState === 'failed' ? '复制失败，请选中代码复制' : 'ESM + 浏览器脚本' }}</span></div>
+          <div class="code-bottom"><code>npm install {{ sdkPackage.name }} cesium</code><span role="status">{{ copyState === 'failed' ? '复制失败，请选中代码复制' : 'ESM + 浏览器脚本' }}</span></div>
         </div>
       </section>
 

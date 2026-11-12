@@ -140,6 +140,22 @@ npm publish -w packages/core --access public --registry=https://registry.npmjs.o
 
 ## 项目结构
 
+官网与文档站位于 `docs/`，独立于示例工作台：
+
+```bash
+npm run dev:site
+npm run build:site
+```
+
+Cloudflare Pages 连接同一个 GitHub 仓库，分别创建两个项目。生产分支选择 `main`，根目录保持仓库根目录，Node.js 版本由 `.node-version` 指定：
+
+| 站点 | 自定义域名 | 构建命令 | 构建输出目录 |
+| --- | --- | --- | --- |
+| 官网与文档 | `geoearth.dev` | `npm run build:site` | `docs/dist` |
+| 在线示例 | `demo.geoearth.dev` | `npm run build:example` | `examples/vue-demo/dist` |
+
+连接 Git 集成后，推送到生产分支会自动更新网站。官网的示例链接默认指向 `https://demo.geoearth.dev`；如需改地址，设置官网项目的 `VITE_DEMO_URL` 构建环境变量。两个站点的图标分别保存在各自的 `public/` 目录。
+
 ```text
 geoearth/
 ├─ packages/core/          SDK 核心包
@@ -148,6 +164,10 @@ geoearth/
 │  ├─ src/styles/         样式
 │  ├─ vite.config.ts      ESM 构建
 │  └─ vite.iife.config.ts 浏览器 IIFE 构建
+├─ docs/                  官网与文档站
+│  ├─ src/               首页、文档阅读和导航
+│  ├─ public/            图片、图标与静态资源
+│  └─ *.md               功能文档
 └─ examples/vue-demo/      示例工作台
    ├─ public/demos/       独立 HTML 示例
    └─ src/                布局、组件、页面和国际化

@@ -67,6 +67,7 @@ async function loadDocument() {
     }
     html.value = markdown.renderer.render(tokens, markdown.options, {});
     headings.value = outline;
+    loading.value = false;
     await nextTick();
     if (router.currentRoute.value.hash) document.getElementById(router.currentRoute.value.hash.slice(1))?.scrollIntoView();
   } catch { if (id === loadId) error.value = '文档加载失败，请重试。'; }
