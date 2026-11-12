@@ -5,15 +5,19 @@ import MarkdownIt from 'markdown-it';
 import SiteHeader from '../components/SiteHeader.vue';
 import SiteFooter from '../components/SiteFooter.vue';
 import SiteIcon from '../components/SiteIcon.vue';
-import { documentGroups, documents } from '../content/docs';
+import { documents as registry } from '../content/docs';
+import { language, text } from '../locales';
 import { exampleUrl, sourceUrl } from '../config';
+
+const documents = computed(() => registry.map(item => ({ ...item, title: text.value[item.title], group: text.value[item.group] })));
+const documentGroups = computed(() => [...new Set(documents.value.map(item => item.group))]);
 
 const props = defineProps<{ slug: string }>();
 const router = useRouter();
-const current = computed(() => documents.find(item => item.slug === props.slug));
-const currentIndex = computed(() => documents.findIndex(item => item.slug === props.slug));
-const previous = computed(() => documents[currentIndex.value - 1]);
-const following = computed(() => documents[currentIndex.value + 1]);
+const current = computed(() => documents.value.find(item => item.slug === props.slug));
+const currentIndex = computed(() => documents.value.findIndex(item => item.slug === props.slug));
+const previous = computed(() => documents.value[currentIndex.value - 1]);
+const following = computed(() => documents.value[currentIndex.value + 1]);
 const html = ref('');
 const loading = ref(true);
 const error = ref('');
@@ -25,11 +29,11 @@ const baseLink = markdown.renderer.rules.link_open;
 markdown.renderer.rules.link_open = (tokens, index, options, env, self) => {
   const token = tokens[index]!;
   const href = token.attrGet('href') || '';
-  const localDoc = href.match(/(?:^|\/)([\w-]+)\.md(?:#.*)?$/);
+  const localDoc = href.match(/(?:^|\/)([\w.-]+)\.md(?:#.*)?$/);
   if (localDoc) {
-    const target = documents.find(item => item.slug === localDoc[1]);
+    const target = documents.value.find(item => item.slug === localDoc[1]);
     if (target) token.attrSet('href', router.resolve(`/docs/${target.slug}`).href);
-    else if (localDoc[1] === 'README') token.attrSet('href', '/docs/getting-started');
+    else if (/^README(?:\.zh-CN)?$/.test(localDoc[1]!)) token.attrSet('href', '/docs/getting-started?lang=' + (localDoc[1]!.endsWith('.zh-CN') ? 'zh-CN' : 'en'));
     else token.attrSet('href', `${sourceUrl}/blob/main/${href.includes('THIRD_PARTY') ? 'packages/core/' : ''}${href.replace(/^\.\//, '')}`);
   } else if (href === './LICENSE') token.attrSet('href', sourceUrl + '/blob/main/LICENSE');
   if (/^https?:/.test(token.attrGet('href') || '')) {
@@ -40,8 +44,8 @@ markdown.renderer.rules.link_open = (tokens, index, options, env, self) => {
 };
 markdown.renderer.rules.fence = (tokens, index) => {
   const token = tokens[index]!;
-  const language = markdown.utils.escapeHtml(token.info.trim().split(/\s/)[0] || 'text');
-  return `<div class="code-fence"><div class="fence-toolbar"><span>${language}</span><button type="button" data-copy-code aria-label="复制这段代码">复制</button></div><pre><code>${markdown.utils.escapeHtml(token.content)}</code></pre></div>`;
+  const codeLanguage = markdown.utils.escapeHtml(token.info.trim().split(/\s/)[0] || 'text');
+  return `<div class="code-fence"><div class="fence-toolbar"><span>${codeLanguage}</span><button type="button" data-copy-code aria-label="${markdown.utils.escapeHtml(text.value.copyBlock)}">${markdown.utils.escapeHtml(text.value.copy)}</button></div><pre><code>${markdown.utils.escapeHtml(token.content)}</code></pre></div>`;
 };
 async function loadDocument() {
   const id = ++loadId;
@@ -49,10 +53,10 @@ async function loadDocument() {
   error.value = '';
   html.value = '';
   headings.value = [];
-  if (!current.value) { error.value = '该文档不存在，请从左侧选择其他主题。'; loading.value = false; return; }
-  document.title = `${current.value.title} · GeoEarth 文档`;
+  if (!current.value) { error.value = text.value.docNotFound; document.title = `${text.value.docMissingTitle} · ${text.value.docsTitleSuffix}`; loading.value = false; return; }
+  document.title = `${current.value.title} · ${text.value.docsTitleSuffix}`;
   try {
-    const source = await current.value.load();
+    const source = await current.value.load(language.value);
     if (id !== loadId) return;
     const tokens = markdown.parse(source, {});
     const outline: typeof headings.value = [];
@@ -70,17 +74,17 @@ async function loadDocument() {
     loading.value = false;
     await nextTick();
     if (router.currentRoute.value.hash) document.getElementById(router.currentRoute.value.hash.slice(1))?.scrollIntoView();
-  } catch { if (id === loadId) error.value = '文档加载失败，请重试。'; }
+  } catch { if (id === loadId) error.value = text.value.docLoadFailed; }
   finally { if (id === loadId) loading.value = false; }
 }
-watch(() => props.slug, loadDocument, { immediate: true });
+watch([() => props.slug, language], loadDocument, { immediate: true });
 async function copyFence(event: MouseEvent) {
   const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-copy-code]');
   if (!button) return;
   const code = button.closest('.code-fence')?.querySelector('code')?.textContent || '';
-  try { await navigator.clipboard.writeText(code); button.textContent = '已复制'; }
-  catch { button.textContent = '请手动复制'; }
-  const timer = setTimeout(() => { if (button.isConnected) button.textContent = '复制'; copyTimers.delete(timer); }, 2000);
+  try { await navigator.clipboard.writeText(code); button.textContent = text.value.copied; }
+  catch { button.textContent = text.value.manualCopy; }
+  const timer = setTimeout(() => { if (button.isConnected) button.textContent = text.value.copy; copyTimers.delete(timer); }, 2000);
   copyTimers.add(timer);
 }
 onUnmounted(() => { loadId++; copyTimers.forEach(clearTimeout); });
@@ -89,22 +93,22 @@ onUnmounted(() => { loadId++; copyTimers.forEach(clearTimeout); });
 <template>
   <div class="docs-page">
     <SiteHeader />
-    <div class="mobile-doc-navigation wrap"><label for="doc-select">开发文档</label><select id="doc-select" :value="slug" @change="router.push('/docs/' + ($event.target as HTMLSelectElement).value)"><option v-for="item in documents" :key="item.slug" :value="item.slug">{{ item.title }}</option></select></div>
+    <div class="mobile-doc-navigation wrap"><label for="doc-select">{{ text.docs }}</label><select id="doc-select" :value="slug" @change="router.push('/docs/' + ($event.target as HTMLSelectElement).value)"><option v-for="item in documents" :key="item.slug" :value="item.slug">{{ item.title }}</option></select></div>
     <div class="docs-layout wrap">
-      <aside class="docs-sidebar" aria-label="文档目录">
+      <aside class="docs-sidebar" :aria-label="text.docNavigation">
         <p class="eyebrow">DEVELOPER DOCS</p>
         <nav v-for="group in documentGroups" :key="group" :aria-label="group"><h2>{{ group }}</h2><RouterLink v-for="item in documents.filter(item => item.group === group)" :key="item.slug" :to="'/docs/' + item.slug" :class="{ selected: slug === item.slug }" :aria-current="slug === item.slug ? 'page' : undefined">{{ item.title }}</RouterLink></nav>
       </aside>
       <main id="main-content" class="docs-main">
-        <p class="doc-breadcrumb">开发文档 <span>/</span> {{ current?.title || '未找到文档' }}</p>
-        <div class="doc-heading"><h1>{{ current?.title || '未找到文档' }}</h1><a v-if="current" class="text-link" :href="exampleUrl(current.example)" target="_blank" rel="noopener noreferrer">运行示例<SiteIcon name="external" /></a></div>
-        <p v-if="loading" class="doc-message" role="status">正在加载文档…</p>
-        <div v-else-if="error" class="doc-message" role="alert">{{ error }}<button v-if="current" class="button" type="button" @click="loadDocument">重新加载</button></div>
+        <p class="doc-breadcrumb">{{ text.docs }} <span>/</span> {{ current?.title || text.docMissingTitle }}</p>
+        <div class="doc-heading"><h1>{{ current?.title || text.docMissingTitle }}</h1><a v-if="current" class="text-link" :href="exampleUrl(current.example)" target="_blank" rel="noopener noreferrer">{{ text.runExample }}<SiteIcon name="external" /></a></div>
+        <p v-if="loading" class="doc-message" role="status">{{ text.docLoading }}</p>
+        <div v-else-if="error" class="doc-message" role="alert">{{ error }}<button v-if="current" class="button" type="button" @click="loadDocument">{{ text.retry }}</button></div>
         <article v-else class="markdown-body" @click="copyFence" v-html="html"></article>
-        <div v-if="!loading && !error" class="doc-bottom"><a :href="sourceUrl + '/blob/main/' + (slug === 'getting-started' ? 'packages/core/README.md' : 'docs/' + slug + '.md')" target="_blank" rel="noopener noreferrer">查看文档源码<SiteIcon name="external" /></a><span>与 SDK 源码同步维护</span></div>
-        <nav v-if="!loading && !error" class="doc-pagination" aria-label="相邻文档"><RouterLink v-if="previous" :to="'/docs/' + previous.slug"><small>上一页</small><span>← {{ previous.title }}</span></RouterLink><RouterLink v-if="following" class="next-doc" :to="'/docs/' + following.slug"><small>下一页</small><span>{{ following.title }} →</span></RouterLink></nav>
+        <div v-if="!loading && !error" class="doc-bottom"><a :href="sourceUrl + '/blob/main/' + current?.sourcePath(language)" target="_blank" rel="noopener noreferrer">{{ text.sourceCode }}<SiteIcon name="external" /></a><span>{{ text.syncedWithSDK }}</span></div>
+        <nav v-if="!loading && !error" class="doc-pagination" :aria-label="text.adjacentDocs"><RouterLink v-if="previous" :to="'/docs/' + previous.slug"><small>{{ text.previous }}</small><span>← {{ previous.title }}</span></RouterLink><RouterLink v-if="following" class="next-doc" :to="'/docs/' + following.slug"><small>{{ text.next }}</small><span>{{ following.title }} →</span></RouterLink></nav>
       </main>
-      <aside v-if="headings.length" class="docs-outline" aria-label="当前页面目录"><h2>本页内容</h2><a v-for="heading in headings" :key="heading.id" :href="'#' + heading.id" :class="{ nested: heading.level === 3 }">{{ heading.title }}</a></aside>
+      <aside v-if="headings.length" class="docs-outline" :aria-label="text.contents"><h2>{{ text.contents }}</h2><a v-for="heading in headings" :key="heading.id" :href="'#' + heading.id" :class="{ nested: heading.level === 3 }">{{ heading.title }}</a></aside>
     </div>
     <SiteFooter />
   </div>

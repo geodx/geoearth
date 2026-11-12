@@ -14,7 +14,3 @@ export const router = createRouter({
     return { top: 0 };
   },
 });
-
-router.afterEach(to => {
-  if (to.name === 'home') document.title = 'GeoEarth · 让三维地理开发更简单';
-});

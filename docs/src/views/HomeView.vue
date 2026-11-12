@@ -5,29 +5,30 @@ import SiteHeader from '../components/SiteHeader.vue';
 import SiteFooter from '../components/SiteFooter.vue';
 import SiteIcon from '../components/SiteIcon.vue';
 import { exampleUrl, adminUrl } from '../config';
+import { text } from '../locales';
 import sdkPackage from '../../../packages/core/package.json';
 
-const examples = [
-  { id: 'effect-water', image: 'water', title: '真实感水体', caption: '波浪、倒影与水下光影', category: 'EFFECTS' },
-  { id: 'analysis-profile', image: 'profile', title: '地形剖面', caption: '从地形到高程曲线', category: 'ANALYSIS' },
-  { id: 'analysis-height-limit', image: 'height-limit', title: '建筑限高', caption: '让空间约束直观可见', category: 'ANALYSIS' },
-];
-const capabilities = [
-  { icon: 'layers' as const, title: '资源管理', text: '影像、地形、模型与三维瓦片，用统一的方式接入场景。', target: 'data-tileset' },
-  { icon: 'pen' as const, title: '交互绘制', text: '绘制、量测、拾取与高亮，让地图响应每一次交互。', target: 'draw-polyline' },
-  { icon: 'terrain' as const, title: '空间分析', text: '剖面、通视与限高分析，把空间关系转化为可读的结果。', target: 'analysis-line-of-sight' },
-  { icon: 'chart' as const, title: '可视化效果', text: '水体、天气、标记与图表，为地理数据增加表达。', target: 'effect-weather' },
-];
-const language = ref<'TypeScript' | 'HTML'>('TypeScript');
+const examples = computed(() => [
+  { id: 'effect-water', image: 'water', title: text.value.waterTitle, caption: text.value.waterCaption, category: 'EFFECTS' },
+  { id: 'analysis-profile', image: 'profile', title: text.value.profileTitle, caption: text.value.profileCaption, category: 'ANALYSIS' },
+  { id: 'analysis-height-limit', image: 'height-limit', title: text.value.heightLimitTitle, caption: text.value.heightLimitCaption, category: 'ANALYSIS' },
+]);
+const capabilities = computed(() => [
+  { icon: 'layers' as const, title: text.value.resourcesTitle, text: text.value.resourcesText, target: 'data-tileset' },
+  { icon: 'pen' as const, title: text.value.drawingTitle, text: text.value.drawingText, target: 'draw-polyline' },
+  { icon: 'terrain' as const, title: text.value.analysisTitle, text: text.value.analysisText, target: 'analysis-line-of-sight' },
+  { icon: 'chart' as const, title: text.value.visualsTitle, text: text.value.visualsText, target: 'effect-weather' },
+]);
+const snippetLanguage = ref<'TypeScript' | 'HTML'>('TypeScript');
 const copyState = ref<'idle' | 'copied' | 'failed'>('idle');
 let copyTimer: ReturnType<typeof setTimeout> | undefined;
 const snippets = {
   TypeScript: `import { GeoEarth } from '${sdkPackage.name}';\nimport '${sdkPackage.name}/style.css';\n\nconst earth = new GeoEarth('earth');\nawait earth.onReady();`,
   HTML: '<div id="earth" style="height: 100vh"></div>\n<script src="/sdk/cesium/Cesium.js"><\/script>\n<script src="/sdk/geoearth.js"><\/script>\n<script>\n  const earth = new GeoEarth("earth");\n<\/script>',
 };
-const snippet = computed(() => snippets[language.value]);
+const snippet = computed(() => snippets[snippetLanguage.value]);
 function selectLanguage(value: 'TypeScript' | 'HTML', focus = false) {
-  language.value = value;
+  snippetLanguage.value = value;
   copyState.value = 'idle';
   if (focus) void nextTick(() => document.getElementById('code-tab-' + value)?.focus());
 }
@@ -61,32 +62,32 @@ onUnmounted(() => clearTimeout(copyTimer));
         <div class="hero-inner wrap">
           <div class="hero-copy">
             <p class="eyebrow">CESIUM <span>·</span> TYPESCRIPT</p>
-            <h1 id="hero-title">让三维地理开发<br /><em>更简单</em></h1>
-            <p class="hero-description">基于 Cesium 的 TypeScript 三维地球 SDK</p>
-            <p class="hero-detail">资源管理 · 交互工具 · 空间分析 · 可视化</p>
+            <h1 id="hero-title">{{ text.headlineFirst }}<br /><em>{{ text.headlineAccent }}</em></h1>
+            <p class="hero-description">{{ text.heroDescription }}</p>
+            <p class="hero-detail">{{ text.heroDetail }}</p>
             <div class="hero-actions">
-              <a class="button primary" :href="exampleUrl()" target="_blank" rel="noopener noreferrer">查看示例<SiteIcon name="arrow" /></a>
-              <RouterLink class="button" to="/docs/getting-started">快速开始</RouterLink>
+              <a class="button primary" :href="exampleUrl()" target="_blank" rel="noopener noreferrer">{{ text.viewExamples }}<SiteIcon name="arrow" /></a>
+              <RouterLink class="button" to="/docs/getting-started">{{ text.quickStart }}</RouterLink>
             </div>
-            <p class="hero-footnote"><span></span>面向开发者，自由构建每一个场景</p>
+            <p class="hero-footnote"><span></span>{{ text.heroFootnote }}</p>
           </div>
           <div class="globe-scene">
             <div class="globe-halo" aria-hidden="true"></div>
             <picture>
               <source media="(prefers-reduced-motion: reduce)" srcset="/media/globe-still.png" />
-              <img class="globe" src="/media/tech-globe.webp" alt="由青蓝色地理线条构成的旋转科技地球" width="420" height="392" fetchpriority="high" />
+              <img class="globe" src="/media/tech-globe.webp" :alt="text.globeAlt" width="420" height="392" fetchpriority="high" />
             </picture>
             <div class="globe-ground" aria-hidden="true"></div>
-            <p class="globe-caption"><span></span>让世界，触手可及</p>
+            <p class="globe-caption"><span></span>{{ text.globeCaption }}</p>
           </div>
         </div>
       </section>
 
       <section id="showcase" class="showcase wrap" aria-labelledby="showcase-title">
-        <div class="section-heading"><div><p class="eyebrow">BUILT WITH GEOEARTH</p><h2 id="showcase-title">从真实效果开始</h2></div><a class="text-link" :href="exampleUrl()" target="_blank" rel="noopener noreferrer">全部示例<SiteIcon name="arrow" /></a></div>
+        <div class="section-heading"><div><p class="eyebrow">BUILT WITH GEOEARTH</p><h2 id="showcase-title">{{ text.showcaseTitle }}</h2></div><a class="text-link" :href="exampleUrl()" target="_blank" rel="noopener noreferrer">{{ text.allExamples }}<SiteIcon name="arrow" /></a></div>
         <div class="showcase-grid">
           <a v-for="item in examples" :key="item.id" class="example-card" :href="exampleUrl(item.id)" target="_blank" rel="noopener noreferrer">
-            <div class="example-image"><img :src="`/media/${item.image}.webp`" :alt="`GeoEarth ${item.title}示例实际画面`" width="960" height="600" loading="lazy" /><span>{{ item.category }}</span></div>
+            <div class="example-image"><img :src="`/media/${item.image}.webp`" :alt="item.title + text.exampleAltSuffix" width="960" height="600" loading="lazy" /><span>{{ item.category }}</span></div>
             <div class="example-caption"><div><h3>{{ item.title }}</h3><p>{{ item.caption }}</p></div><SiteIcon name="arrow" /></div>
           </a>
         </div>
@@ -94,7 +95,7 @@ onUnmounted(() => clearTimeout(copyTimer));
 
       <section id="capabilities" class="capabilities" aria-labelledby="capabilities-title">
         <div class="wrap">
-          <div class="section-heading"><div><p class="eyebrow">ONE SDK, MORE POSSIBILITIES</p><h2 id="capabilities-title">为三维应用准备好常用能力</h2></div></div>
+          <div class="section-heading"><div><p class="eyebrow">ONE SDK, MORE POSSIBILITIES</p><h2 id="capabilities-title">{{ text.capabilitiesTitle }}</h2></div></div>
           <div class="capability-grid">
             <a v-for="item in capabilities" :key="item.title" :href="exampleUrl(item.target)" target="_blank" rel="noopener noreferrer"><SiteIcon :name="item.icon" /><h3>{{ item.title }}<span>↗</span></h3><p>{{ item.text }}</p></a>
           </div>
@@ -102,17 +103,17 @@ onUnmounted(() => clearTimeout(copyTimer));
       </section>
 
       <section id="quick-start" class="quick-start wrap" aria-labelledby="quick-title">
-        <div class="quick-copy"><p class="eyebrow">LESS SETUP. MORE CREATING.</p><h2 id="quick-title">几行代码，<br />开启三维世界</h2><p>从一个地球开始，逐步加入你的数据与交互。</p><RouterLink class="button" to="/docs/getting-started">阅读开发文档<SiteIcon name="arrow" /></RouterLink></div>
+        <div class="quick-copy"><p class="eyebrow">LESS SETUP. MORE CREATING.</p><h2 id="quick-title">{{ text.quickTitleFirst }} <br />{{ text.quickTitleSecond }}</h2><p>{{ text.quickDescription }}</p><RouterLink class="button" to="/docs/getting-started">{{ text.readDocs }}<SiteIcon name="arrow" /></RouterLink></div>
         <div class="code-panel">
-          <div class="code-toolbar"><div role="tablist" aria-label="接入方式"><button v-for="tab in (['TypeScript', 'HTML'] as const)" :id="'code-tab-' + tab" :key="tab" role="tab" type="button" :aria-selected="language === tab" :tabindex="language === tab ? 0 : -1" aria-controls="code-content" :class="{ active: language === tab }" @click="selectLanguage(tab)" @keydown.right.prevent="selectLanguage(language === 'TypeScript' ? 'HTML' : 'TypeScript', true)" @keydown.left.prevent="selectLanguage(language === 'TypeScript' ? 'HTML' : 'TypeScript', true)">{{ tab }}</button></div><button class="copy-button" type="button" :aria-label="copyState === 'copied' ? '已复制代码' : '复制代码'" @click="copyCode"><SiteIcon :name="copyState === 'copied' ? 'check' : 'copy'" /><span>{{ copyState === 'copied' ? '已复制' : '复制' }}</span></button></div>
-          <pre id="code-content" role="tabpanel" :aria-labelledby="'code-tab-' + language"><code v-html="highlighted"></code></pre>
-          <div class="code-bottom"><code>npm install {{ sdkPackage.name }} cesium</code><span role="status">{{ copyState === 'failed' ? '复制失败，请选中代码复制' : 'ESM + 浏览器脚本' }}</span></div>
+          <div class="code-toolbar"><div role="tablist" :aria-label="text.codeModes"><button v-for="tab in (['TypeScript', 'HTML'] as const)" :id="'code-tab-' + tab" :key="tab" role="tab" type="button" :aria-selected="snippetLanguage === tab" :tabindex="snippetLanguage === tab ? 0 : -1" aria-controls="code-content" :class="{ active: snippetLanguage === tab }" @click="selectLanguage(tab)" @keydown.right.prevent="selectLanguage(snippetLanguage === 'TypeScript' ? 'HTML' : 'TypeScript', true)" @keydown.left.prevent="selectLanguage(snippetLanguage === 'TypeScript' ? 'HTML' : 'TypeScript', true)">{{ tab }}</button></div><button class="copy-button" type="button" :aria-label="copyState === 'copied' ? text.copiedCode : text.copyCode" @click="copyCode"><SiteIcon :name="copyState === 'copied' ? 'check' : 'copy'" /><span>{{ copyState === 'copied' ? text.copied : text.copy }}</span></button></div>
+          <pre id="code-content" role="tabpanel" :aria-labelledby="'code-tab-' + snippetLanguage"><code v-html="highlighted"></code></pre>
+          <div class="code-bottom"><code>npm install {{ sdkPackage.name }} cesium</code><span role="status">{{ copyState === 'failed' ? text.copyFailed : text.codeSupport }}</span></div>
         </div>
       </section>
 
       <section id="projects" class="related wrap" aria-labelledby="admin-title">
-        <div class="related-copy"><p class="eyebrow">MORE FROM US</p><h2 id="admin-title">Admin Platform</h2><p>基于 Spring Boot 与 Vue 的后台开发平台，<br />为业务系统准备好常用基础能力。</p><a class="text-link" :href="adminUrl" target="_blank" rel="noopener noreferrer">了解项目<SiteIcon name="external" /></a></div>
-        <a class="admin-preview" :href="adminUrl" target="_blank" rel="noopener noreferrer" aria-label="了解 Admin Platform"><div class="preview-chrome"><span></span><span></span><span></span><small>admin.geoearth.dev</small></div><img src="/media/admin-platform.webp" alt="Admin Platform 分析页面实际界面" width="1000" height="526" loading="lazy" /></a>
+        <div class="related-copy"><p class="eyebrow">MORE FROM US</p><h2 id="admin-title">Admin Platform</h2><p>{{ text.relatedDescriptionFirst }} <br />{{ text.relatedDescriptionSecond }}</p><a class="text-link" :href="adminUrl" target="_blank" rel="noopener noreferrer">{{ text.learnMore }}<SiteIcon name="external" /></a></div>
+        <a class="admin-preview" :href="adminUrl" target="_blank" rel="noopener noreferrer" :aria-label="text.learnMore + ' · Admin Platform'"><div class="preview-chrome"><span></span><span></span><span></span><small>admin.geoearth.dev</small></div><img src="/media/admin-platform.webp" :alt="text.adminImageAlt" width="1000" height="526" loading="lazy" /></a>
       </section>
     </main>
     <SiteFooter />
@@ -222,7 +223,7 @@ pre :deep(.code-string) { color: #e3bb89; }
   .hero-description { font-size: 13px; }
   .hero-detail { font-size: 11px; }
   .hero-actions { margin-top: 27px; gap: 12px; }
-  .hero-actions .button { flex: 1; max-width: 185px; gap: 20px; padding-inline: 14px; min-height: 44px; font-size: 13px; }
+  .hero-actions .button { flex: 1; max-width: 185px; gap: 10px; padding-inline: 14px; min-height: 44px; font-size: 13px; }
   .hero-footnote { margin-top: 18px; font-size: 9px; }
   .globe-scene { min-height: 340px; margin-top: -8px; }
   .globe { width: min(375px, 96vw); }

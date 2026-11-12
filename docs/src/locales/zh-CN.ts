@@ -1,0 +1,16 @@
+export default {
+  skip: '跳转到内容', homeLabel: 'GeoEarth 首页', openMenu: '展开导航', closeMenu: '收起导航', navigation: '网站导航',
+  features: '功能', examples: '在线示例', docs: '开发文档', moreProjects: '更多项目', adminTagline: '业务系统开发平台', language: '语言 / Language',
+  footerTagline: '用更少的代码，构建三维地理应用。', footerNavigation: '页尾导航', feedback: '反馈', footerDocs: '文档',
+  homeTitle: 'GeoEarth · 让三维地理开发更简单', homeDescription: 'GeoEarth 是基于 Cesium 的 TypeScript 三维地球 SDK，提供资源管理、交互绘制、空间分析与可视化组件。探索真实示例，开始构建你的三维应用。',
+  headlineFirst: '让三维地理开发', headlineAccent: '更简单', heroDescription: '基于 Cesium 的 TypeScript 三维地球 SDK', heroDetail: '资源管理 · 交互工具 · 空间分析 · 可视化',
+  viewExamples: '查看示例', quickStart: '快速开始', heroFootnote: '面向开发者，自由构建每一个场景', globeAlt: '由青蓝色地理线条构成的旋转科技地球', globeCaption: '让世界，触手可及',
+  showcaseTitle: '从真实效果开始', allExamples: '全部示例', waterTitle: '真实感水体', waterCaption: '波浪、倒影与水下光影', profileTitle: '地形剖面', profileCaption: '从地形到高程曲线', heightLimitTitle: '建筑限高', heightLimitCaption: '让空间约束直观可见', exampleAltSuffix: '示例实际画面',
+  capabilitiesTitle: '为三维应用准备好常用能力', resourcesTitle: '资源管理', resourcesText: '影像、地形、模型与三维瓦片，用统一的方式接入场景。', drawingTitle: '交互绘制', drawingText: '绘制、量测、拾取与高亮，让地图响应每一次交互。', analysisTitle: '空间分析', analysisText: '剖面、通视与限高分析，把空间关系转化为可读的结果。', visualsTitle: '可视化效果', visualsText: '水体、天气、标记与图表，为地理数据增加表达。',
+  quickTitleFirst: '几行代码，', quickTitleSecond: '开启三维世界', quickDescription: '从一个地球开始，逐步加入你的数据与交互。', readDocs: '阅读开发文档', codeModes: '接入方式', copyCode: '复制代码', copiedCode: '已复制代码', copy: '复制', copied: '已复制', copyFailed: '复制失败，请选中代码复制', codeSupport: 'ESM + 浏览器脚本',
+  relatedDescriptionFirst: '基于 Spring Boot 与 Vue 的后台开发平台，', relatedDescriptionSecond: '为业务系统准备好常用基础能力。', learnMore: '了解项目', adminImageAlt: 'Admin Platform 分析页面实际界面',
+  docNavigation: '文档目录', contents: '本页内容', docLoading: '正在加载文档…', docLoadFailed: '文档加载失败，请重试。', docNotFound: '该文档不存在，请从目录选择其他主题。', docMissingTitle: '未找到文档', runExample: '运行示例', retry: '重新加载', sourceCode: '查看文档源码', syncedWithSDK: '与 SDK 源码同步维护', adjacentDocs: '相邻文档', previous: '上一页', next: '下一页', copyBlock: '复制这段代码', manualCopy: '请手动复制', docsTitleSuffix: 'GeoEarth 文档',
+  docGettingStarted: '快速开始', docCamera: '相机与漫游', docDrawing: '交互绘制', docMeasurement: '空间量测', docInteraction: '拾取与高亮', docProfile: '地形剖面', docLineOfSight: '通视分析', docHeightLimit: '建筑限高', docWater: '水体效果', docFps: 'FPS 监测',
+  groupStart: '开始使用', groupBasics: '基础能力', groupAnalysis: '空间分析', groupEffects: '效果与性能',
+  notFoundTitle: '这里还没有内容', notFoundDescription: '返回首页，继续探索 GeoEarth。', returnHome: '返回首页', notFoundMeta: '页面未找到 · GeoEarth',
+};

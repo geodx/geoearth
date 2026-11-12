@@ -1,6 +1,6 @@
 {
   "name": "geoearth-sdk",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "A TypeScript toolkit for building Cesium-based 3D geospatial visualization applications.",
   "type": "module",
   "main": "./dist/index.js",
@@ -9,6 +9,7 @@
   "files": [
     "dist",
     "README.md",
+    "README.zh-CN.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md"
   ],

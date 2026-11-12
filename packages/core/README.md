@@ -1,22 +1,24 @@
 # GeoEarth
 
-基于 Cesium 的 TypeScript 三维地球 SDK，提供地球初始化、相机控制、资源管理、绘制量测、对象交互、可视化和常用组件。
+[English](./README.md) | [简体中文](./README.zh-CN.md)
 
-项目持续开发中，API 可能调整。
+A TypeScript 3D globe SDK built on Cesium, with globe initialization, camera controls, resource management, drawing, measurements, object interaction, visualization, and widgets.
 
-## 安装
+The project is actively developed; APIs may change.
+
+## Installation
 
 ```bash
 npm install geoearth-sdk cesium
 ```
 
-当前支持 Cesium `^1.147.0`，提供 ESM 和 TypeScript 类型声明。以下示例使用 Vite，支持 Vite 7 / 8；开发环境使用 Node.js 22.17+（或 24 LTS）。SDK 在浏览器中运行，SSR 项目应在客户端挂载后加载和初始化。
+Supports Cesium `^1.147.0`, ESM, and TypeScript declarations. The following examples use Vite 7 / 8. Development requires Node.js 22.17+ or 24 LTS. The SDK runs in the browser; SSR applications should load and initialize it after client mounting.
 
-请使用 Cesium 1.147.0 或更高的兼容版本：独立安装 Cesium 1.146.0 时，其浮动的内部依赖可能导致 ESM 构建报导出缺失。
+Use Cesium 1.147.0 or a newer compatible version. Installing Cesium 1.146.0 independently can cause missing ESM exports through its floating internal dependencies.
 
-## Vite 接入
+## Vite integration
 
-将资源插件加入项目现有的 `plugins` 数组，保留 Vue / React 等已有插件：
+Add the resource plugin to your existing plugins array, keeping Vue, React, or other plugins:
 
 ```ts
 // vite.config.ts
@@ -28,15 +30,15 @@ export default defineConfig({
 })
 ```
 
-插件设置 Cesium 静态资源路径，在开发时提供资源访问，并在构建时复制 `Assets`、`Workers`、`Widgets` 和 `ThirdParty`，同时注入 Cesium 控件样式。默认资源路径为 `/cesium`。部署在子路径（如 `/app/`）时，使用 `geoEarth({ baseUrl: '/app/cesium' })`，与实际部署路径保持一致。
+The plugin configures Cesium resource paths, serves resources during development, copies Assets, Workers, Widgets, and ThirdParty for production, and injects widget styles. The default resource path is `/cesium`. For a subpath deployment such as `/app/`, use `geoEarth({ baseUrl: '/app/cesium' })` to match the deployed location.
 
-页面准备一个有明确宽高的容器：
+Create a container with explicit dimensions:
 
 ```html
 <div id="earth" style="width: 100%; height: 600px"></div>
 ```
 
-在容器创建后初始化地球：
+Initialize after the container exists:
 
 ```ts
 import { GeoEarth } from 'geoearth-sdk'
@@ -45,11 +47,11 @@ import 'geoearth-sdk/style.css'
 const earth = new GeoEarth('earth')
 await earth.onReady()
 
-// 页面或组件卸载时调用：
+// When the page or component unmounts:
 // earth.destroy()
 ```
 
-默认使用 SDK 内置的全球影像。使用 Cesium ion 的影像、地形等服务时，需要自行提供有相应权限的 token：
+The SDK uses its built-in global imagery by default. To use Cesium ion imagery, terrain, or other services, provide your own token with the required permissions:
 
 ```ts
 const earth = new GeoEarth('earth', undefined, {
@@ -57,25 +59,25 @@ const earth = new GeoEarth('earth', undefined, {
 })
 ```
 
-Vue 中应在 `onMounted` 后初始化，并在 `onBeforeUnmount` 中调用 `earth.destroy()`；React 中应在容器挂载后的 effect 中初始化，并在清理函数中销毁。
+In Vue, initialize in onMounted and destroy in onBeforeUnmount. In React, initialize in an effect after the container mounts and destroy in its cleanup function.
 
-不使用 Vite 时，需要自行配置 Cesium 的静态资源访问路径、`CESIUM_BASE_URL` 和 `cesium/Build/Cesium/Widgets/widgets.css`。
+Without Vite, configure Cesium static resources, `CESIUM_BASE_URL`, and `cesium/Build/Cesium/Widgets/widgets.css` yourself.
 
-## 可选专题模块
+## Optional thematic modules
 
-按需从以下入口导入：
+Import only the modules you need:
 
-- `geoearth-sdk/thematic/echarts`：ECharts 图表，需额外安装 `echarts@5.6.0`。
-- `geoearth-sdk/thematic/mapv`：MapV 可视化。
-- `geoearth-sdk/thematic/heatmap`：热力图。
+- `geoearth-sdk/thematic/echarts`: ECharts integration; additionally install `echarts@5.6.0`.
+- `geoearth-sdk/thematic/mapv`: MapV visualization.
+- `geoearth-sdk/thematic/heatmap`: Heatmaps.
 
 ```bash
 npm install echarts@5.6.0
 ```
 
-## 浏览器脚本接入
+## Browser scripts
 
-也可以将包内 `dist` 的完整内容复制到站点的 `/sdk` 目录，通过 HTTP 服务使用：
+Copy the complete contents of the package's dist directory to your site's `/sdk` directory and serve over HTTP:
 
 ```html
 <div id="earth" style="width: 100%; height: 600px"></div>
@@ -90,14 +92,15 @@ npm install echarts@5.6.0
 </script>
 ```
 
-两个脚本需按顺序加载，不要使用 `async`。保留 `dist` 中的配套样式、纹理及 Cesium 资源；`geoearth.js` 会自动加载配套样式。
+Load scripts in order without async. Keep accompanying styles, textures, and Cesium resources; geoearth.js loads its accompanying styles automatically.
 
-## 文档与反馈
+## Documentation and feedback
 
-- [项目源码与接入说明](https://github.com/geodx/geoearth)
-- [API 与功能文档](https://github.com/geodx/geoearth/tree/main/docs)
-- [问题反馈](https://github.com/geodx/geoearth/issues)
+- [Website and documentation](https://geoearth.dev)
+- [Source and integration guide](https://github.com/geodx/geoearth)
+- [API and feature documentation](https://geoearth.dev/docs/getting-started)
+- [Report an issue](https://github.com/geodx/geoearth/issues)
 
-## 许可
+## License
 
-GeoEarth 使用 [Apache License 2.0](./LICENSE)。第三方组件及其许可见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) 和包内附带的第三方许可文件。
+GeoEarth is licensed under [Apache License 2.0](./LICENSE). See [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) and the bundled third-party license files for dependencies and attribution.

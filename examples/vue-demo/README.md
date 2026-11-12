@@ -1,18 +1,20 @@
-# GeoEarth 示例工作台
+# GeoEarth example workbench
 
-Vue 负责示例目录、代码编辑器和页面布局；每个示例都是独立 HTML，依次加载 `/sdk/cesium/Cesium.js` 和 `/sdk/geoearth.js`，SDK 和页面共享同一份 Cesium。
+[English](./README.md) | [简体中文](./README.zh-CN.md)
 
-## 开发与构建
+Vue provides the example directory, code editor, and page layout. Each example is an independent HTML document loading `/sdk/cesium/Cesium.js` before `/sdk/geoearth.js`. The page and SDK share one Cesium instance.
 
-在仓库根目录运行：
+## Development and builds
 
-- `npm run dev`：先构建 SDK，再启动示例开发服务器。
-- `npm run build:iife`：修改 SDK 后重新生成浏览器产物，随后在工作台点击运行或刷新独立示例。
-- `npm run build:example`：构建 SDK 和示例网站，输出到 `examples/vue-demo/dist`。
+Run from the repository root:
 
-开发服务器将 `/sdk` 映射到 `packages/core/dist`；生产构建会将 SDK 复制到示例网站的 `dist/sdk`。部署时需保证 `/sdk/cesium/Cesium.js`、`/sdk/geoearth.js` 及其配套资源可从站点根路径访问。
+- `npm run dev`: build the SDK, then start the demo development server.
+- `npm run build:iife`: regenerate browser output after SDK changes, then rerun or refresh the example.
+- `npm run build:example`: build the SDK and demo site into examples/vue-demo/dist.
 
-每个 HTML 在加载 Cesium 前设置资源路径，并按以下顺序引入脚本：
+Development maps `/sdk` to packages/core/dist; production copies the SDK into dist/sdk. Preserve root-relative access to both scripts and their accompanying resources.
+
+Set the resource path before loading Cesium:
 
 ```html
 <script>
@@ -22,45 +24,43 @@ Vue 负责示例目录、代码编辑器和页面布局；每个示例都是独�
 <script src="/sdk/geoearth.js"></script>
 ```
 
-不要给这两个脚本添加 `async`。示例中可直接使用全局 `Cesium`，无需通过 GeoEarth 再导出 Cesium 命名空间。
+Do not add async to either script. Examples can use global Cesium directly. Vue workbench code supports Vite HMR; SDK code uses built output and does not hot-reload from source.
 
-示例网站自身的 Vue 代码支持 Vite 热更新；SDK 当前使用构建产物，不直接连接源码热更新。
+The initialization example loads lil-gui 0.21.0 from `/demo-assets/lil-gui.umd.min.js`. Script and license files live directly in public/demo-assets and need no npm dependency or dedicated plugin. Shared panels use public/demo-common/panel.css. Preserve demo-assets and demo-common during deployment.
 
-初始化配置示例通过 `/demo-assets/lil-gui.umd.min.js` 加载 lil-gui 0.21.0。脚本及许可证直接保存在 `public/demo-assets`，由 Vite 原样提供和复制，无需 npm 依赖或专用插件。共享面板样式位于 `public/demo-common/panel.css`。部署时保留 `demo-assets` 和 `demo-common` 目录。
-
-## 文件职责
+## File responsibilities
 
 ```text
-public/demos/             独立 HTML 示例，构建时原样复制
-public/demo-assets/       示例模型、GeoJSON、图片、第三方脚本及来源说明
-public/demo-common/       示例共用的面板样式等页面资源
+public/demos/             Independent HTML examples, copied unchanged
+public/demo-assets/       Models, GeoJSON, images, scripts, attribution
+public/demo-common/       Shared panel styles and page resources
 src/
-  App.vue                初始化共享状态和 Element Plus 语言
+  App.vue                Shared state and Element Plus language
   layouts/
-    WorkbenchLayout.vue  顶部导航、左侧图标栏和页面容器
+    WorkbenchLayout.vue  Header, icon sidebar, and page container
   views/
-    Playground.vue       选择示例、读取源码、运行和重置
+    Playground.vue       Example selection, source loading, run/reset
   components/
-    directory/           目录导航、搜索和选择
-    playground/          代码编辑器、运行预览和编辑设置
-    ResizablePanels.vue  分栏与拖拽
+    directory/           Navigation, search, and selection
+    playground/          Editor, preview, and editor settings
+    ResizablePanels.vue  Resizable split panels
   composables/
-    useWorkbench.ts      工作台设置和面板状态
+    useWorkbench.ts      Workbench settings and panel state
   demos/
-    registry.ts          示例目录树与查询索引
-  locales/               翻译和语言设置
-  router/                示例路由
-  style.css              全局主题、基础样式及共享弹层样式
+    registry.ts          Directory tree and lookup indexes
+  locales/               Translations and language settings
+  router/                Routes
+  style.css              Global themes, base styles, shared overlays
 ```
 
-新增示例时，将 HTML 放到 `public/demos`，再在 `src/demos/registry.ts` 注册路径和翻译键。HTML 也可以通过开发服务器的 `/demos/...` 地址单独打开。
+Add HTML under public/demos, then register its path and translation keys in src/demos/registry.ts. Open `/demos/...` directly to run an example without the workbench.
 
-### 示例资源约定
+## Asset conventions
 
-- `demos` 按能力分组，页面名称使用小写短横线，例如 `resources/gltf-model.html`。
-- `demo-assets` 存放原样提供的静态数据，当前按 `geojson`、`glb` 等类型分组。现有 GLB 路径保持不变；以后若增加由 `.gltf`、`.bin` 和纹理组成的模型，建议使用 `models/<模型名>/` 目录，把依赖放在一起并保留相对路径。
-- 新增自有资源优先使用小写短横线命名；保留已有第三方文件名可以避免无意义的路径变更。模型来源和许可证与模型放在同一目录，参见 `public/demo-assets/glb/README.md`。
-- `demo-common` 放共用的 HTML/CSS/JS；只被一个示例使用的少量样式可留在页面中。当前第三方脚本数量少，可以保持位置，后续数量增加时再统一归入 `demo-assets/vendor/`。
-- `/sdk` 来自 SDK 构建目录的映射或复制，不在 `public` 中再维护一份，避免 SDK 文件版本不一致。`favicon.svg` 继续留在 `public` 根目录。
+- Group demos by capability; use lowercase kebab-case page names, such as resources/gltf-model.html.
+- demo-assets contains static data, currently grouped by formats such as geojson and glb. Keep existing GLB paths. For future .gltf models with .bin and textures, use models/<model-name>/ to retain relative dependencies together.
+- Prefer lowercase kebab-case for new first-party assets. Preserve existing third-party names to avoid unnecessary path changes. Keep model origins and licenses alongside their files.
+- Put reusable HTML/CSS/JS in demo-common; small styles used by one example can remain inline. Existing third-party scripts can stay in place; consider demo-assets/vendor/ if their number grows.
+- `/sdk` is mapped/copied from SDK builds; do not maintain another copy under public. Keep favicon.svg at the public root.
 
-切换目录和代码面板只改变可见内容。编辑源码后点击“运行”，预览才会执行新代码；“重置”恢复当前示例的原始源码并重新运行。
+Switching the directory/code panels changes visibility only. Edited code runs after clicking Run. Reset restores and reruns the current example's original source.
