@@ -39,13 +39,14 @@
   <script src="/sdk/geoearth.js"></script>
   <script>
     // HTML 中从 GeoEarth 获取 API；npm 中从 'geoearth' 导入。
-    const { InteractionEventType, ScreenSpaceEventType, ImageryProviderType, DrawCancelledError } = GeoEarth;
+    const { InteractionEventType, ScreenSpaceEventType, SourceType, ImageryScheme, DrawCancelledError } = GeoEarth;
     const earth = new GeoEarth("earth", { infoBox: true, selectionIndicator: true }, {
       startup: { animation: false },
       homeView: { longitude: 116.391, latitude: 39.907, height: 12000 },
       resources: {
-        layers: [{ id: "demo-base", name: "本地底图", defaultLoad: true, show: true,
-          properties: { providerType: ImageryProviderType.SINGLE_TILE,
+        imagery: [{ id: "demo-base", name: "本地底图", catalog: "基础影像",
+          sourceType: SourceType.IMAGERY, defaultLoad: true, show: true,
+          properties: { scheme: ImageryScheme.SINGLE_TILE,
             url: "/demo-assets/resource-events-grid.png", baseLayer: true } }],
       },
     });
